@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { LocationBalance } from './locationBalance';
 
 export interface InventoryItem {
   id: string;
@@ -26,4 +27,12 @@ export interface InventoryItem {
   lastUsed?: Date | null;
   /** @nullable */
   notes?: string | null;
+  /** Derived total on-hand across locations */
+  onHand?: number;
+  /** Derived total reserved across locations */
+  reserved?: number;
+  /** Derived onHand minus reserved */
+  available?: number;
+  /** Derived per-location balances from the transaction ledger */
+  locationBalances?: LocationBalance[];
 }

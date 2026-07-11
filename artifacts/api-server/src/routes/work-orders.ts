@@ -14,6 +14,7 @@ import {
   type Attachment,
   type StatusHistoryEntry,
 } from "@workspace/db";
+import { postTransaction, NegativeStockError } from "../lib/inventory-ledger";
 import {
   CreateWorkOrderBody,
   UpdateWorkOrderBody,
@@ -31,7 +32,12 @@ import {
   TechnicianCheckOutParams,
 } from "@workspace/api-zod";
 import { requireAuth, requireNav, requireRoles } from "../middleware/auth";
-import { canSchedule, isFieldRole, isValidRole } from "../lib/authz";
+import {
+  canSchedule,
+  canOverrideStock,
+  isFieldRole,
+  isValidRole,
+} from "../lib/authz";
 import { toWorkOrder } from "../lib/serialize-ops";
 import { writeAudit } from "../lib/audit";
 
@@ -434,12 +440,26 @@ router.post(
             if (d.cost === undefined) cost = item.cost;
             if (d.billablePrice === undefined) billablePrice = item.billablePrice;
             name = item.name;
+            // Consumption is a ledger transaction, not a direct quantity edit —
+            // balances stay derived. Negative-stock protection applies; only a
+            // privileged role may override it.
+            const privileged = isValidRole(user.role) && canOverrideStock(user.role);
+            await postTransaction(tx, {
+              tenantId: user.tenantId,
+              itemId: item.id,
+              type: "consumption",
+              location: item.location,
+              quantity: -d.quantity,
+              workOrderId: wo.id,
+              reason: `Consumed on ${wo.number}`,
+              override: privileged,
+              privileged,
+              actorUserId: user.id,
+              actorName: user.name,
+            });
             await tx
               .update(inventoryTable)
-              .set({
-                quantity: Math.max(0, item.quantity - d.quantity),
-                lastUsed: new Date(),
-              })
+              .set({ lastUsed: new Date() })
               .where(eq(inventoryTable.id, item.id));
           }
         }
@@ -496,6 +516,10 @@ router.post(
       }
       res.json(toWorkOrder(result.updated));
     } catch (err) {
+      if (err instanceof NegativeStockError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
       req.log.error({ err }, "Failed to add material");
       res.status(500).json({ error: "Failed to add material" });
     }

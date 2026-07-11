@@ -21,7 +21,13 @@ import {
   SendBackCloseoutParams,
 } from "@workspace/api-zod";
 import { requireAuth, requireRoles } from "../middleware/auth";
-import { canApproveCloseouts, isFieldRole, isValidRole } from "../lib/authz";
+import {
+  canApproveCloseouts,
+  canOverrideStock,
+  isFieldRole,
+  isValidRole,
+} from "../lib/authz";
+import { postTransaction } from "../lib/inventory-ledger";
 import { toCloseout } from "../lib/serialize-ops";
 import { writeAudit } from "../lib/audit";
 
@@ -303,7 +309,8 @@ router.post(
           .from(inventoryTable)
           .where(eq(inventoryTable.tenantId, user.tenantId))
           .for("update");
-        let stock = [...items];
+        const stock = [...items];
+        const consumedItems: { item: (typeof stock)[number]; qty: number }[] = [];
         const materialEntries: MaterialEntry[] = co.materialsDetected.map(
           (detected) => {
             const match = stock.find(
@@ -318,11 +325,7 @@ router.post(
             const qtyMatch = detected.match(/^(\d+)/);
             const qty = qtyMatch ? parseInt(qtyMatch[1], 10) : 1;
             if (match) {
-              stock = stock.map((it) =>
-                it.id === match.id
-                  ? { ...it, quantity: Math.max(0, it.quantity - qty) }
-                  : it,
-              );
+              consumedItems.push({ item: match, qty });
               consumed.push({ id: match.id, name: match.name, qty });
             }
             return {
@@ -337,13 +340,28 @@ router.post(
           },
         );
 
-        // Deduct inventory exactly once.
-        for (const c of consumed) {
-          const it = stock.find((s) => s.id === c.id)!;
+        // Post a consumption transaction per detected material. The approver is
+        // privileged, so consumption is allowed to override negative-stock
+        // protection here — an approved closeout reflects work already done.
+        const privileged = isValidRole(user.role) && canOverrideStock(user.role);
+        for (const { item, qty } of consumedItems) {
+          await postTransaction(tx, {
+            tenantId: user.tenantId,
+            itemId: item.id,
+            type: "consumption",
+            location: item.location,
+            quantity: -qty,
+            workOrderId: wo.id,
+            reason: `Closeout ${co.id} approved`,
+            override: privileged,
+            privileged,
+            actorUserId: user.id,
+            actorName: user.name,
+          });
           await tx
             .update(inventoryTable)
-            .set({ quantity: it.quantity, lastUsed: new Date() })
-            .where(eq(inventoryTable.id, c.id));
+            .set({ lastUsed: new Date() })
+            .where(eq(inventoryTable.id, item.id));
         }
 
         const log: LogEntry = {

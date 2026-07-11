@@ -303,6 +303,13 @@ export interface LocationUpdate {
   notes?: string;
 }
 
+export interface LocationBalance {
+  location: string;
+  onHand: number;
+  reserved: number;
+  available: number;
+}
+
 export interface InventoryItem {
   id: string;
   tenantId: string;
@@ -323,6 +330,14 @@ export interface InventoryItem {
   lastUsed?: string | null;
   /** @nullable */
   notes?: string | null;
+  /** Derived total on-hand across locations */
+  onHand?: number;
+  /** Derived total reserved across locations */
+  reserved?: number;
+  /** Derived onHand minus reserved */
+  available?: number;
+  /** Derived per-location balances from the transaction ledger */
+  locationBalances?: LocationBalance[];
 }
 
 export interface IntakeItem {
@@ -672,6 +687,415 @@ export interface CloseoutReviewInput {
   reason?: string;
 }
 
+export interface InventoryTransaction {
+  id: string;
+  tenantId: string;
+  itemId: string;
+  type: string;
+  quantity: number;
+  reservedDelta: number;
+  location: string;
+  /** @nullable */
+  toLocation?: string | null;
+  /** @nullable */
+  workOrderId?: string | null;
+  /** @nullable */
+  purchaseRequestId?: string | null;
+  /** @nullable */
+  reason?: string | null;
+  overridden?: boolean;
+  /** @nullable */
+  actorUserId?: string | null;
+  actorName: string;
+  createdAt: string;
+}
+
+export interface TransferInput {
+  /** @minLength 1 */
+  itemId: string;
+  /** @minLength 1 */
+  fromLocation: string;
+  /** @minLength 1 */
+  toLocation: string;
+  /** @minimum 1 */
+  quantity: number;
+  reason?: string;
+  override?: boolean;
+}
+
+export interface ReservationInput {
+  /** @minLength 1 */
+  itemId: string;
+  /** @minLength 1 */
+  location: string;
+  /** @minimum 1 */
+  quantity: number;
+  workOrderId?: string;
+  reason?: string;
+  override?: boolean;
+}
+
+export interface AdjustmentInput {
+  /** @minLength 1 */
+  itemId: string;
+  /** @minLength 1 */
+  location: string;
+  /** Signed delta (may be negative) */
+  quantity: number;
+  reason?: string;
+  override?: boolean;
+}
+
+export interface CycleCountInput {
+  /** @minLength 1 */
+  itemId: string;
+  /** @minLength 1 */
+  location: string;
+  /** @minimum 0 */
+  countedQuantity: number;
+  reason?: string;
+}
+
+export interface PurchaseRequest {
+  id: string;
+  tenantId: string;
+  itemId: string;
+  itemName?: string;
+  quantity: number;
+  /** @nullable */
+  location?: string | null;
+  /** @nullable */
+  vendor?: string | null;
+  status: string;
+  /** @nullable */
+  reason?: string | null;
+  /** @nullable */
+  requestedByUserId?: string | null;
+  requestedByName: string;
+  /** @nullable */
+  approvedByUserId?: string | null;
+  /** @nullable */
+  approvedByName?: string | null;
+  /** @nullable */
+  approvedAt?: string | null;
+  /** @nullable */
+  receivedAt?: string | null;
+  createdAt: string;
+}
+
+export interface PurchaseRequestInput {
+  /** @minLength 1 */
+  itemId: string;
+  /** @minimum 1 */
+  quantity: number;
+  location?: string;
+  vendor?: string;
+  reason?: string;
+}
+
+export interface EquipmentServiceRecord {
+  id: string;
+  date: string;
+  workOrderId?: string;
+  technicianId?: string;
+  description: string;
+  cost?: number;
+}
+
+export interface EquipmentPartRecord {
+  id: string;
+  date: string;
+  itemId?: string;
+  name: string;
+  quantity: number;
+  workOrderId?: string;
+}
+
+export interface EquipmentPhoto {
+  id: string;
+  fileId?: string;
+  name: string;
+  objectPath?: string;
+  uploadedBy: string;
+  date: string;
+}
+
+export interface Equipment {
+  id: string;
+  tenantId: string;
+  customerId: string;
+  locationId: string;
+  assetName: string;
+  manufacturer: string;
+  model: string;
+  serialNumber: string;
+  category: string;
+  condition: string;
+  /** @nullable */
+  installDate?: string | null;
+  warrantyInfo: string;
+  /** @nullable */
+  warrantyExpiration?: string | null;
+  /** @nullable */
+  lastServiced?: string | null;
+  relatedWorkOrderIds: string[];
+  serviceHistory: EquipmentServiceRecord[];
+  partsHistory: EquipmentPartRecord[];
+  photos: EquipmentPhoto[];
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EquipmentInput {
+  /** @minLength 1 */
+  customerId: string;
+  /** @minLength 1 */
+  locationId: string;
+  /** @minLength 1 */
+  assetName: string;
+  manufacturer?: string;
+  model?: string;
+  serialNumber?: string;
+  category?: string;
+  condition?: string;
+  installDate?: string;
+  warrantyInfo?: string;
+  warrantyExpiration?: string;
+  notes?: string;
+}
+
+export interface EquipmentUpdate {
+  assetName?: string;
+  manufacturer?: string;
+  model?: string;
+  serialNumber?: string;
+  category?: string;
+  condition?: string;
+  installDate?: string;
+  warrantyInfo?: string;
+  warrantyExpiration?: string;
+  lastServiced?: string;
+  notes?: string;
+}
+
+export interface ServiceRecordInput {
+  date?: string;
+  workOrderId?: string;
+  technicianId?: string;
+  /** @minLength 1 */
+  description: string;
+  cost?: number;
+}
+
+export interface PartRecordInput {
+  date?: string;
+  itemId?: string;
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  quantity: number;
+  workOrderId?: string;
+}
+
+export interface PhotoInput {
+  fileId?: string;
+  /** @minLength 1 */
+  name: string;
+  objectPath?: string;
+}
+
+export type EquipmentExtractionExtractedFields = {[key: string]: string};
+
+export interface EquipmentExtraction {
+  id: string;
+  tenantId: string;
+  /** @nullable */
+  equipmentId?: string | null;
+  /** @nullable */
+  customerId?: string | null;
+  /** @nullable */
+  locationId?: string | null;
+  /** @nullable */
+  fileId?: string | null;
+  sourceName: string;
+  simulated: boolean;
+  status: string;
+  extractedFields: EquipmentExtractionExtractedFields;
+  /** @nullable */
+  note?: string | null;
+  /** @nullable */
+  createdByUserId?: string | null;
+  createdByName: string;
+  /** @nullable */
+  reviewedByUserId?: string | null;
+  /** @nullable */
+  reviewedByName?: string | null;
+  /** @nullable */
+  reviewedAt?: string | null;
+  createdAt: string;
+}
+
+export type ExtractionInputExtractedFields = {[key: string]: string};
+
+export interface ExtractionInput {
+  equipmentId?: string;
+  customerId?: string;
+  locationId?: string;
+  fileId?: string;
+  /** @minLength 1 */
+  sourceName: string;
+  extractedFields?: ExtractionInputExtractedFields;
+  note?: string;
+}
+
+export type ExtractionApproveInputFields = {[key: string]: string};
+
+export interface ExtractionApproveInput {
+  /** Target existing asset; omit to create a new asset */
+  equipmentId?: string;
+  fields?: ExtractionApproveInputFields;
+}
+
+export interface DocumentRecord {
+  id: string;
+  tenantId: string;
+  /** @nullable */
+  customerId?: string | null;
+  name: string;
+  type: string;
+  visibility: string;
+  /** @nullable */
+  expiration?: string | null;
+  currentVersion: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DocumentInput {
+  customerId?: string;
+  /** @minLength 1 */
+  name: string;
+  type?: string;
+  visibility?: string;
+  expiration?: string;
+}
+
+export interface DocumentUpdate {
+  name?: string;
+  type?: string;
+  visibility?: string;
+  expiration?: string;
+}
+
+export interface DocumentVersion {
+  id: string;
+  tenantId: string;
+  documentId: string;
+  version: number;
+  /** @nullable */
+  fileId?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  uploadedByUserId?: string | null;
+  uploadedByName: string;
+  createdAt: string;
+}
+
+export interface DocumentVersionInput {
+  /** @minLength 1 */
+  fileId: string;
+  notes?: string;
+}
+
+export interface DocumentReminder {
+  id: string;
+  tenantId: string;
+  documentId: string;
+  remindAt: string;
+  reason: string;
+  status: string;
+  /** @nullable */
+  createdByUserId?: string | null;
+  createdByName: string;
+  createdAt: string;
+}
+
+export interface DocumentReminderInput {
+  /** @minLength 1 */
+  remindAt: string;
+  reason?: string;
+}
+
+export interface FileRecord {
+  id: string;
+  tenantId: string;
+  objectPath: string;
+  name: string;
+  contentType: string;
+  size: number;
+  entityType: string;
+  /** @nullable */
+  entityId?: string | null;
+  version: number;
+  visibility: string;
+  /** @nullable */
+  uploadedByUserId?: string | null;
+  uploadedByName: string;
+  createdAt: string;
+}
+
+export interface FileInput {
+  /** @minLength 1 */
+  objectPath: string;
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  contentType: string;
+  /** @minimum 0 */
+  size: number;
+  entityType?: string;
+  entityId?: string;
+  visibility?: string;
+}
+
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata?: UploadUrlRequest;
+}
+
+/**
+ * Missing or invalid required fields.
+ */
+export type BadRequestResponse = ErrorResponse;
+
+/**
+ * Not authenticated.
+ */
+export type UnauthorizedResponse = ErrorResponse;
+
+/**
+ * Not permitted.
+ */
+export type ForbiddenResponse = ErrorResponse;
+
+/**
+ * Not found.
+ */
+export type NotFoundResponse = ErrorResponse;
+
 export type ListAuditEventsParams = {
 entityType?: string;
 action?: string;
@@ -680,5 +1104,14 @@ action?: string;
  * @maximum 200
  */
 limit?: number;
+};
+
+export type ListInventoryTransactionsParams = {
+itemId?: string;
+};
+
+export type ListFilesParams = {
+entityType?: string;
+entityId?: string;
 };
 

@@ -6,16 +6,22 @@ import {
   customersTable,
   locationsTable,
   inventoryTable,
+  inventoryTransactionsTable,
   intakeTable,
   workOrdersTable,
   closeoutsTable,
+  equipmentTable,
+  documentsTable,
   type InsertUser,
   type InsertCustomer,
   type InsertLocation,
   type InsertInventory,
   type InsertIntake,
   type InsertCloseout,
+  type InsertEquipment,
+  type InsertDocument,
 } from "@workspace/db";
+import { and, eq } from "drizzle-orm";
 import { hashPassword } from "../lib/auth/password";
 import { logger } from "../lib/logger";
 
@@ -140,6 +146,25 @@ const SEED_CLOSEOUTS: SeedCloseout[] = [
   },
 ];
 
+const SEED_EQUIPMENT: Omit<InsertEquipment, "tenantId">[] = [
+  { id: "eq1", customerId: "c6", locationId: "l8", assetName: "Deli Refrigeration Case", model: "Hussmann Q3-DEP", serialNumber: "HUS-88213-A", warrantyInfo: "Parts warranty until 2027-03", lastServiced: dateOnly(-2), relatedWorkOrderIds: ["wo6"], notes: "Compressor replaced under WO-1039." },
+  { id: "eq2", customerId: "c2", locationId: "l3", assetName: "Kitchen Exhaust Fan", model: "CaptiveAire NCA-14", serialNumber: "CA-14-55201", warrantyInfo: "Out of warranty", lastServiced: dateOnly(-90), relatedWorkOrderIds: ["wo2"] },
+  { id: "eq3", customerId: "c3", locationId: "l4", assetName: "Grease Interceptor", model: "Schier GB-250", serialNumber: "SCH-250-9981", warrantyInfo: "N/A", lastServiced: dateOnly(-2), relatedWorkOrderIds: ["wo7"] },
+  { id: "eq4", customerId: "c1", locationId: "l1", assetName: "Backflow Preventer", model: "Watts 909", serialNumber: "W909-33221", warrantyInfo: "5yr, expires 2028", lastServiced: dateOnly(-8), relatedWorkOrderIds: ["wo8"], notes: "Annual cert current." },
+  { id: "eq5", customerId: "c4", locationId: "l5", assetName: "Vacuum Pump System", model: "Air Techniques VacStar", serialNumber: "AT-VS-7712", warrantyInfo: "Warranty until 2026-12", relatedWorkOrderIds: [] },
+];
+
+const SEED_DOCUMENTS: Omit<InsertDocument, "tenantId">[] = [
+  { id: "d1", customerId: "c1", name: "RaceTrac COI 2026", type: "COI", expiration: dateOnly(45), visibility: "All Staff" },
+  { id: "d2", customerId: "c1", name: "RaceTrac Master Contract", type: "Contract", visibility: "Managers Only" },
+  { id: "d3", customerId: "c4", name: "Heartland W-9", type: "W-9", visibility: "Billing Only" },
+  { id: "d4", customerId: "c4", name: "Heartland COI", type: "COI", expiration: dateOnly(9), visibility: "All Staff" },
+  { id: "d5", customerId: "c3", name: "Ruth's Chris Billing Rules", type: "Billing Rules", visibility: "Billing Only" },
+  { id: "d6", customerId: "c2", name: "True Food COI", type: "COI", expiration: dateOnly(-5), visibility: "All Staff" },
+  { id: "d7", customerId: "c5", name: "Cracker Barrel Portal Rules", type: "Portal Rules", visibility: "All Staff" },
+  { id: "d8", customerId: "c6", name: "Publix Site Instructions", type: "Site Instructions", visibility: "All Staff" },
+];
+
 async function seed(): Promise<void> {
   await db
     .insert(tenantsTable)
@@ -179,6 +204,34 @@ async function seed(): Promise<void> {
       .insert(inventoryTable)
       .values({ ...iv, tenantId: TENANT_ID })
       .onConflictDoNothing();
+    // Opening balance as a ledger transaction so on-hand is DERIVED, not
+    // denormalized. Guarded so re-seeding never double-posts an opening.
+    // Seed rows always define id/location even though the insert type makes
+    // them optional (defaults exist).
+    const itemId = iv.id!;
+    const itemLocation = iv.location!;
+    const existing = await db
+      .select({ id: inventoryTransactionsTable.id })
+      .from(inventoryTransactionsTable)
+      .where(
+        and(
+          eq(inventoryTransactionsTable.tenantId, TENANT_ID),
+          eq(inventoryTransactionsTable.itemId, itemId),
+          eq(inventoryTransactionsTable.type, "opening"),
+        ),
+      );
+    const openingQty = iv.quantity ?? 0;
+    if (existing.length === 0 && openingQty > 0) {
+      await db.insert(inventoryTransactionsTable).values({
+        tenantId: TENANT_ID,
+        itemId,
+        type: "opening",
+        quantity: openingQty,
+        location: itemLocation,
+        reason: "Opening balance (seed)",
+        actorName: "System",
+      });
+    }
   }
 
   for (const wo of SEED_WORK_ORDERS) {
@@ -222,6 +275,20 @@ async function seed(): Promise<void> {
       .onConflictDoNothing();
   }
 
+  for (const eq of SEED_EQUIPMENT) {
+    await db
+      .insert(equipmentTable)
+      .values({ ...eq, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
+  for (const doc of SEED_DOCUMENTS) {
+    await db
+      .insert(documentsTable)
+      .values({ ...doc, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
   logger.info(
     {
       tenant: TENANT_ID,
@@ -232,6 +299,8 @@ async function seed(): Promise<void> {
       workOrders: SEED_WORK_ORDERS.length,
       intake: SEED_INTAKE.length,
       closeouts: SEED_CLOSEOUTS.length,
+      equipment: SEED_EQUIPMENT.length,
+      documents: SEED_DOCUMENTS.length,
     },
     "Seed complete (demo password set from DEMO_PASSWORD env or dev default; value not logged)",
   );

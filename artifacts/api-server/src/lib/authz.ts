@@ -80,3 +80,82 @@ const SCHEDULING_ROLES: Role[] = [
 export function canSchedule(role: Role): boolean {
   return SCHEDULING_ROLES.includes(role);
 }
+
+// Roles that may perform inventory mutations (transfers, reservations,
+// adjustments, cycle counts, purchase requests).
+const INVENTORY_MANAGE_ROLES: Role[] = [
+  "Administrator",
+  "Service Manager",
+  "Inventory Manager",
+  "Supervisor",
+  "Lead Technician",
+];
+export function canManageInventory(role: Role): boolean {
+  return INVENTORY_MANAGE_ROLES.includes(role);
+}
+
+// Privileged roles that may override negative-stock protection and approve /
+// receive purchase requests. Deliberately narrower than canManageInventory.
+const INVENTORY_PRIVILEGED_ROLES: Role[] = [
+  "Administrator",
+  "Service Manager",
+  "Inventory Manager",
+];
+export function canOverrideStock(role: Role): boolean {
+  return INVENTORY_PRIVILEGED_ROLES.includes(role);
+}
+export function canApprovePurchase(role: Role): boolean {
+  return INVENTORY_PRIVILEGED_ROLES.includes(role);
+}
+
+// Roles that may create/edit equipment assets and act on extraction reviews.
+const EQUIPMENT_MANAGE_ROLES: Role[] = [
+  "Administrator",
+  "Service Manager",
+  "Scheduler",
+  "Supervisor",
+  "Inventory Manager",
+  "Lead Technician",
+  "Technician",
+];
+export function canManageEquipment(role: Role): boolean {
+  return EQUIPMENT_MANAGE_ROLES.includes(role);
+}
+
+// Roles that may create/edit vault documents, versions, and reminders.
+const DOCUMENT_MANAGE_ROLES: Role[] = [
+  "Administrator",
+  "Service Manager",
+  "Supervisor",
+  "Billing",
+  "Bookkeeper",
+];
+export function canManageDocuments(role: Role): boolean {
+  return DOCUMENT_MANAGE_ROLES.includes(role);
+}
+
+// Document vault visibility gate — mirrors the CustomerDocument.visibility field.
+// "Managers Only" is restricted to approver-level roles; "Billing Only" to
+// billing/accounting roles (plus admins/managers). "All Staff" is open to any
+// authenticated tenant user.
+export function canViewDocumentVisibility(
+  role: Role,
+  visibility: string,
+): boolean {
+  if (visibility === "Managers Only") {
+    return (
+      role === "Administrator" ||
+      role === "Service Manager" ||
+      role === "Supervisor"
+    );
+  }
+  if (visibility === "Billing Only") {
+    return (
+      role === "Administrator" ||
+      role === "Service Manager" ||
+      role === "Billing" ||
+      role === "Bookkeeper"
+    );
+  }
+  return true;
+}

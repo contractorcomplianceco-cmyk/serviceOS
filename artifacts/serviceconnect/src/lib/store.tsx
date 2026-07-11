@@ -10,7 +10,7 @@ import {
   User, Customer, Location, WorkOrder, Invoice, AIRecommendation,
   IntakeItem, InventoryItem, Equipment, CustomerDocument, Closeout,
   AuditEvent, Payment, PaymentType, LaborEntry, MaterialEntry, PortalSyncStatus,
-  BillingStatus,
+  BillingStatus, PurchaseRequest,
 } from './types';
 import * as initialData from './mock-data';
 import { useAuth, mapAuthUserToUser, IS_DEV } from './auth';
@@ -19,7 +19,14 @@ import {
   useListCustomers, useCreateCustomer,
   useListLocations, useCreateLocation,
   useListEmployees,
-  useListInventory,
+  useListInventory, useListInventoryTransactions,
+  useCreateInventoryTransfer, useCreateInventoryReservation,
+  useReleaseInventoryReservation, useCreateInventoryAdjustment,
+  useCreateInventoryCycleCount,
+  useListPurchaseRequests, useCreatePurchaseRequest,
+  useApprovePurchaseRequest, useReceivePurchaseRequest,
+  useListEquipment, useCreateEquipment,
+  useListDocuments,
   useListIntake, useDismissIntake, useConvertIntake,
   useListWorkOrders, useCreateWorkOrder, useUpdateWorkOrder,
   useAddLaborEntry, useAddMaterialEntry, useAddWorkOrderNote,
@@ -27,22 +34,24 @@ import {
   useListCloseouts, useUpdateCloseout, useApproveCloseout, useSendBackCloseout,
   useListAuditEvents,
   getListCustomersQueryKey, getListLocationsQueryKey, getListInventoryQueryKey,
+  getListInventoryTransactionsQueryKey, getListPurchaseRequestsQueryKey,
+  getListEquipmentQueryKey, getListDocumentsQueryKey,
   getListIntakeQueryKey, getListWorkOrdersQueryKey, getListCloseoutsQueryKey,
   getListEmployeesQueryKey, getListAuditEventsQueryKey,
   type CustomerInput, type LocationInput, type WorkOrderInput,
   type WorkOrderUpdate, type CloseoutUpdate,
+  type TransferInput, type ReservationInput, type AdjustmentInput,
+  type CycleCountInput, type PurchaseRequestInput, type EquipmentInput,
 } from '@workspace/api-client-react';
 
 // ---------------------------------------------------------------------------
-// Local-only slice. Billing (invoices/payments), equipment, documents, and AI
-// recommendations remain client-side this sprint; the operational spine
-// (customers/locations/work orders/intake/inventory/closeouts/audit) is served
-// from the backend via react-query below.
+// Local-only slice. Billing (invoices/payments) and AI recommendations remain
+// client-side this sprint; the operational spine (customers/locations/work
+// orders/intake/inventory + ledger/purchase requests/equipment/documents/
+// closeouts/audit) is served from the backend via react-query below.
 // ---------------------------------------------------------------------------
 interface LocalState {
   invoices: Invoice[];
-  equipment: Equipment[];
-  documents: CustomerDocument[];
   recommendations: AIRecommendation[];
   dismissedRecIds: string[];
   // Ephemeral, client-generated audit for local-only actions (portal sync,
@@ -64,6 +73,7 @@ interface AppContextType {
   inventory: InventoryItem[];
   equipment: Equipment[];
   documents: CustomerDocument[];
+  purchaseRequests: PurchaseRequest[];
   closeouts: Closeout[];
   auditLog: AuditEvent[];
   dismissedRecIds: string[];
@@ -74,7 +84,14 @@ interface AppContextType {
   addInvoice: (data: Invoice) => void;
   dismissRecommendation: (id: string) => void;
   dismissIntake: (id: string) => void;
-  updateInventory: (id: string, data: Partial<InventoryItem>) => void;
+  transferInventory: (input: TransferInput) => Promise<boolean>;
+  reserveInventory: (input: ReservationInput) => Promise<boolean>;
+  releaseReservation: (input: ReservationInput) => Promise<boolean>;
+  adjustInventory: (input: AdjustmentInput) => Promise<boolean>;
+  cycleCountInventory: (input: CycleCountInput) => Promise<boolean>;
+  createPurchaseRequest: (input: PurchaseRequestInput) => Promise<boolean>;
+  approvePurchaseRequest: (id: string) => Promise<boolean>;
+  receivePurchaseRequest: (id: string) => Promise<boolean>;
   updateCloseout: (id: string, data: Partial<Closeout>) => void;
   resetData: () => void;
   logAudit: (e: AuditInput) => void;
@@ -101,11 +118,24 @@ let idCounter = 0;
 const genId = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}-${(idCounter++).toString(36)}`;
 
+// The backend document record does not carry a compliance status; it is derived
+// from the expiration date so the Documents page keeps its Valid/Expiring/Expired
+// filtering and attention banners.
+function computeDocStatus(
+  expiration?: string | null,
+): CustomerDocument['status'] {
+  if (!expiration) return 'Valid';
+  const exp = new Date(expiration).getTime();
+  if (Number.isNaN(exp)) return 'Valid';
+  const now = Date.now();
+  if (exp < now) return 'Expired';
+  if (exp - now <= 30 * 24 * 60 * 60 * 1000) return 'Expiring Soon';
+  return 'Valid';
+}
+
 function freshLocal(): LocalState {
   return {
     invoices: initialData.mockInvoices,
-    equipment: initialData.mockEquipment,
-    documents: initialData.mockDocuments,
     recommendations: initialData.mockRecommendations,
     dismissedRecIds: [],
     localAudit: [],
@@ -140,6 +170,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const kLocations = getListLocationsQueryKey();
   const kEmployees = getListEmployeesQueryKey();
   const kInventory = getListInventoryQueryKey();
+  const kInventoryTx = getListInventoryTransactionsQueryKey();
+  const kPurchaseRequests = getListPurchaseRequestsQueryKey();
+  const kEquipment = getListEquipmentQueryKey();
+  const kDocuments = getListDocumentsQueryKey();
   const kIntake = getListIntakeQueryKey();
   const kWorkOrders = getListWorkOrdersQueryKey();
   const kCloseouts = getListCloseoutsQueryKey();
@@ -157,6 +191,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const locationsQuery = useListLocations({ query: { enabled: authed, queryKey: kLocations } });
   const employeesQuery = useListEmployees({ query: { enabled: authed, queryKey: kEmployees } });
   const inventoryQuery = useListInventory({ query: { enabled: authed, queryKey: kInventory } });
+  const purchaseRequestsQuery = useListPurchaseRequests({ query: { enabled: authed, queryKey: kPurchaseRequests } });
+  const equipmentQuery = useListEquipment({ query: { enabled: authed, queryKey: kEquipment } });
+  const documentsQuery = useListDocuments({ query: { enabled: authed, queryKey: kDocuments } });
   const intakeQuery = useListIntake({ query: { enabled: authed, queryKey: kIntake } });
   const workOrdersQuery = useListWorkOrders({ query: { enabled: authed, queryKey: kWorkOrders } });
   const closeoutsQuery = useListCloseouts({ query: { enabled: authed, queryKey: kCloseouts } });
@@ -168,6 +205,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const customers = (customersQuery.data ?? []) as unknown as Customer[];
   const locations = (locationsQuery.data ?? []) as unknown as Location[];
   const inventory = (inventoryQuery.data ?? []) as unknown as InventoryItem[];
+  const purchaseRequests = (purchaseRequestsQuery.data ?? []) as unknown as PurchaseRequest[];
+  const equipment = (equipmentQuery.data ?? []) as unknown as Equipment[];
+  const documents = (documentsQuery.data ?? []).map((d) => ({
+    ...d,
+    status: computeDocStatus((d as { expiration?: string | null }).expiration),
+  })) as unknown as CustomerDocument[];
   const intake = (intakeQuery.data ?? []) as unknown as IntakeItem[];
   const workOrders = (workOrdersQuery.data ?? []) as unknown as WorkOrder[];
   const closeouts = (closeoutsQuery.data ?? []) as unknown as Closeout[];
@@ -252,6 +295,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
     mutation: { onSuccess: () => invalidate([kCloseouts, kAudit]) },
   });
 
+  // Every ledger mutation appends immutable transaction rows; the derived
+  // balances on inventory items are recomputed on the next list fetch, so we
+  // invalidate both the inventory list and its transaction log.
+  const ledgerKeys = [kInventory, kInventoryTx, kAudit];
+  const transferM = useCreateInventoryTransfer({
+    mutation: { onSuccess: () => invalidate(ledgerKeys) },
+  });
+  const reserveM = useCreateInventoryReservation({
+    mutation: { onSuccess: () => invalidate(ledgerKeys) },
+  });
+  const releaseM = useReleaseInventoryReservation({
+    mutation: { onSuccess: () => invalidate(ledgerKeys) },
+  });
+  const adjustM = useCreateInventoryAdjustment({
+    mutation: { onSuccess: () => invalidate(ledgerKeys) },
+  });
+  const cycleCountM = useCreateInventoryCycleCount({
+    mutation: { onSuccess: () => invalidate(ledgerKeys) },
+  });
+  const createPurchaseRequestM = useCreatePurchaseRequest({
+    mutation: { onSuccess: () => invalidate([kPurchaseRequests, kAudit]) },
+  });
+  const approvePurchaseRequestM = useApprovePurchaseRequest({
+    mutation: { onSuccess: () => invalidate([kPurchaseRequests, kAudit]) },
+  });
+  const receivePurchaseRequestM = useReceivePurchaseRequest({
+    // Receiving posts a receipt transaction into the ledger, so inventory
+    // balances change alongside the request status.
+    mutation: {
+      onSuccess: () =>
+        invalidate([kPurchaseRequests, kInventory, kInventoryTx, kAudit]),
+    },
+  });
+  const createEquipmentM = useCreateEquipment({
+    mutation: { onSuccess: () => invalidate([kEquipment, kAudit]) },
+  });
+
   const value: AppContextType = {
     currentUser,
     users,
@@ -262,8 +342,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     recommendations,
     intake,
     inventory,
-    equipment: local.equipment,
-    documents: local.documents,
+    equipment,
+    documents,
+    purchaseRequests,
     closeouts,
     auditLog,
     dismissedRecIds: local.dismissedRecIds,
@@ -347,10 +428,74 @@ export function AppProvider({ children }: { children: ReactNode }) {
       dismissIntakeM.mutate({ id });
     },
 
-    // Inventory is read-only from the backend this sprint; deductions happen
-    // server-side on material add / closeout approval.
-    updateInventory: () => {
-      /* no-op: inventory mutations are downstream work */
+    // Inventory balances are derived server-side from an immutable transaction
+    // ledger — the client never writes a balance directly. Each action below
+    // posts a transaction; negative-stock protection and audit are enforced by
+    // the backend. Callers receive a boolean so UI can surface guard failures
+    // (e.g. a blocked transfer that would drive a location negative).
+    transferInventory: async (input) => {
+      try {
+        await transferM.mutateAsync({ data: input });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    reserveInventory: async (input) => {
+      try {
+        await reserveM.mutateAsync({ data: input });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    releaseReservation: async (input) => {
+      try {
+        await releaseM.mutateAsync({ data: input });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    adjustInventory: async (input) => {
+      try {
+        await adjustM.mutateAsync({ data: input });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    cycleCountInventory: async (input) => {
+      try {
+        await cycleCountM.mutateAsync({ data: input });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    createPurchaseRequest: async (input) => {
+      try {
+        await createPurchaseRequestM.mutateAsync({ data: input });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    approvePurchaseRequest: async (id) => {
+      try {
+        await approvePurchaseRequestM.mutateAsync({ id });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    receivePurchaseRequest: async (id) => {
+      try {
+        await receivePurchaseRequestM.mutateAsync({ id });
+        return true;
+      } catch {
+        return false;
+      }
     },
 
     updateCloseout: (id, data) => {
@@ -431,12 +576,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       createLocationM.mutate({ data: input });
     },
 
-    addEquipment: (data) =>
-      setLocal((s) => ({
-        ...s,
-        equipment: [data, ...s.equipment],
-        localAudit: [buildEvent({ action: 'Created', entityType: 'Equipment', entityId: data.id, summary: `Equipment ${data.assetName} created` }), ...s.localAudit],
-      })),
+    addEquipment: (data) => {
+      const input: EquipmentInput = {
+        customerId: data.customerId,
+        locationId: data.locationId,
+        assetName: data.assetName,
+        model: data.model,
+        serialNumber: data.serialNumber,
+        warrantyInfo: data.warrantyInfo,
+        notes: data.notes,
+      };
+      createEquipmentM.mutate({ data: input });
+    },
 
     recordPayment: (invoiceId, amount, type, method = 'Manual') =>
       setLocal((s) => {
@@ -489,7 +640,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     resetData: () => {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       setLocal(freshLocal());
-      invalidate([kCustomers, kLocations, kEmployees, kInventory, kIntake, kWorkOrders, kCloseouts, kAudit]);
+      invalidate([kCustomers, kLocations, kEmployees, kInventory, kInventoryTx, kPurchaseRequests, kEquipment, kDocuments, kIntake, kWorkOrders, kCloseouts, kAudit]);
     },
   };
 

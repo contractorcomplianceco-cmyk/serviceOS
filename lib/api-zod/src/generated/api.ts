@@ -697,7 +697,16 @@ export const ListInventoryResponseItem = zod.object({
   "locationDetail": zod.string().nullish(),
   "reservedForJob": zod.string().nullish(),
   "lastUsed": zod.coerce.date().nullish(),
-  "notes": zod.string().nullish()
+  "notes": zod.string().nullish(),
+  "onHand": zod.number().optional().describe('Derived total on-hand across locations'),
+  "reserved": zod.number().optional().describe('Derived total reserved across locations'),
+  "available": zod.number().optional().describe('Derived onHand minus reserved'),
+  "locationBalances": zod.array(zod.object({
+  "location": zod.string(),
+  "onHand": zod.number(),
+  "reserved": zod.number(),
+  "available": zod.number()
+})).optional().describe('Derived per-location balances from the transaction ledger')
 })
 export const ListInventoryResponse = zod.array(ListInventoryResponseItem)
 
@@ -2147,5 +2156,1129 @@ export const SendBackCloseoutResponse = zod.object({
   "reviewedAt": zod.coerce.date().nullish(),
   "reviewNote": zod.string().nullish()
 })
+
+
+/**
+ * @summary List inventory transactions (immutable ledger)
+ */
+export const ListInventoryTransactionsQueryParams = zod.object({
+  "itemId": zod.coerce.string().optional()
+})
+
+export const ListInventoryTransactionsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "itemId": zod.string(),
+  "type": zod.string(),
+  "quantity": zod.number(),
+  "reservedDelta": zod.number(),
+  "location": zod.string(),
+  "toLocation": zod.string().nullish(),
+  "workOrderId": zod.string().nullish(),
+  "purchaseRequestId": zod.string().nullish(),
+  "reason": zod.string().nullish(),
+  "overridden": zod.boolean().optional(),
+  "actorUserId": zod.string().nullish(),
+  "actorName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListInventoryTransactionsResponse = zod.array(ListInventoryTransactionsResponseItem)
+
+
+/**
+ * @summary Transfer stock between locations
+ */
+
+
+
+
+
+
+export const CreateInventoryTransferBody = zod.object({
+  "itemId": zod.string().min(1),
+  "fromLocation": zod.string().min(1),
+  "toLocation": zod.string().min(1),
+  "quantity": zod.number().min(1),
+  "reason": zod.string().optional(),
+  "override": zod.boolean().optional()
+})
+
+export const CreateInventoryTransferResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "vendor": zod.string(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "quantity": zod.number(),
+  "reorderPoint": zod.number(),
+  "compatibleJobTypes": zod.array(zod.string()),
+  "location": zod.string(),
+  "locationDetail": zod.string().nullish(),
+  "reservedForJob": zod.string().nullish(),
+  "lastUsed": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "onHand": zod.number().optional().describe('Derived total on-hand across locations'),
+  "reserved": zod.number().optional().describe('Derived total reserved across locations'),
+  "available": zod.number().optional().describe('Derived onHand minus reserved'),
+  "locationBalances": zod.array(zod.object({
+  "location": zod.string(),
+  "onHand": zod.number(),
+  "reserved": zod.number(),
+  "available": zod.number()
+})).optional().describe('Derived per-location balances from the transaction ledger')
+})
+
+
+/**
+ * @summary Reserve stock at a location
+ */
+
+
+
+
+
+export const CreateInventoryReservationBody = zod.object({
+  "itemId": zod.string().min(1),
+  "location": zod.string().min(1),
+  "quantity": zod.number().min(1),
+  "workOrderId": zod.string().optional(),
+  "reason": zod.string().optional(),
+  "override": zod.boolean().optional()
+})
+
+export const CreateInventoryReservationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "vendor": zod.string(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "quantity": zod.number(),
+  "reorderPoint": zod.number(),
+  "compatibleJobTypes": zod.array(zod.string()),
+  "location": zod.string(),
+  "locationDetail": zod.string().nullish(),
+  "reservedForJob": zod.string().nullish(),
+  "lastUsed": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "onHand": zod.number().optional().describe('Derived total on-hand across locations'),
+  "reserved": zod.number().optional().describe('Derived total reserved across locations'),
+  "available": zod.number().optional().describe('Derived onHand minus reserved'),
+  "locationBalances": zod.array(zod.object({
+  "location": zod.string(),
+  "onHand": zod.number(),
+  "reserved": zod.number(),
+  "available": zod.number()
+})).optional().describe('Derived per-location balances from the transaction ledger')
+})
+
+
+/**
+ * @summary Release previously reserved stock
+ */
+
+
+
+
+
+export const ReleaseInventoryReservationBody = zod.object({
+  "itemId": zod.string().min(1),
+  "location": zod.string().min(1),
+  "quantity": zod.number().min(1),
+  "workOrderId": zod.string().optional(),
+  "reason": zod.string().optional(),
+  "override": zod.boolean().optional()
+})
+
+export const ReleaseInventoryReservationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "vendor": zod.string(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "quantity": zod.number(),
+  "reorderPoint": zod.number(),
+  "compatibleJobTypes": zod.array(zod.string()),
+  "location": zod.string(),
+  "locationDetail": zod.string().nullish(),
+  "reservedForJob": zod.string().nullish(),
+  "lastUsed": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "onHand": zod.number().optional().describe('Derived total on-hand across locations'),
+  "reserved": zod.number().optional().describe('Derived total reserved across locations'),
+  "available": zod.number().optional().describe('Derived onHand minus reserved'),
+  "locationBalances": zod.array(zod.object({
+  "location": zod.string(),
+  "onHand": zod.number(),
+  "reserved": zod.number(),
+  "available": zod.number()
+})).optional().describe('Derived per-location balances from the transaction ledger')
+})
+
+
+/**
+ * @summary Manual stock adjustment (signed delta)
+ */
+
+
+
+
+export const CreateInventoryAdjustmentBody = zod.object({
+  "itemId": zod.string().min(1),
+  "location": zod.string().min(1),
+  "quantity": zod.number().describe('Signed delta (may be negative)'),
+  "reason": zod.string().optional(),
+  "override": zod.boolean().optional()
+})
+
+export const CreateInventoryAdjustmentResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "vendor": zod.string(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "quantity": zod.number(),
+  "reorderPoint": zod.number(),
+  "compatibleJobTypes": zod.array(zod.string()),
+  "location": zod.string(),
+  "locationDetail": zod.string().nullish(),
+  "reservedForJob": zod.string().nullish(),
+  "lastUsed": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "onHand": zod.number().optional().describe('Derived total on-hand across locations'),
+  "reserved": zod.number().optional().describe('Derived total reserved across locations'),
+  "available": zod.number().optional().describe('Derived onHand minus reserved'),
+  "locationBalances": zod.array(zod.object({
+  "location": zod.string(),
+  "onHand": zod.number(),
+  "reserved": zod.number(),
+  "available": zod.number()
+})).optional().describe('Derived per-location balances from the transaction ledger')
+})
+
+
+/**
+ * @summary Reconcile counted quantity at a location
+ */
+
+
+export const createInventoryCycleCountBodyCountedQuantityMin = 0;
+
+
+
+export const CreateInventoryCycleCountBody = zod.object({
+  "itemId": zod.string().min(1),
+  "location": zod.string().min(1),
+  "countedQuantity": zod.number().min(createInventoryCycleCountBodyCountedQuantityMin),
+  "reason": zod.string().optional()
+})
+
+export const CreateInventoryCycleCountResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "vendor": zod.string(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "quantity": zod.number(),
+  "reorderPoint": zod.number(),
+  "compatibleJobTypes": zod.array(zod.string()),
+  "location": zod.string(),
+  "locationDetail": zod.string().nullish(),
+  "reservedForJob": zod.string().nullish(),
+  "lastUsed": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "onHand": zod.number().optional().describe('Derived total on-hand across locations'),
+  "reserved": zod.number().optional().describe('Derived total reserved across locations'),
+  "available": zod.number().optional().describe('Derived onHand minus reserved'),
+  "locationBalances": zod.array(zod.object({
+  "location": zod.string(),
+  "onHand": zod.number(),
+  "reserved": zod.number(),
+  "available": zod.number()
+})).optional().describe('Derived per-location balances from the transaction ledger')
+})
+
+
+/**
+ * @summary List purchase / reorder requests
+ */
+export const ListPurchaseRequestsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "itemId": zod.string(),
+  "itemName": zod.string().optional(),
+  "quantity": zod.number(),
+  "location": zod.string().nullish(),
+  "vendor": zod.string().nullish(),
+  "status": zod.string(),
+  "reason": zod.string().nullish(),
+  "requestedByUserId": zod.string().nullish(),
+  "requestedByName": zod.string(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedByName": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "receivedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListPurchaseRequestsResponse = zod.array(ListPurchaseRequestsResponseItem)
+
+
+/**
+ * @summary Create a purchase / reorder request
+ */
+
+
+
+
+export const CreatePurchaseRequestBody = zod.object({
+  "itemId": zod.string().min(1),
+  "quantity": zod.number().min(1),
+  "location": zod.string().optional(),
+  "vendor": zod.string().optional(),
+  "reason": zod.string().optional()
+})
+
+export const CreatePurchaseRequestResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "itemId": zod.string(),
+  "itemName": zod.string().optional(),
+  "quantity": zod.number(),
+  "location": zod.string().nullish(),
+  "vendor": zod.string().nullish(),
+  "status": zod.string(),
+  "reason": zod.string().nullish(),
+  "requestedByUserId": zod.string().nullish(),
+  "requestedByName": zod.string(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedByName": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "receivedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const ApprovePurchaseRequestParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ApprovePurchaseRequestResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "itemId": zod.string(),
+  "itemName": zod.string().optional(),
+  "quantity": zod.number(),
+  "location": zod.string().nullish(),
+  "vendor": zod.string().nullish(),
+  "status": zod.string(),
+  "reason": zod.string().nullish(),
+  "requestedByUserId": zod.string().nullish(),
+  "requestedByName": zod.string(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedByName": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "receivedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Mark received; posts a receipt transaction
+ */
+export const ReceivePurchaseRequestParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ReceivePurchaseRequestResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "itemId": zod.string(),
+  "itemName": zod.string().optional(),
+  "quantity": zod.number(),
+  "location": zod.string().nullish(),
+  "vendor": zod.string().nullish(),
+  "status": zod.string(),
+  "reason": zod.string().nullish(),
+  "requestedByUserId": zod.string().nullish(),
+  "requestedByName": zod.string(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedByName": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "receivedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const CancelPurchaseRequestParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const CancelPurchaseRequestResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "itemId": zod.string(),
+  "itemName": zod.string().optional(),
+  "quantity": zod.number(),
+  "location": zod.string().nullish(),
+  "vendor": zod.string().nullish(),
+  "status": zod.string(),
+  "reason": zod.string().nullish(),
+  "requestedByUserId": zod.string().nullish(),
+  "requestedByName": zod.string(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedByName": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "receivedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const ListEquipmentResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "assetName": zod.string(),
+  "manufacturer": zod.string(),
+  "model": zod.string(),
+  "serialNumber": zod.string(),
+  "category": zod.string(),
+  "condition": zod.string(),
+  "installDate": zod.string().nullish(),
+  "warrantyInfo": zod.string(),
+  "warrantyExpiration": zod.string().nullish(),
+  "lastServiced": zod.string().nullish(),
+  "relatedWorkOrderIds": zod.array(zod.string()),
+  "serviceHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "workOrderId": zod.string().optional(),
+  "technicianId": zod.string().optional(),
+  "description": zod.string(),
+  "cost": zod.number().optional()
+})),
+  "partsHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "itemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "workOrderId": zod.string().optional()
+})),
+  "photos": zod.array(zod.object({
+  "id": zod.string(),
+  "fileId": zod.string().optional(),
+  "name": zod.string(),
+  "objectPath": zod.string().optional(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListEquipmentResponse = zod.array(ListEquipmentResponseItem)
+
+
+
+
+
+
+
+export const CreateEquipmentBody = zod.object({
+  "customerId": zod.string().min(1),
+  "locationId": zod.string().min(1),
+  "assetName": zod.string().min(1),
+  "manufacturer": zod.string().optional(),
+  "model": zod.string().optional(),
+  "serialNumber": zod.string().optional(),
+  "category": zod.string().optional(),
+  "condition": zod.string().optional(),
+  "installDate": zod.string().optional(),
+  "warrantyInfo": zod.string().optional(),
+  "warrantyExpiration": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const CreateEquipmentResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "assetName": zod.string(),
+  "manufacturer": zod.string(),
+  "model": zod.string(),
+  "serialNumber": zod.string(),
+  "category": zod.string(),
+  "condition": zod.string(),
+  "installDate": zod.string().nullish(),
+  "warrantyInfo": zod.string(),
+  "warrantyExpiration": zod.string().nullish(),
+  "lastServiced": zod.string().nullish(),
+  "relatedWorkOrderIds": zod.array(zod.string()),
+  "serviceHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "workOrderId": zod.string().optional(),
+  "technicianId": zod.string().optional(),
+  "description": zod.string(),
+  "cost": zod.number().optional()
+})),
+  "partsHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "itemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "workOrderId": zod.string().optional()
+})),
+  "photos": zod.array(zod.object({
+  "id": zod.string(),
+  "fileId": zod.string().optional(),
+  "name": zod.string(),
+  "objectPath": zod.string().optional(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const UpdateEquipmentParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateEquipmentBody = zod.object({
+  "assetName": zod.string().optional(),
+  "manufacturer": zod.string().optional(),
+  "model": zod.string().optional(),
+  "serialNumber": zod.string().optional(),
+  "category": zod.string().optional(),
+  "condition": zod.string().optional(),
+  "installDate": zod.string().optional(),
+  "warrantyInfo": zod.string().optional(),
+  "warrantyExpiration": zod.string().optional(),
+  "lastServiced": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateEquipmentResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "assetName": zod.string(),
+  "manufacturer": zod.string(),
+  "model": zod.string(),
+  "serialNumber": zod.string(),
+  "category": zod.string(),
+  "condition": zod.string(),
+  "installDate": zod.string().nullish(),
+  "warrantyInfo": zod.string(),
+  "warrantyExpiration": zod.string().nullish(),
+  "lastServiced": zod.string().nullish(),
+  "relatedWorkOrderIds": zod.array(zod.string()),
+  "serviceHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "workOrderId": zod.string().optional(),
+  "technicianId": zod.string().optional(),
+  "description": zod.string(),
+  "cost": zod.number().optional()
+})),
+  "partsHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "itemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "workOrderId": zod.string().optional()
+})),
+  "photos": zod.array(zod.object({
+  "id": zod.string(),
+  "fileId": zod.string().optional(),
+  "name": zod.string(),
+  "objectPath": zod.string().optional(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const AddEquipmentServiceRecordParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const AddEquipmentServiceRecordBody = zod.object({
+  "date": zod.string().optional(),
+  "workOrderId": zod.string().optional(),
+  "technicianId": zod.string().optional(),
+  "description": zod.string().min(1),
+  "cost": zod.number().optional()
+})
+
+export const AddEquipmentServiceRecordResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "assetName": zod.string(),
+  "manufacturer": zod.string(),
+  "model": zod.string(),
+  "serialNumber": zod.string(),
+  "category": zod.string(),
+  "condition": zod.string(),
+  "installDate": zod.string().nullish(),
+  "warrantyInfo": zod.string(),
+  "warrantyExpiration": zod.string().nullish(),
+  "lastServiced": zod.string().nullish(),
+  "relatedWorkOrderIds": zod.array(zod.string()),
+  "serviceHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "workOrderId": zod.string().optional(),
+  "technicianId": zod.string().optional(),
+  "description": zod.string(),
+  "cost": zod.number().optional()
+})),
+  "partsHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "itemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "workOrderId": zod.string().optional()
+})),
+  "photos": zod.array(zod.object({
+  "id": zod.string(),
+  "fileId": zod.string().optional(),
+  "name": zod.string(),
+  "objectPath": zod.string().optional(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const AddEquipmentPartRecordParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+
+export const AddEquipmentPartRecordBody = zod.object({
+  "date": zod.string().optional(),
+  "itemId": zod.string().optional(),
+  "name": zod.string().min(1),
+  "quantity": zod.number().min(1),
+  "workOrderId": zod.string().optional()
+})
+
+export const AddEquipmentPartRecordResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "assetName": zod.string(),
+  "manufacturer": zod.string(),
+  "model": zod.string(),
+  "serialNumber": zod.string(),
+  "category": zod.string(),
+  "condition": zod.string(),
+  "installDate": zod.string().nullish(),
+  "warrantyInfo": zod.string(),
+  "warrantyExpiration": zod.string().nullish(),
+  "lastServiced": zod.string().nullish(),
+  "relatedWorkOrderIds": zod.array(zod.string()),
+  "serviceHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "workOrderId": zod.string().optional(),
+  "technicianId": zod.string().optional(),
+  "description": zod.string(),
+  "cost": zod.number().optional()
+})),
+  "partsHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "itemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "workOrderId": zod.string().optional()
+})),
+  "photos": zod.array(zod.object({
+  "id": zod.string(),
+  "fileId": zod.string().optional(),
+  "name": zod.string(),
+  "objectPath": zod.string().optional(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const AddEquipmentPhotoParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const AddEquipmentPhotoBody = zod.object({
+  "fileId": zod.string().optional(),
+  "name": zod.string().min(1),
+  "objectPath": zod.string().optional()
+})
+
+export const AddEquipmentPhotoResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "assetName": zod.string(),
+  "manufacturer": zod.string(),
+  "model": zod.string(),
+  "serialNumber": zod.string(),
+  "category": zod.string(),
+  "condition": zod.string(),
+  "installDate": zod.string().nullish(),
+  "warrantyInfo": zod.string(),
+  "warrantyExpiration": zod.string().nullish(),
+  "lastServiced": zod.string().nullish(),
+  "relatedWorkOrderIds": zod.array(zod.string()),
+  "serviceHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "workOrderId": zod.string().optional(),
+  "technicianId": zod.string().optional(),
+  "description": zod.string(),
+  "cost": zod.number().optional()
+})),
+  "partsHistory": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.string(),
+  "itemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "workOrderId": zod.string().optional()
+})),
+  "photos": zod.array(zod.object({
+  "id": zod.string(),
+  "fileId": zod.string().optional(),
+  "name": zod.string(),
+  "objectPath": zod.string().optional(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const ListEquipmentExtractionsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "equipmentId": zod.string().nullish(),
+  "customerId": zod.string().nullish(),
+  "locationId": zod.string().nullish(),
+  "fileId": zod.string().nullish(),
+  "sourceName": zod.string(),
+  "simulated": zod.boolean(),
+  "status": zod.string(),
+  "extractedFields": zod.record(zod.string(), zod.string()),
+  "note": zod.string().nullish(),
+  "createdByUserId": zod.string().nullish(),
+  "createdByName": zod.string(),
+  "reviewedByUserId": zod.string().nullish(),
+  "reviewedByName": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListEquipmentExtractionsResponse = zod.array(ListEquipmentExtractionsResponseItem)
+
+
+/**
+ * @summary Create a (simulated) extraction candidate for review
+ */
+
+
+
+export const CreateEquipmentExtractionBody = zod.object({
+  "equipmentId": zod.string().optional(),
+  "customerId": zod.string().optional(),
+  "locationId": zod.string().optional(),
+  "fileId": zod.string().optional(),
+  "sourceName": zod.string().min(1),
+  "extractedFields": zod.record(zod.string(), zod.string()).optional(),
+  "note": zod.string().optional()
+})
+
+export const CreateEquipmentExtractionResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "equipmentId": zod.string().nullish(),
+  "customerId": zod.string().nullish(),
+  "locationId": zod.string().nullish(),
+  "fileId": zod.string().nullish(),
+  "sourceName": zod.string(),
+  "simulated": zod.boolean(),
+  "status": zod.string(),
+  "extractedFields": zod.record(zod.string(), zod.string()),
+  "note": zod.string().nullish(),
+  "createdByUserId": zod.string().nullish(),
+  "createdByName": zod.string(),
+  "reviewedByUserId": zod.string().nullish(),
+  "reviewedByName": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Human-approve extraction; persists fields to equipment
+ */
+export const ApproveEquipmentExtractionParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ApproveEquipmentExtractionBody = zod.object({
+  "equipmentId": zod.string().optional().describe('Target existing asset; omit to create a new asset'),
+  "fields": zod.record(zod.string(), zod.string()).optional()
+})
+
+export const ApproveEquipmentExtractionResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "equipmentId": zod.string().nullish(),
+  "customerId": zod.string().nullish(),
+  "locationId": zod.string().nullish(),
+  "fileId": zod.string().nullish(),
+  "sourceName": zod.string(),
+  "simulated": zod.boolean(),
+  "status": zod.string(),
+  "extractedFields": zod.record(zod.string(), zod.string()),
+  "note": zod.string().nullish(),
+  "createdByUserId": zod.string().nullish(),
+  "createdByName": zod.string(),
+  "reviewedByUserId": zod.string().nullish(),
+  "reviewedByName": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const RejectEquipmentExtractionParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RejectEquipmentExtractionResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "equipmentId": zod.string().nullish(),
+  "customerId": zod.string().nullish(),
+  "locationId": zod.string().nullish(),
+  "fileId": zod.string().nullish(),
+  "sourceName": zod.string(),
+  "simulated": zod.boolean(),
+  "status": zod.string(),
+  "extractedFields": zod.record(zod.string(), zod.string()),
+  "note": zod.string().nullish(),
+  "createdByUserId": zod.string().nullish(),
+  "createdByName": zod.string(),
+  "reviewedByUserId": zod.string().nullish(),
+  "reviewedByName": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const ListDocumentsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string().nullish(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "visibility": zod.string(),
+  "expiration": zod.string().nullish(),
+  "currentVersion": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListDocumentsResponse = zod.array(ListDocumentsResponseItem)
+
+
+
+
+
+export const CreateDocumentBody = zod.object({
+  "customerId": zod.string().optional(),
+  "name": zod.string().min(1),
+  "type": zod.string().optional(),
+  "visibility": zod.string().optional(),
+  "expiration": zod.string().optional()
+})
+
+export const CreateDocumentResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string().nullish(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "visibility": zod.string(),
+  "expiration": zod.string().nullish(),
+  "currentVersion": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const UpdateDocumentParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateDocumentBody = zod.object({
+  "name": zod.string().optional(),
+  "type": zod.string().optional(),
+  "visibility": zod.string().optional(),
+  "expiration": zod.string().optional()
+})
+
+export const UpdateDocumentResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string().nullish(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "visibility": zod.string(),
+  "expiration": zod.string().nullish(),
+  "currentVersion": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const ListDocumentVersionsParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ListDocumentVersionsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "documentId": zod.string(),
+  "version": zod.number(),
+  "fileId": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "uploadedByUserId": zod.string().nullish(),
+  "uploadedByName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListDocumentVersionsResponse = zod.array(ListDocumentVersionsResponseItem)
+
+
+/**
+ * @summary Add a new immutable version referencing an uploaded file
+ */
+export const AddDocumentVersionParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const AddDocumentVersionBody = zod.object({
+  "fileId": zod.string().min(1),
+  "notes": zod.string().optional()
+})
+
+export const AddDocumentVersionResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "documentId": zod.string(),
+  "version": zod.number(),
+  "fileId": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "uploadedByUserId": zod.string().nullish(),
+  "uploadedByName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const ListDocumentRemindersParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ListDocumentRemindersResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "documentId": zod.string(),
+  "remindAt": zod.string(),
+  "reason": zod.string(),
+  "status": zod.string(),
+  "createdByUserId": zod.string().nullish(),
+  "createdByName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListDocumentRemindersResponse = zod.array(ListDocumentRemindersResponseItem)
+
+
+export const AddDocumentReminderParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const AddDocumentReminderBody = zod.object({
+  "remindAt": zod.string().min(1),
+  "reason": zod.string().optional()
+})
+
+export const AddDocumentReminderResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "documentId": zod.string(),
+  "remindAt": zod.string(),
+  "reason": zod.string(),
+  "status": zod.string(),
+  "createdByUserId": zod.string().nullish(),
+  "createdByName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const ListFilesQueryParams = zod.object({
+  "entityType": zod.coerce.string().optional(),
+  "entityId": zod.coerce.string().optional()
+})
+
+export const ListFilesResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "objectPath": zod.string(),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number(),
+  "entityType": zod.string(),
+  "entityId": zod.string().nullish(),
+  "version": zod.number(),
+  "visibility": zod.string(),
+  "uploadedByUserId": zod.string().nullish(),
+  "uploadedByName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListFilesResponse = zod.array(ListFilesResponseItem)
+
+
+/**
+ * @summary Record metadata for an uploaded object
+ */
+
+
+
+export const createFileBodySizeMin = 0;
+
+
+
+export const CreateFileBody = zod.object({
+  "objectPath": zod.string().min(1),
+  "name": zod.string().min(1),
+  "contentType": zod.string().min(1),
+  "size": zod.number().min(createFileBodySizeMin),
+  "entityType": zod.string().optional(),
+  "entityId": zod.string().optional(),
+  "visibility": zod.string().optional()
+})
+
+export const CreateFileResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "objectPath": zod.string(),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number(),
+  "entityType": zod.string(),
+  "entityId": zod.string().nullish(),
+  "version": zod.number(),
+  "visibility": zod.string(),
+  "uploadedByUserId": zod.string().nullish(),
+  "uploadedByName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Request a presigned URL for file upload
+ */
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+})
+
+
+
+
+
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string(),
+  "objectPath": zod.string(),
+  "metadata": zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+}).optional()
+})
+
+
+/**
+ * @summary Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
+ */
+export const GetPublicObjectParams = zod.object({
+  "filePath": zod.coerce.string()
+})
+
+export const GetPublicObjectResponse = zod.unknown()
+
+
+/**
+ * @summary Serve an object entity (authorized) from PRIVATE_OBJECT_DIR
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string()
+})
+
+export const GetStorageObjectResponse = zod.unknown()
 
 

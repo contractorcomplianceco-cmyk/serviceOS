@@ -260,6 +260,13 @@ export interface Invoice {
   amountPaid?: number;
 }
 
+export interface LocationBalance {
+  location: string;
+  onHand: number;
+  reserved: number;
+  available: number;
+}
+
 export interface InventoryItem {
   id: string;
   name: string;
@@ -275,6 +282,34 @@ export interface InventoryItem {
   reservedForJob?: string;
   lastUsed?: string;
   notes?: string;
+  // Derived from the immutable transaction ledger by the backend. Balances are
+  // never mutated in place; these fold the item's transactions.
+  onHand?: number;
+  reserved?: number;
+  available?: number;
+  locationBalances?: LocationBalance[];
+}
+
+export type PurchaseRequestStatus =
+  | 'Requested'
+  | 'Approved'
+  | 'Received'
+  | 'Cancelled';
+
+export interface PurchaseRequest {
+  id: string;
+  itemId: string;
+  itemName?: string;
+  quantity: number;
+  location?: string | null;
+  vendor?: string | null;
+  status: PurchaseRequestStatus;
+  reason?: string | null;
+  requestedByName: string;
+  approvedByName?: string | null;
+  approvedAt?: string | null;
+  receivedAt?: string | null;
+  createdAt: string;
 }
 
 export interface Equipment {

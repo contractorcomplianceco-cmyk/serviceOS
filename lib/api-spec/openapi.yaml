@@ -32,6 +32,16 @@ tags:
     description: Work order operations
   - name: closeouts
     description: Closeout and supervisor review operations
+  - name: purchasing
+    description: Reorder / purchase requests
+  - name: equipment
+    description: Equipment assets & extraction review
+  - name: documents
+    description: Document vault operations
+  - name: files
+    description: File metadata operations
+  - name: Storage
+    description: Object storage upload and serving endpoints
 paths:
   /healthz:
     get:
@@ -1246,6 +1256,621 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /inventory/transactions:
+    get:
+      operationId: listInventoryTransactions
+      tags: [inventory]
+      summary: List inventory transactions (immutable ledger)
+      parameters:
+        - name: itemId
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryTransaction"
+  /inventory/transfers:
+    post:
+      operationId: createInventoryTransfer
+      tags: [inventory]
+      summary: Transfer stock between locations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferInput"
+      responses:
+        "200":
+          description: Item after transfer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /inventory/reservations:
+    post:
+      operationId: createInventoryReservation
+      tags: [inventory]
+      summary: Reserve stock at a location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationInput"
+      responses:
+        "200":
+          description: Item after reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /inventory/reservations/release:
+    post:
+      operationId: releaseInventoryReservation
+      tags: [inventory]
+      summary: Release previously reserved stock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationInput"
+      responses:
+        "200":
+          description: Item after release
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /inventory/adjustments:
+    post:
+      operationId: createInventoryAdjustment
+      tags: [inventory]
+      summary: Manual stock adjustment (signed delta)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdjustmentInput"
+      responses:
+        "200":
+          description: Item after adjustment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /inventory/cycle-counts:
+    post:
+      operationId: createInventoryCycleCount
+      tags: [inventory]
+      summary: Reconcile counted quantity at a location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CycleCountInput"
+      responses:
+        "200":
+          description: Item after cycle count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /purchase-requests:
+    get:
+      operationId: listPurchaseRequests
+      tags: [purchasing]
+      summary: List purchase / reorder requests
+      responses:
+        "200":
+          description: Purchase request list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PurchaseRequest"
+    post:
+      operationId: createPurchaseRequest
+      tags: [purchasing]
+      summary: Create a purchase / reorder request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseRequestInput"
+      responses:
+        "200":
+          description: Created request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseRequest"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /purchase-requests/{id}/approve:
+    post:
+      operationId: approvePurchaseRequest
+      tags: [purchasing]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Approved request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseRequest"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /purchase-requests/{id}/receive:
+    post:
+      operationId: receivePurchaseRequest
+      tags: [purchasing]
+      summary: Mark received; posts a receipt transaction
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Received request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseRequest"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /purchase-requests/{id}/cancel:
+    post:
+      operationId: cancelPurchaseRequest
+      tags: [purchasing]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Cancelled request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseRequest"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /equipment:
+    get:
+      operationId: listEquipment
+      tags: [equipment]
+      responses:
+        "200":
+          description: Equipment list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Equipment"
+    post:
+      operationId: createEquipment
+      tags: [equipment]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipmentInput"
+      responses:
+        "200":
+          description: Created equipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Equipment"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /equipment/{id}:
+    patch:
+      operationId: updateEquipment
+      tags: [equipment]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipmentUpdate"
+      responses:
+        "200":
+          description: Updated equipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Equipment"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /equipment/{id}/service:
+    post:
+      operationId: addEquipmentServiceRecord
+      tags: [equipment]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceRecordInput"
+      responses:
+        "200":
+          description: Updated equipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Equipment"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /equipment/{id}/parts:
+    post:
+      operationId: addEquipmentPartRecord
+      tags: [equipment]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartRecordInput"
+      responses:
+        "200":
+          description: Updated equipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Equipment"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /equipment/{id}/photos:
+    post:
+      operationId: addEquipmentPhoto
+      tags: [equipment]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoInput"
+      responses:
+        "200":
+          description: Updated equipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Equipment"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /equipment/extractions:
+    get:
+      operationId: listEquipmentExtractions
+      tags: [equipment]
+      responses:
+        "200":
+          description: Extraction candidates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EquipmentExtraction"
+    post:
+      operationId: createEquipmentExtraction
+      tags: [equipment]
+      summary: Create a (simulated) extraction candidate for review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExtractionInput"
+      responses:
+        "200":
+          description: Created candidate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EquipmentExtraction"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /equipment/extractions/{id}/approve:
+    post:
+      operationId: approveEquipmentExtraction
+      tags: [equipment]
+      summary: Human-approve extraction; persists fields to equipment
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExtractionApproveInput"
+      responses:
+        "200":
+          description: Approved extraction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EquipmentExtraction"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /equipment/extractions/{id}/reject:
+    post:
+      operationId: rejectEquipmentExtraction
+      tags: [equipment]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Rejected extraction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EquipmentExtraction"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /documents:
+    get:
+      operationId: listDocuments
+      tags: [documents]
+      responses:
+        "200":
+          description: Documents visible to the caller
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DocumentRecord"
+    post:
+      operationId: createDocument
+      tags: [documents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentInput"
+      responses:
+        "200":
+          description: Created document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentRecord"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /documents/{id}:
+    patch:
+      operationId: updateDocument
+      tags: [documents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentUpdate"
+      responses:
+        "200":
+          description: Updated document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentRecord"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /documents/{id}/versions:
+    get:
+      operationId: listDocumentVersions
+      tags: [documents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Version history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DocumentVersion"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    post:
+      operationId: addDocumentVersion
+      tags: [documents]
+      summary: Add a new immutable version referencing an uploaded file
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentVersionInput"
+      responses:
+        "200":
+          description: Created version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentVersion"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /documents/{id}/reminders:
+    get:
+      operationId: listDocumentReminders
+      tags: [documents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DocumentReminder"
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    post:
+      operationId: addDocumentReminder
+      tags: [documents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentReminderInput"
+      responses:
+        "200":
+          description: Created reminder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentReminder"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /files:
+    get:
+      operationId: listFiles
+      tags: [files]
+      parameters:
+        - { name: entityType, in: query, required: false, schema: { type: string } }
+        - { name: entityId, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: File metadata list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FileRecord"
+    post:
+      operationId: createFile
+      tags: [files]
+      summary: Record metadata for an uploaded object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileInput"
+      responses:
+        "200":
+          description: Created file record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileRecord"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "500":
+          description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [Storage]
+      operationId: getPublicObject
+      summary: Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
+      parameters:
+        - { name: filePath, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Object content streamed with correct Content-Type.
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500":
+          description: Failed to serve public object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /storage/objects/{objectPath}:
+    get:
+      tags: [Storage]
+      operationId: getStorageObject
+      summary: Serve an object entity (authorized) from PRIVATE_OBJECT_DIR
+      parameters:
+        - { name: objectPath, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Object content streamed with correct Content-Type.
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500":
+          description: Failed to serve object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -1757,6 +2382,23 @@ components:
         reservedForJob: { type: ["string", "null"] }
         lastUsed: { type: ["string", "null"], format: date-time }
         notes: { type: ["string", "null"] }
+        onHand: { type: integer, description: Derived total on-hand across locations }
+        reserved: { type: integer, description: Derived total reserved across locations }
+        available: { type: integer, description: Derived onHand minus reserved }
+        locationBalances:
+          type: array
+          description: Derived per-location balances from the transaction ledger
+          items:
+            $ref: "#/components/schemas/LocationBalance"
+
+    LocationBalance:
+      type: object
+      required: [location, onHand, reserved, available]
+      properties:
+        location: { type: string }
+        onHand: { type: integer }
+        reserved: { type: integer }
+        available: { type: integer }
 
     IntakeItem:
       type: object
@@ -2192,3 +2834,475 @@ components:
       type: object
       properties:
         reason: { type: string }
+
+    InventoryTransaction:
+      type: object
+      required:
+        - id
+        - tenantId
+        - itemId
+        - type
+        - quantity
+        - reservedDelta
+        - location
+        - actorName
+        - createdAt
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        itemId: { type: string }
+        type: { type: string }
+        quantity: { type: integer }
+        reservedDelta: { type: integer }
+        location: { type: string }
+        toLocation: { type: ["string", "null"] }
+        workOrderId: { type: ["string", "null"] }
+        purchaseRequestId: { type: ["string", "null"] }
+        reason: { type: ["string", "null"] }
+        overridden: { type: boolean }
+        actorUserId: { type: ["string", "null"] }
+        actorName: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    TransferInput:
+      type: object
+      required: [itemId, fromLocation, toLocation, quantity]
+      properties:
+        itemId: { type: string, minLength: 1 }
+        fromLocation: { type: string, minLength: 1 }
+        toLocation: { type: string, minLength: 1 }
+        quantity: { type: integer, minimum: 1 }
+        reason: { type: string }
+        override: { type: boolean }
+
+    ReservationInput:
+      type: object
+      required: [itemId, location, quantity]
+      properties:
+        itemId: { type: string, minLength: 1 }
+        location: { type: string, minLength: 1 }
+        quantity: { type: integer, minimum: 1 }
+        workOrderId: { type: string }
+        reason: { type: string }
+        override: { type: boolean }
+
+    AdjustmentInput:
+      type: object
+      required: [itemId, location, quantity]
+      properties:
+        itemId: { type: string, minLength: 1 }
+        location: { type: string, minLength: 1 }
+        quantity: { type: integer, description: Signed delta (may be negative) }
+        reason: { type: string }
+        override: { type: boolean }
+
+    CycleCountInput:
+      type: object
+      required: [itemId, location, countedQuantity]
+      properties:
+        itemId: { type: string, minLength: 1 }
+        location: { type: string, minLength: 1 }
+        countedQuantity: { type: integer, minimum: 0 }
+        reason: { type: string }
+
+    PurchaseRequest:
+      type: object
+      required:
+        - id
+        - tenantId
+        - itemId
+        - quantity
+        - status
+        - requestedByName
+        - createdAt
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        itemId: { type: string }
+        itemName: { type: string }
+        quantity: { type: integer }
+        location: { type: ["string", "null"] }
+        vendor: { type: ["string", "null"] }
+        status: { type: string }
+        reason: { type: ["string", "null"] }
+        requestedByUserId: { type: ["string", "null"] }
+        requestedByName: { type: string }
+        approvedByUserId: { type: ["string", "null"] }
+        approvedByName: { type: ["string", "null"] }
+        approvedAt: { type: ["string", "null"], format: date-time }
+        receivedAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+
+    PurchaseRequestInput:
+      type: object
+      required: [itemId, quantity]
+      properties:
+        itemId: { type: string, minLength: 1 }
+        quantity: { type: integer, minimum: 1 }
+        location: { type: string }
+        vendor: { type: string }
+        reason: { type: string }
+
+    EquipmentServiceRecord:
+      type: object
+      required: [id, date, description]
+      properties:
+        id: { type: string }
+        date: { type: string }
+        workOrderId: { type: string }
+        technicianId: { type: string }
+        description: { type: string }
+        cost: { type: number }
+
+    EquipmentPartRecord:
+      type: object
+      required: [id, date, name, quantity]
+      properties:
+        id: { type: string }
+        date: { type: string }
+        itemId: { type: string }
+        name: { type: string }
+        quantity: { type: integer }
+        workOrderId: { type: string }
+
+    EquipmentPhoto:
+      type: object
+      required: [id, name, uploadedBy, date]
+      properties:
+        id: { type: string }
+        fileId: { type: string }
+        name: { type: string }
+        objectPath: { type: string }
+        uploadedBy: { type: string }
+        date: { type: string }
+
+    Equipment:
+      type: object
+      required:
+        - id
+        - tenantId
+        - customerId
+        - locationId
+        - assetName
+        - manufacturer
+        - model
+        - serialNumber
+        - category
+        - condition
+        - warrantyInfo
+        - relatedWorkOrderIds
+        - serviceHistory
+        - partsHistory
+        - photos
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        customerId: { type: string }
+        locationId: { type: string }
+        assetName: { type: string }
+        manufacturer: { type: string }
+        model: { type: string }
+        serialNumber: { type: string }
+        category: { type: string }
+        condition: { type: string }
+        installDate: { type: ["string", "null"] }
+        warrantyInfo: { type: string }
+        warrantyExpiration: { type: ["string", "null"] }
+        lastServiced: { type: ["string", "null"] }
+        relatedWorkOrderIds:
+          type: array
+          items: { type: string }
+        serviceHistory:
+          type: array
+          items: { $ref: "#/components/schemas/EquipmentServiceRecord" }
+        partsHistory:
+          type: array
+          items: { $ref: "#/components/schemas/EquipmentPartRecord" }
+        photos:
+          type: array
+          items: { $ref: "#/components/schemas/EquipmentPhoto" }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    EquipmentInput:
+      type: object
+      required: [customerId, locationId, assetName]
+      properties:
+        customerId: { type: string, minLength: 1 }
+        locationId: { type: string, minLength: 1 }
+        assetName: { type: string, minLength: 1 }
+        manufacturer: { type: string }
+        model: { type: string }
+        serialNumber: { type: string }
+        category: { type: string }
+        condition: { type: string }
+        installDate: { type: string }
+        warrantyInfo: { type: string }
+        warrantyExpiration: { type: string }
+        notes: { type: string }
+
+    EquipmentUpdate:
+      type: object
+      properties:
+        assetName: { type: string }
+        manufacturer: { type: string }
+        model: { type: string }
+        serialNumber: { type: string }
+        category: { type: string }
+        condition: { type: string }
+        installDate: { type: string }
+        warrantyInfo: { type: string }
+        warrantyExpiration: { type: string }
+        lastServiced: { type: string }
+        notes: { type: string }
+
+    ServiceRecordInput:
+      type: object
+      required: [description]
+      properties:
+        date: { type: string }
+        workOrderId: { type: string }
+        technicianId: { type: string }
+        description: { type: string, minLength: 1 }
+        cost: { type: number }
+
+    PartRecordInput:
+      type: object
+      required: [name, quantity]
+      properties:
+        date: { type: string }
+        itemId: { type: string }
+        name: { type: string, minLength: 1 }
+        quantity: { type: integer, minimum: 1 }
+        workOrderId: { type: string }
+
+    PhotoInput:
+      type: object
+      required: [name]
+      properties:
+        fileId: { type: string }
+        name: { type: string, minLength: 1 }
+        objectPath: { type: string }
+
+    EquipmentExtraction:
+      type: object
+      required:
+        - id
+        - tenantId
+        - sourceName
+        - simulated
+        - status
+        - extractedFields
+        - createdByName
+        - createdAt
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        equipmentId: { type: ["string", "null"] }
+        customerId: { type: ["string", "null"] }
+        locationId: { type: ["string", "null"] }
+        fileId: { type: ["string", "null"] }
+        sourceName: { type: string }
+        simulated: { type: boolean }
+        status: { type: string }
+        extractedFields:
+          type: object
+          additionalProperties: { type: string }
+        note: { type: ["string", "null"] }
+        createdByUserId: { type: ["string", "null"] }
+        createdByName: { type: string }
+        reviewedByUserId: { type: ["string", "null"] }
+        reviewedByName: { type: ["string", "null"] }
+        reviewedAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+
+    ExtractionInput:
+      type: object
+      required: [sourceName]
+      properties:
+        equipmentId: { type: string }
+        customerId: { type: string }
+        locationId: { type: string }
+        fileId: { type: string }
+        sourceName: { type: string, minLength: 1 }
+        extractedFields:
+          type: object
+          additionalProperties: { type: string }
+        note: { type: string }
+
+    ExtractionApproveInput:
+      type: object
+      properties:
+        equipmentId: { type: string, description: Target existing asset; omit to create a new asset }
+        fields:
+          type: object
+          additionalProperties: { type: string }
+
+    DocumentRecord:
+      type: object
+      required:
+        - id
+        - tenantId
+        - name
+        - type
+        - visibility
+        - currentVersion
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        customerId: { type: ["string", "null"] }
+        name: { type: string }
+        type: { type: string }
+        visibility: { type: string }
+        expiration: { type: ["string", "null"] }
+        currentVersion: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    DocumentInput:
+      type: object
+      required: [name]
+      properties:
+        customerId: { type: string }
+        name: { type: string, minLength: 1 }
+        type: { type: string }
+        visibility: { type: string }
+        expiration: { type: string }
+
+    DocumentUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        type: { type: string }
+        visibility: { type: string }
+        expiration: { type: string }
+
+    DocumentVersion:
+      type: object
+      required: [id, tenantId, documentId, version, uploadedByName, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        documentId: { type: string }
+        version: { type: integer }
+        fileId: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        uploadedByUserId: { type: ["string", "null"] }
+        uploadedByName: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    DocumentVersionInput:
+      type: object
+      required: [fileId]
+      properties:
+        fileId: { type: string, minLength: 1 }
+        notes: { type: string }
+
+    DocumentReminder:
+      type: object
+      required: [id, tenantId, documentId, remindAt, reason, status, createdByName, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        documentId: { type: string }
+        remindAt: { type: string }
+        reason: { type: string }
+        status: { type: string }
+        createdByUserId: { type: ["string", "null"] }
+        createdByName: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    DocumentReminderInput:
+      type: object
+      required: [remindAt]
+      properties:
+        remindAt: { type: string, minLength: 1 }
+        reason: { type: string }
+
+    FileRecord:
+      type: object
+      required:
+        - id
+        - tenantId
+        - objectPath
+        - name
+        - contentType
+        - size
+        - entityType
+        - version
+        - visibility
+        - uploadedByName
+        - createdAt
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        objectPath: { type: string }
+        name: { type: string }
+        contentType: { type: string }
+        size: { type: integer }
+        entityType: { type: string }
+        entityId: { type: ["string", "null"] }
+        version: { type: integer }
+        visibility: { type: string }
+        uploadedByUserId: { type: ["string", "null"] }
+        uploadedByName: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    FileInput:
+      type: object
+      required: [objectPath, name, contentType, size]
+      properties:
+        objectPath: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        contentType: { type: string, minLength: 1 }
+        size: { type: integer, minimum: 0 }
+        entityType: { type: string }
+        entityId: { type: string }
+        visibility: { type: string }
+
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1 }
+        size: { type: integer, minimum: 1 }
+        contentType: { type: string, minLength: 1 }
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: { type: string }
+        objectPath: { type: string }
+        metadata: { $ref: "#/components/schemas/UploadUrlRequest" }
+
+  responses:
+    BadRequest:
+      description: Missing or invalid required fields.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Not authenticated.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Not permitted.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
