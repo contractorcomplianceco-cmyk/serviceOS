@@ -61,7 +61,7 @@ export function Sidebar() {
         <img
           src={logoIcon}
           alt="ServiceConnect"
-          className="w-10 h-10 rounded-lg object-cover shrink-0 ring-1 ring-white/10"
+          className="w-14 h-14 rounded-lg object-cover shrink-0 ring-1 ring-white/10"
         />
         <div className="flex flex-col leading-none">
           <span className="text-[17px] font-semibold tracking-tight text-sc">ServiceConnect</span>
