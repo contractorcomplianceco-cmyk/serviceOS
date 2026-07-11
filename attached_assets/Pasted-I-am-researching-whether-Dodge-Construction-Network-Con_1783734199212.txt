@@ -1,0 +1,88 @@
+I am researching whether Dodge Construction Network / Construction.com could be a useful licensed data source, research source, or integration partner for a contractor-facing product called BidIntelligenceOS.
+
+Context:
+BidIntelligenceOS is a proposed external product for contractors. It is meant to help contractor owners, estimators, business development leads, and operations leaders evaluate bid opportunities, decide whether to bid, understand project risk, organize scope and cost assumptions, generate stronger bid packages, track follow-up, and learn from win/loss history.
+
+The product should not scrape or improperly copy proprietary data. I need a business, product, data-rights, and integration feasibility deep dive.
+
+Please research and summarize:
+
+1. What Dodge Construction Network / Construction.com offers today
+- Dodge One
+- The Dodge Report
+- The Blue Book
+- Bid Board
+- Sweets
+- IMS
+- Principia
+- Any API, CRM, analytics, export, alert, or integration capabilities
+- What types of project, contact, bid, spec, market, and forecasting data are available
+
+2. Relevance to BidIntelligenceOS
+Evaluate how Dodge data could support:
+- bid opportunity discovery
+- commercial project tracking
+- project stage and bid-date monitoring
+- owner / architect / GC / bidder relationship intelligence
+- scope and spec review
+- project valuation and market signal analysis
+- bid-fit scoring
+- no-bid / bid-with-caution recommendations
+- deadline, addenda, and document checklist alerts
+- contractor sales/prospecting intelligence
+- win/loss and follow-up workflows
+
+3. Data access and licensing
+Find any public information on:
+- whether Dodge offers an API
+- whether data exports are available
+- CRM integrations
+- permitted business use
+- restrictions on scraping, automated access, redistribution, resale, AI training, derivative products, competitive products, or embedding data into another platform
+- whether a product like BidIntelligenceOS would likely need a commercial license, partnership agreement, or custom data agreement
+
+4. Product strategy recommendation
+Recommend the safest and most useful way BidIntelligenceOS could use Dodge/Construction.com information:
+- direct licensed API integration
+- user-authorized import/export
+- manual upload of Dodge reports by contractor users
+- CRM integration
+- partnership/reseller model
+- no integration, but use as market research/reference only
+
+5. Competitive and risk analysis
+Evaluate:
+- whether BidIntelligenceOS would complement or compete with Dodge
+- what Dodge already does that overlaps with BidIntelligenceOS
+- what BidIntelligenceOS could add on top of Dodge data
+- legal, data-rights, privacy, and product-positioning risks
+- whether there are safer alternative sources for public bid data
+
+6. Alternatives and comparison
+Compare Dodge/Construction.com with:
+- ConstructConnect
+- BidClerk
+- BuildingConnected
+- PlanHub
+- public procurement portals
+- SAM.gov
+- state/local bid portals
+- The Blue Book if treated as a separate product
+Focus on contractor-facing bid intelligence, not just lead generation.
+
+7. Practical next steps
+Create a recommended 30/60/90-day validation plan for CCA:
+- what to ask Dodge in a demo
+- what data/API/licensing questions to ask
+- what use case to test first
+- what should stay manual until rights are confirmed
+- what should not be built until legal/data permissions are clear
+- what a small pilot could look like
+
+Important constraints:
+- Do not assume CCA can scrape, copy, republish, or train AI on Dodge data.
+- Clearly separate public facts from assumptions.
+- Cite sources.
+- Flag any information that could not be confirmed publicly.
+- Include specific questions CCA should ask Dodge’s sales or partnership team.
+- End with a clear recommendation: pursue, cautiously evaluate, or avoid, and explain why.

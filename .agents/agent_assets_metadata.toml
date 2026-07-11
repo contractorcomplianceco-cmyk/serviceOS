@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "Y1BWwMaqtn3QB_j0UQZf1"
+uri = "file://research/Dodge_Construction_Network_BidIntelligenceOS_Feasibility.md"
+type = "text"
+title = "Dodge Construction Network Feasibility Report for BidIntelligenceOS"
