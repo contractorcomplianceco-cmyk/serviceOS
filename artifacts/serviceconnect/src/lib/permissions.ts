@@ -16,12 +16,13 @@ export type NavKey =
   | 'reports'
   | 'intelligence'
   | 'settings'
+  | 'contracts'
   | 'portal';
 
 const ALL: NavKey[] = [
   'today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers',
   'locations', 'inventory', 'equipment', 'billing', 'accounting', 'documents',
-  'reports', 'intelligence', 'settings',
+  'reports', 'intelligence', 'contracts', 'settings',
 ];
 
 // IMPORTANT: this map is the client mirror of the backend-enforced source of
@@ -30,8 +31,8 @@ const ALL: NavKey[] = [
 // diverges from server-side authorization.
 const ROLE_NAV: Record<Role, NavKey[]> = {
   Administrator: ALL,
-  'Service Manager': ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'billing', 'documents', 'reports', 'intelligence'],
-  Scheduler: ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'documents', 'intelligence'],
+  'Service Manager': ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'billing', 'documents', 'reports', 'intelligence', 'contracts'],
+  Scheduler: ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'documents', 'intelligence', 'contracts'],
   Supervisor: ['today', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'equipment', 'inventory', 'documents', 'reports', 'intelligence'],
   'Lead Technician': ['today', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'equipment', 'inventory'],
   Technician: ['today', 'work-orders', 'customers', 'locations', 'equipment', 'inventory'],

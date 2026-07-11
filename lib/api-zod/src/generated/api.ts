@@ -3284,3 +3284,1277 @@ export const GetStorageObjectParams = zod.object({
 export const GetStorageObjectResponse = zod.unknown()
 
 
+/**
+ * @summary List quotes for the tenant
+ */
+export const ListQuotesResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string().nullish(),
+  "workOrderId": zod.string().nullish(),
+  "number": zod.string(),
+  "title": zod.string().optional(),
+  "lines": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "rate": zod.number()
+})),
+  "amount": zod.number(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "validUntil": zod.coerce.date().nullish(),
+  "decidedAt": zod.coerce.date().nullish(),
+  "decidedByName": zod.string().nullish(),
+  "decisionNote": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListQuotesResponse = zod.array(ListQuotesResponseItem)
+
+
+/**
+ * @summary Create a quote
+ */
+
+
+
+
+export const CreateQuoteBody = zod.object({
+  "customerId": zod.string().min(1),
+  "locationId": zod.string().optional(),
+  "workOrderId": zod.string().optional(),
+  "title": zod.string().optional(),
+  "notes": zod.string().optional(),
+  "validUntil": zod.coerce.date().optional(),
+  "status": zod.enum(['Draft', 'Sent']).optional(),
+  "lines": zod.array(zod.object({
+  "description": zod.string().min(1),
+  "quantity": zod.number(),
+  "rate": zod.number()
+}))
+})
+
+export const CreateQuoteResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string().nullish(),
+  "workOrderId": zod.string().nullish(),
+  "number": zod.string(),
+  "title": zod.string().optional(),
+  "lines": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "rate": zod.number()
+})),
+  "amount": zod.number(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "validUntil": zod.coerce.date().nullish(),
+  "decidedAt": zod.coerce.date().nullish(),
+  "decidedByName": zod.string().nullish(),
+  "decisionNote": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Get a quote by id
+ */
+export const GetQuoteParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetQuoteResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string().nullish(),
+  "workOrderId": zod.string().nullish(),
+  "number": zod.string(),
+  "title": zod.string().optional(),
+  "lines": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "rate": zod.number()
+})),
+  "amount": zod.number(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "validUntil": zod.coerce.date().nullish(),
+  "decidedAt": zod.coerce.date().nullish(),
+  "decidedByName": zod.string().nullish(),
+  "decisionNote": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List invoices for the tenant
+ */
+export const ListInvoicesResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "workOrderId": zod.string().nullish(),
+  "number": zod.string(),
+  "lines": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "rate": zod.number()
+})),
+  "amount": zod.number(),
+  "amountPaid": zod.number(),
+  "status": zod.string(),
+  "issueDate": zod.coerce.date().nullish(),
+  "dueDate": zod.coerce.date(),
+  "paidDate": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "payments": zod.array(zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "invoiceId": zod.string(),
+  "customerId": zod.string(),
+  "date": zod.coerce.date(),
+  "amount": zod.number(),
+  "method": zod.string(),
+  "type": zod.string(),
+  "recordedByUserId": zod.string().nullish(),
+  "recordedByName": zod.string(),
+  "note": zod.string().nullish(),
+  "createdAt": zod.coerce.date().optional()
+})).optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListInvoicesResponse = zod.array(ListInvoicesResponseItem)
+
+
+/**
+ * @summary Create an invoice from a billing-approved work order
+ */
+
+export const createInvoiceBodyDueInDaysMin = 0;
+
+
+
+export const CreateInvoiceBody = zod.object({
+  "workOrderId": zod.string().min(1),
+  "dueInDays": zod.number().min(createInvoiceBodyDueInDaysMin).optional(),
+  "notes": zod.string().optional()
+})
+
+export const CreateInvoiceResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "workOrderId": zod.string().nullish(),
+  "number": zod.string(),
+  "lines": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "rate": zod.number()
+})),
+  "amount": zod.number(),
+  "amountPaid": zod.number(),
+  "status": zod.string(),
+  "issueDate": zod.coerce.date().nullish(),
+  "dueDate": zod.coerce.date(),
+  "paidDate": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "payments": zod.array(zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "invoiceId": zod.string(),
+  "customerId": zod.string(),
+  "date": zod.coerce.date(),
+  "amount": zod.number(),
+  "method": zod.string(),
+  "type": zod.string(),
+  "recordedByUserId": zod.string().nullish(),
+  "recordedByName": zod.string(),
+  "note": zod.string().nullish(),
+  "createdAt": zod.coerce.date().optional()
+})).optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Get an invoice by id (includes payments)
+ */
+export const GetInvoiceParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetInvoiceResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "workOrderId": zod.string().nullish(),
+  "number": zod.string(),
+  "lines": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "rate": zod.number()
+})),
+  "amount": zod.number(),
+  "amountPaid": zod.number(),
+  "status": zod.string(),
+  "issueDate": zod.coerce.date().nullish(),
+  "dueDate": zod.coerce.date(),
+  "paidDate": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "payments": zod.array(zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "invoiceId": zod.string(),
+  "customerId": zod.string(),
+  "date": zod.coerce.date(),
+  "amount": zod.number(),
+  "method": zod.string(),
+  "type": zod.string(),
+  "recordedByUserId": zod.string().nullish(),
+  "recordedByName": zod.string(),
+  "note": zod.string().nullish(),
+  "createdAt": zod.coerce.date().optional()
+})).optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List payments for the tenant
+ */
+export const ListPaymentsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "invoiceId": zod.string(),
+  "customerId": zod.string(),
+  "date": zod.coerce.date(),
+  "amount": zod.number(),
+  "method": zod.string(),
+  "type": zod.string(),
+  "recordedByUserId": zod.string().nullish(),
+  "recordedByName": zod.string(),
+  "note": zod.string().nullish(),
+  "createdAt": zod.coerce.date().optional()
+})
+export const ListPaymentsResponse = zod.array(ListPaymentsResponseItem)
+
+
+/**
+ * @summary Record a payment against an invoice (updates AR state)
+ */
+
+
+
+export const RecordPaymentBody = zod.object({
+  "invoiceId": zod.string().min(1),
+  "amount": zod.number(),
+  "method": zod.string().optional(),
+  "type": zod.enum(['Payment', 'Partial Payment', 'Credit', 'Refund']).optional(),
+  "date": zod.coerce.date().optional(),
+  "note": zod.string().optional()
+})
+
+export const RecordPaymentResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "invoiceId": zod.string(),
+  "customerId": zod.string(),
+  "date": zod.coerce.date(),
+  "amount": zod.number(),
+  "method": zod.string(),
+  "type": zod.string(),
+  "recordedByUserId": zod.string().nullish(),
+  "recordedByName": zod.string(),
+  "note": zod.string().nullish(),
+  "createdAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List service contracts for the tenant
+ */
+export const ListContractsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string().nullish(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "laborRate": zod.number().nullish(),
+  "afterHoursRate": zod.number().nullish(),
+  "value": zod.number().nullish(),
+  "includedServices": zod.array(zod.string()).optional(),
+  "coveredEquipmentIds": zod.array(zod.string()).optional(),
+  "startDate": zod.coerce.date(),
+  "renewalDate": zod.coerce.date(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListContractsResponse = zod.array(ListContractsResponseItem)
+
+
+/**
+ * @summary Create a service contract
+ */
+
+
+
+
+export const CreateContractBody = zod.object({
+  "customerId": zod.string().min(1),
+  "locationId": zod.string().optional(),
+  "name": zod.string().min(1),
+  "description": zod.string().optional(),
+  "laborRate": zod.number().optional(),
+  "afterHoursRate": zod.number().optional(),
+  "value": zod.number().optional(),
+  "includedServices": zod.array(zod.string()).optional(),
+  "coveredEquipmentIds": zod.array(zod.string()).optional(),
+  "startDate": zod.coerce.date(),
+  "renewalDate": zod.coerce.date()
+})
+
+export const CreateContractResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string().nullish(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "laborRate": zod.number().nullish(),
+  "afterHoursRate": zod.number().nullish(),
+  "value": zod.number().nullish(),
+  "includedServices": zod.array(zod.string()).optional(),
+  "coveredEquipmentIds": zod.array(zod.string()).optional(),
+  "startDate": zod.coerce.date(),
+  "renewalDate": zod.coerce.date(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Get a service contract by id
+ */
+export const GetContractParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetContractResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string().nullish(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "laborRate": zod.number().nullish(),
+  "afterHoursRate": zod.number().nullish(),
+  "value": zod.number().nullish(),
+  "includedServices": zod.array(zod.string()).optional(),
+  "coveredEquipmentIds": zod.array(zod.string()).optional(),
+  "startDate": zod.coerce.date(),
+  "renewalDate": zod.coerce.date(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Update a service contract
+ */
+export const UpdateContractParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateContractBody = zod.object({
+  "name": zod.string().optional(),
+  "description": zod.string().optional(),
+  "laborRate": zod.number().optional(),
+  "afterHoursRate": zod.number().optional(),
+  "value": zod.number().optional(),
+  "includedServices": zod.array(zod.string()).optional(),
+  "coveredEquipmentIds": zod.array(zod.string()).optional(),
+  "renewalDate": zod.coerce.date().optional(),
+  "status": zod.enum(['Active', 'Paused', 'Ended', 'Expired']).optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateContractResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string().nullish(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "laborRate": zod.number().nullish(),
+  "afterHoursRate": zod.number().nullish(),
+  "value": zod.number().nullish(),
+  "includedServices": zod.array(zod.string()).optional(),
+  "coveredEquipmentIds": zod.array(zod.string()).optional(),
+  "startDate": zod.coerce.date(),
+  "renewalDate": zod.coerce.date(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Renew a service contract (extends renewal date, clears reminders)
+ */
+export const RenewContractParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const RenewContractBody = zod.object({
+  "renewalDate": zod.coerce.date().optional(),
+  "termMonths": zod.number().min(1).optional()
+})
+
+export const RenewContractResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string().nullish(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "laborRate": zod.number().nullish(),
+  "afterHoursRate": zod.number().nullish(),
+  "value": zod.number().nullish(),
+  "includedServices": zod.array(zod.string()).optional(),
+  "coveredEquipmentIds": zod.array(zod.string()).optional(),
+  "startDate": zod.coerce.date(),
+  "renewalDate": zod.coerce.date(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List open contract renewal/expiration reminders
+ */
+export const ListContractRemindersResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "contractId": zod.string(),
+  "customerId": zod.string(),
+  "type": zod.string(),
+  "dueDate": zod.coerce.date(),
+  "message": zod.string(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListContractRemindersResponse = zod.array(ListContractRemindersResponseItem)
+
+
+/**
+ * @summary List recurrence schedules for the tenant
+ */
+export const ListRecurrenceSchedulesResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "contractId": zod.string().nullish(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "frequency": zod.string(),
+  "interval": zod.number(),
+  "weekdays": zod.array(zod.number()).optional(),
+  "monthDays": zod.array(zod.number()).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().nullish(),
+  "occurrenceLimit": zod.number().nullish(),
+  "occurrencesGenerated": zod.number(),
+  "lastGeneratedDate": zod.coerce.date().nullish(),
+  "nextRunDate": zod.coerce.date().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListRecurrenceSchedulesResponse = zod.array(ListRecurrenceSchedulesResponseItem)
+
+
+/**
+ * @summary Create a recurrence schedule
+ */
+
+
+
+
+export const createRecurrenceScheduleBodyWeekdaysItemMin = 0;
+export const createRecurrenceScheduleBodyWeekdaysItemMax = 6;
+
+export const createRecurrenceScheduleBodyMonthDaysItemMax = 31;
+
+
+
+
+export const CreateRecurrenceScheduleBody = zod.object({
+  "contractId": zod.string().optional(),
+  "customerId": zod.string().min(1),
+  "locationId": zod.string().min(1),
+  "title": zod.string().min(1),
+  "description": zod.string().optional(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.enum(['Low', 'Medium', 'High', 'Emergency']).optional(),
+  "frequency": zod.enum(['Daily', 'Weekly', 'Monthly', 'Quarterly', 'SemiAnnual', 'Annual', 'Custom']),
+  "interval": zod.number().min(1).optional(),
+  "weekdays": zod.array(zod.number().min(createRecurrenceScheduleBodyWeekdaysItemMin).max(createRecurrenceScheduleBodyWeekdaysItemMax)).optional(),
+  "monthDays": zod.array(zod.number().min(1).max(createRecurrenceScheduleBodyMonthDaysItemMax)).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().optional(),
+  "assignedTechnicianId": zod.string().optional(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().optional(),
+  "occurrenceLimit": zod.number().min(1).optional()
+})
+
+export const CreateRecurrenceScheduleResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "contractId": zod.string().nullish(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "frequency": zod.string(),
+  "interval": zod.number(),
+  "weekdays": zod.array(zod.number()).optional(),
+  "monthDays": zod.array(zod.number()).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().nullish(),
+  "occurrenceLimit": zod.number().nullish(),
+  "occurrencesGenerated": zod.number(),
+  "lastGeneratedDate": zod.coerce.date().nullish(),
+  "nextRunDate": zod.coerce.date().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Preview upcoming occurrence dates for a candidate schedule
+ */
+
+export const previewRecurrenceBodyWeekdaysItemMin = 0;
+export const previewRecurrenceBodyWeekdaysItemMax = 6;
+
+export const previewRecurrenceBodyMonthDaysItemMax = 31;
+
+
+export const previewRecurrenceBodyCountMax = 60;
+
+
+
+export const PreviewRecurrenceBody = zod.object({
+  "frequency": zod.enum(['Daily', 'Weekly', 'Monthly', 'Quarterly', 'SemiAnnual', 'Annual', 'Custom']),
+  "interval": zod.number().min(1).optional(),
+  "weekdays": zod.array(zod.number().min(previewRecurrenceBodyWeekdaysItemMin).max(previewRecurrenceBodyWeekdaysItemMax)).optional(),
+  "monthDays": zod.array(zod.number().min(1).max(previewRecurrenceBodyMonthDaysItemMax)).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().optional(),
+  "occurrenceLimit": zod.number().min(1).optional(),
+  "count": zod.number().min(1).max(previewRecurrenceBodyCountMax).optional()
+})
+
+export const PreviewRecurrenceResponse = zod.object({
+  "dates": zod.array(zod.coerce.date())
+})
+
+
+/**
+ * @summary Trigger the recurrence generation worker (admin/manager only)
+ */
+export const RunRecurrenceResponse = zod.object({
+  "schedulesProcessed": zod.number(),
+  "generated": zod.number(),
+  "remindersEmitted": zod.number(),
+  "workOrderIds": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Get a recurrence schedule by id
+ */
+export const GetRecurrenceScheduleParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetRecurrenceScheduleResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "contractId": zod.string().nullish(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "frequency": zod.string(),
+  "interval": zod.number(),
+  "weekdays": zod.array(zod.number()).optional(),
+  "monthDays": zod.array(zod.number()).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().nullish(),
+  "occurrenceLimit": zod.number().nullish(),
+  "occurrencesGenerated": zod.number(),
+  "lastGeneratedDate": zod.coerce.date().nullish(),
+  "nextRunDate": zod.coerce.date().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Update a recurrence schedule
+ */
+export const UpdateRecurrenceScheduleParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+export const updateRecurrenceScheduleBodyWeekdaysItemMin = 0;
+export const updateRecurrenceScheduleBodyWeekdaysItemMax = 6;
+
+export const updateRecurrenceScheduleBodyMonthDaysItemMax = 31;
+
+
+
+
+export const UpdateRecurrenceScheduleBody = zod.object({
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.enum(['Low', 'Medium', 'High', 'Emergency']).optional(),
+  "frequency": zod.enum(['Daily', 'Weekly', 'Monthly', 'Quarterly', 'SemiAnnual', 'Annual', 'Custom']).optional(),
+  "interval": zod.number().min(1).optional(),
+  "weekdays": zod.array(zod.number().min(updateRecurrenceScheduleBodyWeekdaysItemMin).max(updateRecurrenceScheduleBodyWeekdaysItemMax)).optional(),
+  "monthDays": zod.array(zod.number().min(1).max(updateRecurrenceScheduleBodyMonthDaysItemMax)).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().optional(),
+  "assignedTechnicianId": zod.string().optional(),
+  "endDate": zod.coerce.date().optional(),
+  "occurrenceLimit": zod.number().min(1).optional()
+})
+
+export const UpdateRecurrenceScheduleResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "contractId": zod.string().nullish(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "frequency": zod.string(),
+  "interval": zod.number(),
+  "weekdays": zod.array(zod.number()).optional(),
+  "monthDays": zod.array(zod.number()).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().nullish(),
+  "occurrenceLimit": zod.number().nullish(),
+  "occurrencesGenerated": zod.number(),
+  "lastGeneratedDate": zod.coerce.date().nullish(),
+  "nextRunDate": zod.coerce.date().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List generated/skipped occurrences for a schedule
+ */
+export const ListRecurrenceOccurrencesParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ListRecurrenceOccurrencesResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "scheduleId": zod.string(),
+  "sequence": zod.number(),
+  "scheduledDate": zod.coerce.date(),
+  "status": zod.string(),
+  "workOrderId": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListRecurrenceOccurrencesResponse = zod.array(ListRecurrenceOccurrencesResponseItem)
+
+
+/**
+ * @summary Pause a recurrence schedule
+ */
+export const PauseRecurrenceParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const PauseRecurrenceResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "contractId": zod.string().nullish(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "frequency": zod.string(),
+  "interval": zod.number(),
+  "weekdays": zod.array(zod.number()).optional(),
+  "monthDays": zod.array(zod.number()).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().nullish(),
+  "occurrenceLimit": zod.number().nullish(),
+  "occurrencesGenerated": zod.number(),
+  "lastGeneratedDate": zod.coerce.date().nullish(),
+  "nextRunDate": zod.coerce.date().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Resume a paused recurrence schedule
+ */
+export const ResumeRecurrenceParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ResumeRecurrenceResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "contractId": zod.string().nullish(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "frequency": zod.string(),
+  "interval": zod.number(),
+  "weekdays": zod.array(zod.number()).optional(),
+  "monthDays": zod.array(zod.number()).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().nullish(),
+  "occurrenceLimit": zod.number().nullish(),
+  "occurrencesGenerated": zod.number(),
+  "lastGeneratedDate": zod.coerce.date().nullish(),
+  "nextRunDate": zod.coerce.date().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary End a recurrence schedule permanently
+ */
+export const EndRecurrenceParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const EndRecurrenceResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "contractId": zod.string().nullish(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "frequency": zod.string(),
+  "interval": zod.number(),
+  "weekdays": zod.array(zod.number()).optional(),
+  "monthDays": zod.array(zod.number()).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().nullish(),
+  "occurrenceLimit": zod.number().nullish(),
+  "occurrencesGenerated": zod.number(),
+  "lastGeneratedDate": zod.coerce.date().nullish(),
+  "nextRunDate": zod.coerce.date().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Skip the next occurrence of a recurrence schedule
+ */
+export const SkipRecurrenceParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const SkipRecurrenceResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "contractId": zod.string().nullish(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "frequency": zod.string(),
+  "interval": zod.number(),
+  "weekdays": zod.array(zod.number()).optional(),
+  "monthDays": zod.array(zod.number()).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().nullish(),
+  "occurrenceLimit": zod.number().nullish(),
+  "occurrencesGenerated": zod.number(),
+  "lastGeneratedDate": zod.coerce.date().nullish(),
+  "nextRunDate": zod.coerce.date().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Reschedule the next run date of a recurrence schedule
+ */
+export const RescheduleRecurrenceParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RescheduleRecurrenceBody = zod.object({
+  "nextRunDate": zod.coerce.date()
+})
+
+export const RescheduleRecurrenceResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "contractId": zod.string().nullish(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "workOrderType": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "frequency": zod.string(),
+  "interval": zod.number(),
+  "weekdays": zod.array(zod.number()).optional(),
+  "monthDays": zod.array(zod.number()).optional(),
+  "blackoutDates": zod.array(zod.coerce.date()).optional(),
+  "timeWindow": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date().nullish(),
+  "occurrenceLimit": zod.number().nullish(),
+  "occurrencesGenerated": zod.number(),
+  "lastGeneratedDate": zod.coerce.date().nullish(),
+  "nextRunDate": zod.coerce.date().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Get the authenticated portal user's profile + customer
+ */
+export const GetPortalMeResponse = zod.object({
+  "userId": zod.string().optional(),
+  "userName": zod.string().optional(),
+  "userEmail": zod.string().optional(),
+  "customerId": zod.string(),
+  "name": zod.string(),
+  "industry": zod.string().optional(),
+  "email": zod.string(),
+  "phone": zod.string(),
+  "locations": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "address": zod.string().optional(),
+  "city": zod.string().optional(),
+  "state": zod.string().optional(),
+  "zip": zod.string().optional()
+}))
+})
+
+
+/**
+ * @summary Update the portal customer's contact info
+ */
+export const UpdatePortalProfileBody = zod.object({
+  "email": zod.string().optional(),
+  "phone": zod.string().optional()
+})
+
+export const UpdatePortalProfileResponse = zod.object({
+  "userId": zod.string().optional(),
+  "userName": zod.string().optional(),
+  "userEmail": zod.string().optional(),
+  "customerId": zod.string(),
+  "name": zod.string(),
+  "industry": zod.string().optional(),
+  "email": zod.string(),
+  "phone": zod.string(),
+  "locations": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "address": zod.string().optional(),
+  "city": zod.string().optional(),
+  "state": zod.string().optional(),
+  "zip": zod.string().optional()
+}))
+})
+
+
+/**
+ * @summary Portal dashboard summary for the customer
+ */
+export const GetPortalDashboardResponse = zod.object({
+  "openWorkOrders": zod.number(),
+  "pendingQuotes": zod.number(),
+  "openInvoices": zod.number(),
+  "outstandingBalance": zod.number(),
+  "upcomingVisits": zod.array(zod.object({
+  "date": zod.coerce.date(),
+  "title": zod.string(),
+  "workOrderId": zod.string().nullish(),
+  "locationId": zod.string().nullish()
+})).optional(),
+  "recentWorkOrders": zod.array(zod.object({
+  "id": zod.string(),
+  "number": zod.string(),
+  "status": zod.string(),
+  "priority": zod.string(),
+  "type": zod.string(),
+  "locationId": zod.string().nullish(),
+  "dueDate": zod.coerce.date(),
+  "description": zod.string().optional(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "source": zod.string().optional(),
+  "visits": zod.array(zod.object({
+  "date": zod.string(),
+  "summary": zod.string().nullish(),
+  "technicianName": zod.string().nullish()
+})).optional(),
+  "updates": zod.array(zod.object({
+  "timestamp": zod.string(),
+  "message": zod.string()
+})).optional(),
+  "createdAt": zod.coerce.date()
+})).optional()
+})
+
+
+/**
+ * @summary List the customer's work orders (redacted)
+ */
+export const ListPortalWorkOrdersResponseItem = zod.object({
+  "id": zod.string(),
+  "number": zod.string(),
+  "status": zod.string(),
+  "priority": zod.string(),
+  "type": zod.string(),
+  "locationId": zod.string().nullish(),
+  "dueDate": zod.coerce.date(),
+  "description": zod.string().optional(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "source": zod.string().optional(),
+  "visits": zod.array(zod.object({
+  "date": zod.string(),
+  "summary": zod.string().nullish(),
+  "technicianName": zod.string().nullish()
+})).optional(),
+  "updates": zod.array(zod.object({
+  "timestamp": zod.string(),
+  "message": zod.string()
+})).optional(),
+  "createdAt": zod.coerce.date()
+})
+export const ListPortalWorkOrdersResponse = zod.array(ListPortalWorkOrdersResponseItem)
+
+
+/**
+ * @summary Get one of the customer's work orders (redacted)
+ */
+export const GetPortalWorkOrderParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetPortalWorkOrderResponse = zod.object({
+  "id": zod.string(),
+  "number": zod.string(),
+  "status": zod.string(),
+  "priority": zod.string(),
+  "type": zod.string(),
+  "locationId": zod.string().nullish(),
+  "dueDate": zod.coerce.date(),
+  "description": zod.string().optional(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "source": zod.string().optional(),
+  "visits": zod.array(zod.object({
+  "date": zod.string(),
+  "summary": zod.string().nullish(),
+  "technicianName": zod.string().nullish()
+})).optional(),
+  "updates": zod.array(zod.object({
+  "timestamp": zod.string(),
+  "message": zod.string()
+})).optional(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List service requests the customer submitted
+ */
+export const ListPortalRequestsResponseItem = zod.object({
+  "id": zod.string(),
+  "number": zod.string(),
+  "status": zod.string(),
+  "priority": zod.string(),
+  "type": zod.string(),
+  "locationId": zod.string().nullish(),
+  "dueDate": zod.coerce.date(),
+  "description": zod.string().optional(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "source": zod.string().optional(),
+  "visits": zod.array(zod.object({
+  "date": zod.string(),
+  "summary": zod.string().nullish(),
+  "technicianName": zod.string().nullish()
+})).optional(),
+  "updates": zod.array(zod.object({
+  "timestamp": zod.string(),
+  "message": zod.string()
+})).optional(),
+  "createdAt": zod.coerce.date()
+})
+export const ListPortalRequestsResponse = zod.array(ListPortalRequestsResponseItem)
+
+
+/**
+ * @summary Submit a new service request (goes to staff triage, never auto-scheduled)
+ */
+
+
+
+
+export const CreatePortalRequestBody = zod.object({
+  "locationId": zod.string().min(1),
+  "priority": zod.enum(['Low', 'Medium', 'High', 'Emergency']).optional(),
+  "description": zod.string().min(1),
+  "requestedDate": zod.coerce.date().optional()
+})
+
+export const CreatePortalRequestResponse = zod.object({
+  "id": zod.string(),
+  "number": zod.string(),
+  "status": zod.string(),
+  "priority": zod.string(),
+  "type": zod.string(),
+  "locationId": zod.string().nullish(),
+  "dueDate": zod.coerce.date(),
+  "description": zod.string().optional(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "source": zod.string().optional(),
+  "visits": zod.array(zod.object({
+  "date": zod.string(),
+  "summary": zod.string().nullish(),
+  "technicianName": zod.string().nullish()
+})).optional(),
+  "updates": zod.array(zod.object({
+  "timestamp": zod.string(),
+  "message": zod.string()
+})).optional(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List the customer's quotes
+ */
+export const ListPortalQuotesResponseItem = zod.object({
+  "id": zod.string(),
+  "number": zod.string(),
+  "title": zod.string(),
+  "amount": zod.number(),
+  "status": zod.string(),
+  "validUntil": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "lines": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "rate": zod.number()
+})),
+  "decidedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListPortalQuotesResponse = zod.array(ListPortalQuotesResponseItem)
+
+
+/**
+ * @summary Approve or reject a quote (human-in-the-loop; never auto-converts)
+ */
+export const DecidePortalQuoteParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DecidePortalQuoteBody = zod.object({
+  "decision": zod.enum(['Approved', 'Rejected']),
+  "note": zod.string().optional()
+})
+
+export const DecidePortalQuoteResponse = zod.object({
+  "id": zod.string(),
+  "number": zod.string(),
+  "title": zod.string(),
+  "amount": zod.number(),
+  "status": zod.string(),
+  "validUntil": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "lines": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "rate": zod.number()
+})),
+  "decidedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List the customer's invoices (redacted)
+ */
+export const ListPortalInvoicesResponseItem = zod.object({
+  "id": zod.string(),
+  "number": zod.string(),
+  "workOrderId": zod.string().nullish(),
+  "amount": zod.number(),
+  "amountPaid": zod.number(),
+  "status": zod.string(),
+  "issueDate": zod.coerce.date().nullish(),
+  "dueDate": zod.coerce.date(),
+  "paidDate": zod.coerce.date().nullish(),
+  "lines": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "rate": zod.number()
+})),
+  "createdAt": zod.coerce.date()
+})
+export const ListPortalInvoicesResponse = zod.array(ListPortalInvoicesResponseItem)
+
+
+/**
+ * @summary List the customer's payment history
+ */
+export const ListPortalPaymentsResponseItem = zod.object({
+  "id": zod.string(),
+  "invoiceId": zod.string(),
+  "date": zod.coerce.date(),
+  "amount": zod.number(),
+  "method": zod.string(),
+  "type": zod.string()
+})
+export const ListPortalPaymentsResponse = zod.array(ListPortalPaymentsResponseItem)
+
+
+/**
+ * @summary List documents visible to the customer
+ */
+export const ListPortalDocumentsResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "expiration": zod.coerce.date().nullish()
+})
+export const ListPortalDocumentsResponse = zod.array(ListPortalDocumentsResponseItem)
+
+
+/**
+ * @summary List the customer's equipment (redacted)
+ */
+export const ListPortalEquipmentResponseItem = zod.object({
+  "id": zod.string(),
+  "assetName": zod.string(),
+  "model": zod.string().optional(),
+  "serialNumber": zod.string().optional(),
+  "locationId": zod.string().nullish(),
+  "lastServiced": zod.string().nullish(),
+  "warrantyInfo": zod.string().optional()
+})
+export const ListPortalEquipmentResponse = zod.array(ListPortalEquipmentResponseItem)
+
+

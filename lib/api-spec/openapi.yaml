@@ -1871,8 +1871,1470 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /quotes:
+    get:
+      operationId: listQuotes
+      tags: [quotes]
+      summary: List quotes for the tenant
+      responses:
+        "200":
+          description: Quotes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Quote"
+    post:
+      operationId: createQuote
+      tags: [quotes]
+      summary: Create a quote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quote"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quotes/{id}:
+    get:
+      operationId: getQuote
+      tags: [quotes]
+      summary: Get a quote by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Quote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quote"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /invoices:
+    get:
+      operationId: listInvoices
+      tags: [invoices]
+      summary: List invoices for the tenant
+      responses:
+        "200":
+          description: Invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invoice"
+    post:
+      operationId: createInvoice
+      tags: [invoices]
+      summary: Create an invoice from a billing-approved work order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceCreateInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+        "400":
+          description: Invalid input or work order not ready for billing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /invoices/{id}:
+    get:
+      operationId: getInvoice
+      tags: [invoices]
+      summary: Get an invoice by id (includes payments)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /payments:
+    get:
+      operationId: listPayments
+      tags: [payments]
+      summary: List payments for the tenant
+      responses:
+        "200":
+          description: Payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    post:
+      operationId: recordPayment
+      tags: [payments]
+      summary: Record a payment against an invoice (updates AR state)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRecordInput"
+      responses:
+        "201":
+          description: Recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /contracts:
+    get:
+      operationId: listContracts
+      tags: [contracts]
+      summary: List service contracts for the tenant
+      responses:
+        "200":
+          description: Contracts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServiceContract"
+    post:
+      operationId: createContract
+      tags: [contracts]
+      summary: Create a service contract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceContractInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceContract"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /contracts/{id}:
+    get:
+      operationId: getContract
+      tags: [contracts]
+      summary: Get a service contract by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Contract
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceContract"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateContract
+      tags: [contracts]
+      summary: Update a service contract
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceContractUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceContract"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /contracts/{id}/renew:
+    post:
+      operationId: renewContract
+      tags: [contracts]
+      summary: Renew a service contract (extends renewal date, clears reminders)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractRenewInput"
+      responses:
+        "200":
+          description: Renewed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceContract"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /contract-reminders:
+    get:
+      operationId: listContractReminders
+      tags: [contracts]
+      summary: List open contract renewal/expiration reminders
+      responses:
+        "200":
+          description: Reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContractReminder"
+
+  /recurrence:
+    get:
+      operationId: listRecurrenceSchedules
+      tags: [recurrence]
+      summary: List recurrence schedules for the tenant
+      responses:
+        "200":
+          description: Schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecurrenceSchedule"
+    post:
+      operationId: createRecurrenceSchedule
+      tags: [recurrence]
+      summary: Create a recurrence schedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecurrenceScheduleInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceSchedule"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recurrence/preview:
+    post:
+      operationId: previewRecurrence
+      tags: [recurrence]
+      summary: Preview upcoming occurrence dates for a candidate schedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecurrencePreviewInput"
+      responses:
+        "200":
+          description: Preview dates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrencePreviewResult"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recurrence/run:
+    post:
+      operationId: runRecurrence
+      tags: [recurrence]
+      summary: Trigger the recurrence generation worker (admin/manager only)
+      responses:
+        "200":
+          description: Run result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceRunResult"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recurrence/{id}:
+    get:
+      operationId: getRecurrenceSchedule
+      tags: [recurrence]
+      summary: Get a recurrence schedule by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Schedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceSchedule"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateRecurrenceSchedule
+      tags: [recurrence]
+      summary: Update a recurrence schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecurrenceScheduleUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceSchedule"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recurrence/{id}/occurrences:
+    get:
+      operationId: listRecurrenceOccurrences
+      tags: [recurrence]
+      summary: List generated/skipped occurrences for a schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Occurrences
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecurrenceOccurrence"
+
+  /recurrence/{id}/pause:
+    post:
+      operationId: pauseRecurrence
+      tags: [recurrence]
+      summary: Pause a recurrence schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paused
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceSchedule"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recurrence/{id}/resume:
+    post:
+      operationId: resumeRecurrence
+      tags: [recurrence]
+      summary: Resume a paused recurrence schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Resumed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceSchedule"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recurrence/{id}/end:
+    post:
+      operationId: endRecurrence
+      tags: [recurrence]
+      summary: End a recurrence schedule permanently
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceSchedule"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recurrence/{id}/skip:
+    post:
+      operationId: skipRecurrence
+      tags: [recurrence]
+      summary: Skip the next occurrence of a recurrence schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Skipped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceSchedule"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recurrence/{id}/reschedule:
+    post:
+      operationId: rescheduleRecurrence
+      tags: [recurrence]
+      summary: Reschedule the next run date of a recurrence schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecurrenceRescheduleInput"
+      responses:
+        "200":
+          description: Rescheduled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceSchedule"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /portal/me:
+    get:
+      operationId: getPortalMe
+      tags: [portal]
+      summary: Get the authenticated portal user's profile + customer
+      responses:
+        "200":
+          description: Portal profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalProfile"
+        "403":
+          description: Not a portal user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /portal/profile:
+    patch:
+      operationId: updatePortalProfile
+      tags: [portal]
+      summary: Update the portal customer's contact info
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortalProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalProfile"
+        "403":
+          description: Not a portal user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /portal/dashboard:
+    get:
+      operationId: getPortalDashboard
+      tags: [portal]
+      summary: Portal dashboard summary for the customer
+      responses:
+        "200":
+          description: Dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalDashboard"
+        "403":
+          description: Not a portal user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /portal/work-orders:
+    get:
+      operationId: listPortalWorkOrders
+      tags: [portal]
+      summary: List the customer's work orders (redacted)
+      responses:
+        "200":
+          description: Work orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortalWorkOrder"
+        "403":
+          description: Not a portal user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /portal/work-orders/{id}:
+    get:
+      operationId: getPortalWorkOrder
+      tags: [portal]
+      summary: Get one of the customer's work orders (redacted)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Work order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalWorkOrder"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /portal/requests:
+    get:
+      operationId: listPortalRequests
+      tags: [portal]
+      summary: List service requests the customer submitted
+      responses:
+        "200":
+          description: Requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortalWorkOrder"
+    post:
+      operationId: createPortalRequest
+      tags: [portal]
+      summary: Submit a new service request (goes to staff triage, never auto-scheduled)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortalRequestInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalWorkOrder"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /portal/quotes:
+    get:
+      operationId: listPortalQuotes
+      tags: [portal]
+      summary: List the customer's quotes
+      responses:
+        "200":
+          description: Quotes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortalQuote"
+
+  /portal/quotes/{id}/decide:
+    post:
+      operationId: decidePortalQuote
+      tags: [portal]
+      summary: Approve or reject a quote (human-in-the-loop; never auto-converts)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteDecisionInput"
+      responses:
+        "200":
+          description: Decision recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalQuote"
+        "400":
+          description: Invalid input or quote not decidable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /portal/invoices:
+    get:
+      operationId: listPortalInvoices
+      tags: [portal]
+      summary: List the customer's invoices (redacted)
+      responses:
+        "200":
+          description: Invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortalInvoice"
+
+  /portal/payments:
+    get:
+      operationId: listPortalPayments
+      tags: [portal]
+      summary: List the customer's payment history
+      responses:
+        "200":
+          description: Payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortalPayment"
+
+  /portal/documents:
+    get:
+      operationId: listPortalDocuments
+      tags: [portal]
+      summary: List documents visible to the customer
+      responses:
+        "200":
+          description: Documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortalDocument"
+
+  /portal/equipment:
+    get:
+      operationId: listPortalEquipment
+      tags: [portal]
+      summary: List the customer's equipment (redacted)
+      responses:
+        "200":
+          description: Equipment
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortalEquipment"
+
 components:
   schemas:
+    Quote:
+      type: object
+      required: [id, tenantId, customerId, number, lines, amount, status, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        customerId: { type: string }
+        locationId: { type: ["string", "null"] }
+        workOrderId: { type: ["string", "null"] }
+        number: { type: string }
+        title: { type: string }
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuoteLine"
+        amount: { type: number }
+        status: { type: string }
+        notes: { type: ["string", "null"] }
+        validUntil: { type: ["string", "null"], format: date }
+        decidedAt: { type: ["string", "null"], format: date-time }
+        decidedByName: { type: ["string", "null"] }
+        decisionNote: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    QuoteLine:
+      type: object
+      required: [id, description, quantity, rate]
+      properties:
+        id: { type: string }
+        description: { type: string }
+        quantity: { type: number }
+        rate: { type: number }
+
+    QuoteLineInput:
+      type: object
+      required: [description, quantity, rate]
+      properties:
+        description: { type: string, minLength: 1 }
+        quantity: { type: number }
+        rate: { type: number }
+
+    QuoteInput:
+      type: object
+      required: [customerId, lines]
+      properties:
+        customerId: { type: string, minLength: 1 }
+        locationId: { type: string }
+        workOrderId: { type: string }
+        title: { type: string }
+        notes: { type: string }
+        validUntil: { type: string, format: date }
+        status:
+          type: string
+          enum: [Draft, Sent]
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuoteLineInput"
+
+    QuoteDecisionInput:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [Approved, Rejected]
+        note: { type: string }
+
+    InvoiceLine:
+      type: object
+      required: [id, description, quantity, rate]
+      properties:
+        id: { type: string }
+        description: { type: string }
+        quantity: { type: number }
+        rate: { type: number }
+
+    Invoice:
+      type: object
+      required: [id, tenantId, customerId, number, lines, amount, amountPaid, status, dueDate, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        customerId: { type: string }
+        workOrderId: { type: ["string", "null"] }
+        number: { type: string }
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceLine"
+        amount: { type: number }
+        amountPaid: { type: number }
+        status: { type: string }
+        issueDate: { type: ["string", "null"], format: date }
+        dueDate: { type: string, format: date }
+        paidDate: { type: ["string", "null"], format: date }
+        notes: { type: ["string", "null"] }
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payment"
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    InvoiceCreateInput:
+      type: object
+      required: [workOrderId]
+      properties:
+        workOrderId: { type: string, minLength: 1 }
+        dueInDays: { type: integer, minimum: 0 }
+        notes: { type: string }
+
+    Payment:
+      type: object
+      required: [id, tenantId, invoiceId, customerId, date, amount, method, type, recordedByName]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        invoiceId: { type: string }
+        customerId: { type: string }
+        date: { type: string, format: date }
+        amount: { type: number }
+        method: { type: string }
+        type: { type: string }
+        recordedByUserId: { type: ["string", "null"] }
+        recordedByName: { type: string }
+        note: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+
+    PaymentRecordInput:
+      type: object
+      required: [invoiceId, amount]
+      properties:
+        invoiceId: { type: string, minLength: 1 }
+        amount: { type: number }
+        method: { type: string }
+        type:
+          type: string
+          enum: [Payment, Partial Payment, Credit, Refund]
+        date: { type: string, format: date }
+        note: { type: string }
+
+    ServiceContract:
+      type: object
+      required: [id, tenantId, customerId, name, startDate, renewalDate, status, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        customerId: { type: string }
+        locationId: { type: ["string", "null"] }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        laborRate: { type: ["number", "null"] }
+        afterHoursRate: { type: ["number", "null"] }
+        value: { type: ["number", "null"] }
+        includedServices:
+          type: array
+          items: { type: string }
+        coveredEquipmentIds:
+          type: array
+          items: { type: string }
+        startDate: { type: string, format: date }
+        renewalDate: { type: string, format: date }
+        status: { type: string }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    ServiceContractInput:
+      type: object
+      required: [customerId, name, startDate, renewalDate]
+      properties:
+        customerId: { type: string, minLength: 1 }
+        locationId: { type: string }
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+        laborRate: { type: number }
+        afterHoursRate: { type: number }
+        value: { type: number }
+        includedServices:
+          type: array
+          items: { type: string }
+        coveredEquipmentIds:
+          type: array
+          items: { type: string }
+        startDate: { type: string, format: date }
+        renewalDate: { type: string, format: date }
+
+    ServiceContractUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        laborRate: { type: number }
+        afterHoursRate: { type: number }
+        value: { type: number }
+        includedServices:
+          type: array
+          items: { type: string }
+        coveredEquipmentIds:
+          type: array
+          items: { type: string }
+        renewalDate: { type: string, format: date }
+        status:
+          type: string
+          enum: [Active, Paused, Ended, Expired]
+        notes: { type: string }
+
+    ContractRenewInput:
+      type: object
+      properties:
+        renewalDate: { type: string, format: date }
+        termMonths: { type: integer, minimum: 1 }
+
+    ContractReminder:
+      type: object
+      required: [id, tenantId, contractId, customerId, type, dueDate, message, status, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        contractId: { type: string }
+        customerId: { type: string }
+        type: { type: string }
+        dueDate: { type: string, format: date }
+        message: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    RecurrenceSchedule:
+      type: object
+      required: [id, tenantId, customerId, locationId, title, frequency, interval, status, startDate, occurrencesGenerated, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        contractId: { type: ["string", "null"] }
+        customerId: { type: string }
+        locationId: { type: string }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        workOrderType: { type: string }
+        priority: { type: string }
+        frequency: { type: string }
+        interval: { type: integer }
+        weekdays:
+          type: array
+          items: { type: integer }
+        monthDays:
+          type: array
+          items: { type: integer }
+        blackoutDates:
+          type: array
+          items: { type: string, format: date }
+        timeWindow: { type: ["string", "null"] }
+        assignedTechnicianId: { type: ["string", "null"] }
+        startDate: { type: string, format: date }
+        endDate: { type: ["string", "null"], format: date }
+        occurrenceLimit: { type: ["integer", "null"] }
+        occurrencesGenerated: { type: integer }
+        lastGeneratedDate: { type: ["string", "null"], format: date }
+        nextRunDate: { type: ["string", "null"], format: date }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    RecurrenceScheduleInput:
+      type: object
+      required: [customerId, locationId, title, frequency, startDate]
+      properties:
+        contractId: { type: string }
+        customerId: { type: string, minLength: 1 }
+        locationId: { type: string, minLength: 1 }
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        workOrderType: { type: string }
+        priority:
+          type: string
+          enum: [Low, Medium, High, Emergency]
+        frequency:
+          type: string
+          enum: [Daily, Weekly, Monthly, Quarterly, SemiAnnual, Annual, Custom]
+        interval: { type: integer, minimum: 1 }
+        weekdays:
+          type: array
+          items: { type: integer, minimum: 0, maximum: 6 }
+        monthDays:
+          type: array
+          items: { type: integer, minimum: 1, maximum: 31 }
+        blackoutDates:
+          type: array
+          items: { type: string, format: date }
+        timeWindow: { type: string }
+        assignedTechnicianId: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        occurrenceLimit: { type: integer, minimum: 1 }
+
+    RecurrenceScheduleUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        workOrderType: { type: string }
+        priority:
+          type: string
+          enum: [Low, Medium, High, Emergency]
+        frequency:
+          type: string
+          enum: [Daily, Weekly, Monthly, Quarterly, SemiAnnual, Annual, Custom]
+        interval: { type: integer, minimum: 1 }
+        weekdays:
+          type: array
+          items: { type: integer, minimum: 0, maximum: 6 }
+        monthDays:
+          type: array
+          items: { type: integer, minimum: 1, maximum: 31 }
+        blackoutDates:
+          type: array
+          items: { type: string, format: date }
+        timeWindow: { type: string }
+        assignedTechnicianId: { type: string }
+        endDate: { type: string, format: date }
+        occurrenceLimit: { type: integer, minimum: 1 }
+
+    RecurrenceOccurrence:
+      type: object
+      required: [id, tenantId, scheduleId, sequence, scheduledDate, status, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        scheduleId: { type: string }
+        sequence: { type: integer }
+        scheduledDate: { type: string, format: date }
+        status: { type: string }
+        workOrderId: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+
+    RecurrencePreviewInput:
+      type: object
+      required: [frequency, startDate]
+      properties:
+        frequency:
+          type: string
+          enum: [Daily, Weekly, Monthly, Quarterly, SemiAnnual, Annual, Custom]
+        interval: { type: integer, minimum: 1 }
+        weekdays:
+          type: array
+          items: { type: integer, minimum: 0, maximum: 6 }
+        monthDays:
+          type: array
+          items: { type: integer, minimum: 1, maximum: 31 }
+        blackoutDates:
+          type: array
+          items: { type: string, format: date }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        occurrenceLimit: { type: integer, minimum: 1 }
+        count: { type: integer, minimum: 1, maximum: 60 }
+
+    RecurrencePreviewResult:
+      type: object
+      required: [dates]
+      properties:
+        dates:
+          type: array
+          items: { type: string, format: date }
+
+    RecurrenceRescheduleInput:
+      type: object
+      required: [nextRunDate]
+      properties:
+        nextRunDate: { type: string, format: date }
+
+    RecurrenceRunResult:
+      type: object
+      required: [schedulesProcessed, generated, remindersEmitted, workOrderIds]
+      properties:
+        schedulesProcessed: { type: integer }
+        generated: { type: integer }
+        remindersEmitted: { type: integer }
+        workOrderIds:
+          type: array
+          items: { type: string }
+
+    PortalProfile:
+      type: object
+      required: [customerId, name, email, phone, locations]
+      properties:
+        userId: { type: string }
+        userName: { type: string }
+        userEmail: { type: string }
+        customerId: { type: string }
+        name: { type: string }
+        industry: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        locations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalLocation"
+
+    PortalLocation:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        address: { type: string }
+        city: { type: string }
+        state: { type: string }
+        zip: { type: string }
+
+    PortalProfileUpdate:
+      type: object
+      properties:
+        email: { type: string }
+        phone: { type: string }
+
+    PortalDashboard:
+      type: object
+      required: [openWorkOrders, pendingQuotes, openInvoices, outstandingBalance]
+      properties:
+        openWorkOrders: { type: integer }
+        pendingQuotes: { type: integer }
+        openInvoices: { type: integer }
+        outstandingBalance: { type: number }
+        upcomingVisits:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalVisit"
+        recentWorkOrders:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalWorkOrder"
+
+    PortalVisit:
+      type: object
+      required: [date, title]
+      properties:
+        date: { type: string, format: date-time }
+        title: { type: string }
+        workOrderId: { type: ["string", "null"] }
+        locationId: { type: ["string", "null"] }
+
+    PortalWorkOrder:
+      type: object
+      required: [id, number, status, priority, type, dueDate, createdAt]
+      properties:
+        id: { type: string }
+        number: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        type: { type: string }
+        locationId: { type: ["string", "null"] }
+        dueDate: { type: string, format: date }
+        description: { type: string }
+        timeWindow: { type: ["string", "null"] }
+        scheduledStart: { type: ["string", "null"], format: date-time }
+        scheduledEnd: { type: ["string", "null"], format: date-time }
+        source: { type: string }
+        visits:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalVisitSummary"
+        updates:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalUpdate"
+        createdAt: { type: string, format: date-time }
+
+    PortalVisitSummary:
+      type: object
+      required: [date]
+      properties:
+        date: { type: string }
+        summary: { type: ["string", "null"] }
+        technicianName: { type: ["string", "null"] }
+
+    PortalUpdate:
+      type: object
+      required: [timestamp, message]
+      properties:
+        timestamp: { type: string }
+        message: { type: string }
+
+    PortalRequestInput:
+      type: object
+      required: [locationId, description]
+      properties:
+        locationId: { type: string, minLength: 1 }
+        priority:
+          type: string
+          enum: [Low, Medium, High, Emergency]
+        description: { type: string, minLength: 1 }
+        requestedDate: { type: string, format: date }
+
+    PortalQuote:
+      type: object
+      required: [id, number, title, amount, status, lines, createdAt]
+      properties:
+        id: { type: string }
+        number: { type: string }
+        title: { type: string }
+        amount: { type: number }
+        status: { type: string }
+        validUntil: { type: ["string", "null"], format: date }
+        notes: { type: ["string", "null"] }
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuoteLine"
+        decidedAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+
+    PortalInvoice:
+      type: object
+      required: [id, number, amount, amountPaid, status, dueDate, lines, createdAt]
+      properties:
+        id: { type: string }
+        number: { type: string }
+        workOrderId: { type: ["string", "null"] }
+        amount: { type: number }
+        amountPaid: { type: number }
+        status: { type: string }
+        issueDate: { type: ["string", "null"], format: date }
+        dueDate: { type: string, format: date }
+        paidDate: { type: ["string", "null"], format: date }
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceLine"
+        createdAt: { type: string, format: date-time }
+
+    PortalPayment:
+      type: object
+      required: [id, invoiceId, date, amount, method, type]
+      properties:
+        id: { type: string }
+        invoiceId: { type: string }
+        date: { type: string, format: date }
+        amount: { type: number }
+        method: { type: string }
+        type: { type: string }
+
+    PortalDocument:
+      type: object
+      required: [id, name, type]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        type: { type: string }
+        expiration: { type: ["string", "null"], format: date }
+
+    PortalEquipment:
+      type: object
+      required: [id, assetName]
+      properties:
+        id: { type: string }
+        assetName: { type: string }
+        model: { type: string }
+        serialNumber: { type: string }
+        locationId: { type: ["string", "null"] }
+        lastServiced: { type: ["string", "null"] }
+        warrantyInfo: { type: string }
+
     HealthStatus:
       type: object
       properties:

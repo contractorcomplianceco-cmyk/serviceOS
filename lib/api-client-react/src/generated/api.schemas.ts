@@ -5,6 +5,605 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface QuoteLine {
+  id: string;
+  description: string;
+  quantity: number;
+  rate: number;
+}
+
+export interface Quote {
+  id: string;
+  tenantId: string;
+  customerId: string;
+  /** @nullable */
+  locationId?: string | null;
+  /** @nullable */
+  workOrderId?: string | null;
+  number: string;
+  title?: string;
+  lines: QuoteLine[];
+  amount: number;
+  status: string;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  validUntil?: string | null;
+  /** @nullable */
+  decidedAt?: string | null;
+  /** @nullable */
+  decidedByName?: string | null;
+  /** @nullable */
+  decisionNote?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface QuoteLineInput {
+  /** @minLength 1 */
+  description: string;
+  quantity: number;
+  rate: number;
+}
+
+export type QuoteInputStatus = typeof QuoteInputStatus[keyof typeof QuoteInputStatus];
+
+
+export const QuoteInputStatus = {
+  Draft: 'Draft',
+  Sent: 'Sent',
+} as const;
+
+export interface QuoteInput {
+  /** @minLength 1 */
+  customerId: string;
+  locationId?: string;
+  workOrderId?: string;
+  title?: string;
+  notes?: string;
+  validUntil?: string;
+  status?: QuoteInputStatus;
+  lines: QuoteLineInput[];
+}
+
+export type QuoteDecisionInputDecision = typeof QuoteDecisionInputDecision[keyof typeof QuoteDecisionInputDecision];
+
+
+export const QuoteDecisionInputDecision = {
+  Approved: 'Approved',
+  Rejected: 'Rejected',
+} as const;
+
+export interface QuoteDecisionInput {
+  decision: QuoteDecisionInputDecision;
+  note?: string;
+}
+
+export interface InvoiceLine {
+  id: string;
+  description: string;
+  quantity: number;
+  rate: number;
+}
+
+export interface Payment {
+  id: string;
+  tenantId: string;
+  invoiceId: string;
+  customerId: string;
+  date: string;
+  amount: number;
+  method: string;
+  type: string;
+  /** @nullable */
+  recordedByUserId?: string | null;
+  recordedByName: string;
+  /** @nullable */
+  note?: string | null;
+  createdAt?: string;
+}
+
+export interface Invoice {
+  id: string;
+  tenantId: string;
+  customerId: string;
+  /** @nullable */
+  workOrderId?: string | null;
+  number: string;
+  lines: InvoiceLine[];
+  amount: number;
+  amountPaid: number;
+  status: string;
+  /** @nullable */
+  issueDate?: string | null;
+  dueDate: string;
+  /** @nullable */
+  paidDate?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  payments?: Payment[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface InvoiceCreateInput {
+  /** @minLength 1 */
+  workOrderId: string;
+  /** @minimum 0 */
+  dueInDays?: number;
+  notes?: string;
+}
+
+export type PaymentRecordInputType = typeof PaymentRecordInputType[keyof typeof PaymentRecordInputType];
+
+
+export const PaymentRecordInputType = {
+  Payment: 'Payment',
+  Partial_Payment: 'Partial Payment',
+  Credit: 'Credit',
+  Refund: 'Refund',
+} as const;
+
+export interface PaymentRecordInput {
+  /** @minLength 1 */
+  invoiceId: string;
+  amount: number;
+  method?: string;
+  type?: PaymentRecordInputType;
+  date?: string;
+  note?: string;
+}
+
+export interface ServiceContract {
+  id: string;
+  tenantId: string;
+  customerId: string;
+  /** @nullable */
+  locationId?: string | null;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  laborRate?: number | null;
+  /** @nullable */
+  afterHoursRate?: number | null;
+  /** @nullable */
+  value?: number | null;
+  includedServices?: string[];
+  coveredEquipmentIds?: string[];
+  startDate: string;
+  renewalDate: string;
+  status: string;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ServiceContractInput {
+  /** @minLength 1 */
+  customerId: string;
+  locationId?: string;
+  /** @minLength 1 */
+  name: string;
+  description?: string;
+  laborRate?: number;
+  afterHoursRate?: number;
+  value?: number;
+  includedServices?: string[];
+  coveredEquipmentIds?: string[];
+  startDate: string;
+  renewalDate: string;
+}
+
+export type ServiceContractUpdateStatus = typeof ServiceContractUpdateStatus[keyof typeof ServiceContractUpdateStatus];
+
+
+export const ServiceContractUpdateStatus = {
+  Active: 'Active',
+  Paused: 'Paused',
+  Ended: 'Ended',
+  Expired: 'Expired',
+} as const;
+
+export interface ServiceContractUpdate {
+  name?: string;
+  description?: string;
+  laborRate?: number;
+  afterHoursRate?: number;
+  value?: number;
+  includedServices?: string[];
+  coveredEquipmentIds?: string[];
+  renewalDate?: string;
+  status?: ServiceContractUpdateStatus;
+  notes?: string;
+}
+
+export interface ContractRenewInput {
+  renewalDate?: string;
+  /** @minimum 1 */
+  termMonths?: number;
+}
+
+export interface ContractReminder {
+  id: string;
+  tenantId: string;
+  contractId: string;
+  customerId: string;
+  type: string;
+  dueDate: string;
+  message: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface RecurrenceSchedule {
+  id: string;
+  tenantId: string;
+  /** @nullable */
+  contractId?: string | null;
+  customerId: string;
+  locationId: string;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  workOrderType?: string;
+  priority?: string;
+  frequency: string;
+  interval: number;
+  weekdays?: number[];
+  monthDays?: number[];
+  blackoutDates?: string[];
+  /** @nullable */
+  timeWindow?: string | null;
+  /** @nullable */
+  assignedTechnicianId?: string | null;
+  startDate: string;
+  /** @nullable */
+  endDate?: string | null;
+  /** @nullable */
+  occurrenceLimit?: number | null;
+  occurrencesGenerated: number;
+  /** @nullable */
+  lastGeneratedDate?: string | null;
+  /** @nullable */
+  nextRunDate?: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type RecurrenceScheduleInputPriority = typeof RecurrenceScheduleInputPriority[keyof typeof RecurrenceScheduleInputPriority];
+
+
+export const RecurrenceScheduleInputPriority = {
+  Low: 'Low',
+  Medium: 'Medium',
+  High: 'High',
+  Emergency: 'Emergency',
+} as const;
+
+export type RecurrenceScheduleInputFrequency = typeof RecurrenceScheduleInputFrequency[keyof typeof RecurrenceScheduleInputFrequency];
+
+
+export const RecurrenceScheduleInputFrequency = {
+  Daily: 'Daily',
+  Weekly: 'Weekly',
+  Monthly: 'Monthly',
+  Quarterly: 'Quarterly',
+  SemiAnnual: 'SemiAnnual',
+  Annual: 'Annual',
+  Custom: 'Custom',
+} as const;
+
+export interface RecurrenceScheduleInput {
+  contractId?: string;
+  /** @minLength 1 */
+  customerId: string;
+  /** @minLength 1 */
+  locationId: string;
+  /** @minLength 1 */
+  title: string;
+  description?: string;
+  workOrderType?: string;
+  priority?: RecurrenceScheduleInputPriority;
+  frequency: RecurrenceScheduleInputFrequency;
+  /** @minimum 1 */
+  interval?: number;
+  /**
+     * @items.minimum 0
+     * @items.maximum 6
+     */
+  weekdays?: number[];
+  /**
+     * @items.minimum 1
+     * @items.maximum 31
+     */
+  monthDays?: number[];
+  blackoutDates?: string[];
+  timeWindow?: string;
+  assignedTechnicianId?: string;
+  startDate: string;
+  endDate?: string;
+  /** @minimum 1 */
+  occurrenceLimit?: number;
+}
+
+export type RecurrenceScheduleUpdatePriority = typeof RecurrenceScheduleUpdatePriority[keyof typeof RecurrenceScheduleUpdatePriority];
+
+
+export const RecurrenceScheduleUpdatePriority = {
+  Low: 'Low',
+  Medium: 'Medium',
+  High: 'High',
+  Emergency: 'Emergency',
+} as const;
+
+export type RecurrenceScheduleUpdateFrequency = typeof RecurrenceScheduleUpdateFrequency[keyof typeof RecurrenceScheduleUpdateFrequency];
+
+
+export const RecurrenceScheduleUpdateFrequency = {
+  Daily: 'Daily',
+  Weekly: 'Weekly',
+  Monthly: 'Monthly',
+  Quarterly: 'Quarterly',
+  SemiAnnual: 'SemiAnnual',
+  Annual: 'Annual',
+  Custom: 'Custom',
+} as const;
+
+export interface RecurrenceScheduleUpdate {
+  title?: string;
+  description?: string;
+  workOrderType?: string;
+  priority?: RecurrenceScheduleUpdatePriority;
+  frequency?: RecurrenceScheduleUpdateFrequency;
+  /** @minimum 1 */
+  interval?: number;
+  /**
+     * @items.minimum 0
+     * @items.maximum 6
+     */
+  weekdays?: number[];
+  /**
+     * @items.minimum 1
+     * @items.maximum 31
+     */
+  monthDays?: number[];
+  blackoutDates?: string[];
+  timeWindow?: string;
+  assignedTechnicianId?: string;
+  endDate?: string;
+  /** @minimum 1 */
+  occurrenceLimit?: number;
+}
+
+export interface RecurrenceOccurrence {
+  id: string;
+  tenantId: string;
+  scheduleId: string;
+  sequence: number;
+  scheduledDate: string;
+  status: string;
+  /** @nullable */
+  workOrderId?: string | null;
+  createdAt: string;
+}
+
+export type RecurrencePreviewInputFrequency = typeof RecurrencePreviewInputFrequency[keyof typeof RecurrencePreviewInputFrequency];
+
+
+export const RecurrencePreviewInputFrequency = {
+  Daily: 'Daily',
+  Weekly: 'Weekly',
+  Monthly: 'Monthly',
+  Quarterly: 'Quarterly',
+  SemiAnnual: 'SemiAnnual',
+  Annual: 'Annual',
+  Custom: 'Custom',
+} as const;
+
+export interface RecurrencePreviewInput {
+  frequency: RecurrencePreviewInputFrequency;
+  /** @minimum 1 */
+  interval?: number;
+  /**
+     * @items.minimum 0
+     * @items.maximum 6
+     */
+  weekdays?: number[];
+  /**
+     * @items.minimum 1
+     * @items.maximum 31
+     */
+  monthDays?: number[];
+  blackoutDates?: string[];
+  startDate: string;
+  endDate?: string;
+  /** @minimum 1 */
+  occurrenceLimit?: number;
+  /**
+     * @minimum 1
+     * @maximum 60
+     */
+  count?: number;
+}
+
+export interface RecurrencePreviewResult {
+  dates: string[];
+}
+
+export interface RecurrenceRescheduleInput {
+  nextRunDate: string;
+}
+
+export interface RecurrenceRunResult {
+  schedulesProcessed: number;
+  generated: number;
+  remindersEmitted: number;
+  workOrderIds: string[];
+}
+
+export interface PortalLocation {
+  id: string;
+  name: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+}
+
+export interface PortalProfile {
+  userId?: string;
+  userName?: string;
+  userEmail?: string;
+  customerId: string;
+  name: string;
+  industry?: string;
+  email: string;
+  phone: string;
+  locations: PortalLocation[];
+}
+
+export interface PortalProfileUpdate {
+  email?: string;
+  phone?: string;
+}
+
+export interface PortalVisit {
+  date: string;
+  title: string;
+  /** @nullable */
+  workOrderId?: string | null;
+  /** @nullable */
+  locationId?: string | null;
+}
+
+export interface PortalVisitSummary {
+  date: string;
+  /** @nullable */
+  summary?: string | null;
+  /** @nullable */
+  technicianName?: string | null;
+}
+
+export interface PortalUpdate {
+  timestamp: string;
+  message: string;
+}
+
+export interface PortalWorkOrder {
+  id: string;
+  number: string;
+  status: string;
+  priority: string;
+  type: string;
+  /** @nullable */
+  locationId?: string | null;
+  dueDate: string;
+  description?: string;
+  /** @nullable */
+  timeWindow?: string | null;
+  /** @nullable */
+  scheduledStart?: string | null;
+  /** @nullable */
+  scheduledEnd?: string | null;
+  source?: string;
+  visits?: PortalVisitSummary[];
+  updates?: PortalUpdate[];
+  createdAt: string;
+}
+
+export interface PortalDashboard {
+  openWorkOrders: number;
+  pendingQuotes: number;
+  openInvoices: number;
+  outstandingBalance: number;
+  upcomingVisits?: PortalVisit[];
+  recentWorkOrders?: PortalWorkOrder[];
+}
+
+export type PortalRequestInputPriority = typeof PortalRequestInputPriority[keyof typeof PortalRequestInputPriority];
+
+
+export const PortalRequestInputPriority = {
+  Low: 'Low',
+  Medium: 'Medium',
+  High: 'High',
+  Emergency: 'Emergency',
+} as const;
+
+export interface PortalRequestInput {
+  /** @minLength 1 */
+  locationId: string;
+  priority?: PortalRequestInputPriority;
+  /** @minLength 1 */
+  description: string;
+  requestedDate?: string;
+}
+
+export interface PortalQuote {
+  id: string;
+  number: string;
+  title: string;
+  amount: number;
+  status: string;
+  /** @nullable */
+  validUntil?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  lines: QuoteLine[];
+  /** @nullable */
+  decidedAt?: string | null;
+  createdAt: string;
+}
+
+export interface PortalInvoice {
+  id: string;
+  number: string;
+  /** @nullable */
+  workOrderId?: string | null;
+  amount: number;
+  amountPaid: number;
+  status: string;
+  /** @nullable */
+  issueDate?: string | null;
+  dueDate: string;
+  /** @nullable */
+  paidDate?: string | null;
+  lines: InvoiceLine[];
+  createdAt: string;
+}
+
+export interface PortalPayment {
+  id: string;
+  invoiceId: string;
+  date: string;
+  amount: number;
+  method: string;
+  type: string;
+}
+
+export interface PortalDocument {
+  id: string;
+  name: string;
+  type: string;
+  /** @nullable */
+  expiration?: string | null;
+}
+
+export interface PortalEquipment {
+  id: string;
+  assetName: string;
+  model?: string;
+  serialNumber?: string;
+  /** @nullable */
+  locationId?: string | null;
+  /** @nullable */
+  lastServiced?: string | null;
+  warrantyInfo?: string;
+}
+
 export interface HealthStatus {
   status: string;
 }

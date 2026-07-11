@@ -23,6 +23,8 @@ import Inventory from "@/pages/Inventory";
 import Equipment from "@/pages/Equipment";
 import Billing from "@/pages/Billing";
 import Accounting from "@/pages/Accounting";
+import Contracts from "@/pages/Contracts";
+import Recurrence from "@/pages/Recurrence";
 import Documents from "@/pages/Documents";
 import Reports from "@/pages/Reports";
 import Intelligence from "@/pages/Intelligence";
@@ -32,6 +34,7 @@ import VoiceConnect from "@/pages/VoiceConnect";
 import SupervisorReview from "@/pages/SupervisorReview";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
+import { PortalShell, PortalLogin } from "@/pages/portal";
 
 const queryClient = new QueryClient();
 
@@ -98,6 +101,8 @@ function Router() {
       <Route path="/locations">{() => <Protected allow={nav("locations")}><Locations /></Protected>}</Route>
       <Route path="/inventory">{() => <Protected allow={nav("inventory")}><Inventory /></Protected>}</Route>
       <Route path="/equipment">{() => <Protected allow={nav("equipment")}><Equipment /></Protected>}</Route>
+      <Route path="/contracts">{() => <Protected allow={nav("contracts")}><Contracts /></Protected>}</Route>
+      <Route path="/recurrence">{() => <Protected allow={nav("contracts")}><Recurrence /></Protected>}</Route>
       <Route path="/billing">{() => <Protected allow={nav("billing")}><Billing /></Protected>}</Route>
       <Route path="/accounting">{() => <Protected allow={nav("accounting")}><Accounting /></Protected>}</Route>
       <Route path="/documents">{() => <Protected allow={nav("documents")}><Documents /></Protected>}</Route>
@@ -113,8 +118,16 @@ function Router() {
 }
 
 function AuthedApp() {
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
+  const [location] = useLocation();
   if (isLoading) return <FullScreenLoader />;
+
+  // The customer portal is a fully isolated, tenant+customer-scoped experience.
+  // Portal users 403 on every staff endpoint, so they must never mount the
+  // staff AppProvider/AppLayout — they get their own shell and data hooks.
+  if (user?.role === "Customer Portal User") return <PortalShell />;
+  if (!user && location.startsWith("/portal")) return <PortalLogin />;
+
   return (
     <AppProvider>
       <AppLayout>

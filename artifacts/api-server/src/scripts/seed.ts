@@ -12,6 +12,11 @@ import {
   closeoutsTable,
   equipmentTable,
   documentsTable,
+  quotesTable,
+  invoicesTable,
+  paymentsTable,
+  serviceContractsTable,
+  recurrenceSchedulesTable,
   type InsertUser,
   type InsertCustomer,
   type InsertLocation,
@@ -20,6 +25,11 @@ import {
   type InsertCloseout,
   type InsertEquipment,
   type InsertDocument,
+  type InsertQuote,
+  type InsertInvoice,
+  type InsertPayment,
+  type InsertServiceContract,
+  type InsertRecurrenceSchedule,
 } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import { hashPassword } from "../lib/auth/password";
@@ -165,6 +175,111 @@ const SEED_DOCUMENTS: Omit<InsertDocument, "tenantId">[] = [
   { id: "d8", customerId: "c6", name: "Publix Site Instructions", type: "Site Instructions", visibility: "All Staff" },
 ];
 
+type SeedQuote = Omit<InsertQuote, "tenantId">;
+const SEED_QUOTES: SeedQuote[] = [
+  {
+    id: "qt1", customerId: "c1", locationId: "l1", number: "QT-2026-1001",
+    title: "Backflow preventer rebuild — RaceTrac #145",
+    lines: [
+      { id: "ql1", description: "Watts 909 rebuild kit", quantity: 1, rate: 240 },
+      { id: "ql2", description: "Certified labor (2 hrs)", quantity: 2, rate: 145 },
+    ],
+    amount: 530, status: "Sent", notes: "Recommended after annual test flagged wear.", validUntil: dateOnly(20),
+  },
+  {
+    id: "qt2", customerId: "c2", locationId: "l3", workOrderId: "wo9", number: "QT-2026-1002",
+    title: "Hydro-jet main line + camera inspection",
+    lines: [
+      { id: "ql3", description: "Hydro-jetting main line", quantity: 1, rate: 1350 },
+      { id: "ql4", description: "Camera inspection", quantity: 1, rate: 500 },
+    ],
+    amount: 1850, status: "Sent", notes: "Addresses recurring backups in prep area.", validUntil: dateOnly(14),
+  },
+  {
+    id: "qt3", customerId: "c1", locationId: "l2", number: "QT-2026-1003",
+    title: "Restroom fixture upgrade — RaceTrac #212",
+    lines: [
+      { id: "ql5", description: "Low-flow flush valves (4)", quantity: 4, rate: 185 },
+      { id: "ql6", description: "Install labor (3 hrs)", quantity: 3, rate: 145 },
+    ],
+    amount: 1175, status: "Approved", notes: "Approved by facilities.", validUntil: dateOnly(-2),
+    decidedAt: ts(-4), decidedByName: "Bill Turner", decisionNote: "Approved — proceed.",
+  },
+];
+
+type SeedInvoice = Omit<InsertInvoice, "tenantId">;
+const SEED_INVOICES: SeedInvoice[] = [
+  {
+    id: "inv1", customerId: "c1", workOrderId: "wo8", number: "INV-2026-2001",
+    lines: [{ id: "il1", description: "Annual backflow certification test — labor 1.25 hrs", quantity: 1.25, rate: 145 }],
+    amount: 181.25, amountPaid: 181.25, status: "Paid",
+    issueDate: dateOnly(-8), dueDate: dateOnly(22), paidDate: dateOnly(-3),
+  },
+  {
+    id: "inv2", customerId: "c1", number: "INV-2026-2002",
+    lines: [{ id: "il2", description: "Emergency water line repair — labor + materials", quantity: 1, rate: 750 }],
+    amount: 750, amountPaid: 0, status: "Past Due",
+    issueDate: dateOnly(-40), dueDate: dateOnly(-10),
+  },
+  {
+    id: "inv3", customerId: "c3", workOrderId: "wo7", number: "INV-2026-2003",
+    lines: [
+      { id: "il3", description: "Grease trap service — labor 2.5 hrs", quantity: 2.5, rate: 175 },
+      { id: "il4", description: "Enzyme treatment x2", quantity: 2, rate: 35 },
+    ],
+    amount: 507.5, amountPaid: 0, status: "Invoiced",
+    issueDate: dateOnly(-1), dueDate: dateOnly(29),
+  },
+];
+
+type SeedPayment = Omit<InsertPayment, "tenantId">;
+const SEED_PAYMENTS: SeedPayment[] = [
+  {
+    id: "pay1", invoiceId: "inv1", customerId: "c1", date: dateOnly(-3), amount: 181.25,
+    method: "Check", type: "Payment", recordedByUserId: "u8", recordedByName: "Elena Rodriguez",
+    note: "Check #40218 — RaceTrac AP.",
+  },
+];
+
+type SeedContract = Omit<InsertServiceContract, "tenantId">;
+const SEED_CONTRACTS: SeedContract[] = [
+  {
+    id: "sc1", customerId: "c1", locationId: "l1", name: "RaceTrac #145 Preventive Maintenance",
+    description: "Monthly plumbing PM + quarterly backflow check.",
+    laborRate: 135, afterHoursRate: 195, value: 4800,
+    includedServices: ["Monthly plumbing inspection", "Drain treatment", "Quarterly backflow check"],
+    coveredEquipmentIds: ["eq4"], startDate: dateOnly(-180), renewalDate: dateOnly(25), status: "Active",
+    notes: "Auto-generates monthly maintenance work orders.",
+  },
+  {
+    id: "sc2", customerId: "c6", locationId: "l8", name: "Publix Refrigeration Care Plan",
+    description: "Quarterly refrigeration PM for deli cases.",
+    laborRate: 130, afterHoursRate: 190, value: 6200,
+    includedServices: ["Quarterly refrigeration PM", "Coil cleaning", "Priority dispatch"],
+    coveredEquipmentIds: ["eq1"], startDate: dateOnly(-90), renewalDate: dateOnly(120), status: "Active",
+  },
+];
+
+type SeedRecurrence = Omit<InsertRecurrenceSchedule, "tenantId">;
+const SEED_RECURRENCE: SeedRecurrence[] = [
+  {
+    id: "rs1", contractId: "sc1", customerId: "c1", locationId: "l1",
+    title: "Monthly Plumbing PM — RaceTrac #145", description: "Inspect fixtures, treat drains, log findings.",
+    workOrderType: "Maintenance", priority: "Medium", frequency: "Monthly", interval: 1,
+    weekdays: [], monthDays: [1], blackoutDates: [], timeWindow: "08:00 AM – 12:00 PM",
+    assignedTechnicianId: "u4", startDate: dateOnly(-180), occurrenceLimit: null,
+    nextRunDate: dateOnly(3), status: "Active",
+  },
+  {
+    id: "rs2", contractId: "sc2", customerId: "c6", locationId: "l8",
+    title: "Quarterly Refrigeration PM — Publix #1105", description: "Coil cleaning + compressor check.",
+    workOrderType: "Maintenance", priority: "High", frequency: "Quarterly", interval: 1,
+    weekdays: [], monthDays: [15], blackoutDates: [], timeWindow: "10:00 PM – 2:00 AM",
+    assignedTechnicianId: "u5", startDate: dateOnly(-90), occurrenceLimit: null,
+    nextRunDate: dateOnly(10), status: "Active",
+  },
+];
+
 async function seed(): Promise<void> {
   await db
     .insert(tenantsTable)
@@ -289,6 +404,41 @@ async function seed(): Promise<void> {
       .onConflictDoNothing();
   }
 
+  for (const q of SEED_QUOTES) {
+    await db
+      .insert(quotesTable)
+      .values({ ...q, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
+  for (const inv of SEED_INVOICES) {
+    await db
+      .insert(invoicesTable)
+      .values({ ...inv, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
+  for (const pay of SEED_PAYMENTS) {
+    await db
+      .insert(paymentsTable)
+      .values({ ...pay, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
+  for (const sc of SEED_CONTRACTS) {
+    await db
+      .insert(serviceContractsTable)
+      .values({ ...sc, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
+  for (const rs of SEED_RECURRENCE) {
+    await db
+      .insert(recurrenceSchedulesTable)
+      .values({ ...rs, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
   logger.info(
     {
       tenant: TENANT_ID,
@@ -301,6 +451,11 @@ async function seed(): Promise<void> {
       closeouts: SEED_CLOSEOUTS.length,
       equipment: SEED_EQUIPMENT.length,
       documents: SEED_DOCUMENTS.length,
+      quotes: SEED_QUOTES.length,
+      invoices: SEED_INVOICES.length,
+      payments: SEED_PAYMENTS.length,
+      contracts: SEED_CONTRACTS.length,
+      recurrence: SEED_RECURRENCE.length,
     },
     "Seed complete (demo password set from DEMO_PASSWORD env or dev default; value not logged)",
   );

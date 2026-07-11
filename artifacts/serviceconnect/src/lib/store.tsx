@@ -33,29 +33,34 @@ import {
   useTechnicianCheckIn, useTechnicianCheckOut,
   useListCloseouts, useUpdateCloseout, useApproveCloseout, useSendBackCloseout,
   useListAuditEvents,
+  useListInvoices, useCreateInvoice,
+  useListPayments, useRecordPayment,
+  useListQuotes, useCreateQuote,
   getListCustomersQueryKey, getListLocationsQueryKey, getListInventoryQueryKey,
   getListInventoryTransactionsQueryKey, getListPurchaseRequestsQueryKey,
   getListEquipmentQueryKey, getListDocumentsQueryKey,
   getListIntakeQueryKey, getListWorkOrdersQueryKey, getListCloseoutsQueryKey,
   getListEmployeesQueryKey, getListAuditEventsQueryKey,
+  getListInvoicesQueryKey, getListPaymentsQueryKey, getListQuotesQueryKey,
   type CustomerInput, type LocationInput, type WorkOrderInput,
   type WorkOrderUpdate, type CloseoutUpdate,
   type TransferInput, type ReservationInput, type AdjustmentInput,
   type CycleCountInput, type PurchaseRequestInput, type EquipmentInput,
+  type InvoiceCreateInput, type PaymentRecordInput, type PaymentRecordInputType,
+  type QuoteInput, type Quote,
 } from '@workspace/api-client-react';
 
 // ---------------------------------------------------------------------------
-// Local-only slice. Billing (invoices/payments) and AI recommendations remain
-// client-side this sprint; the operational spine (customers/locations/work
-// orders/intake/inventory + ledger/purchase requests/equipment/documents/
-// closeouts/audit) is served from the backend via react-query below.
+// Local-only slice. Only RoseOS AI recommendations remain client-side this
+// sprint; the operational spine (customers/locations/work orders/intake/
+// inventory + ledger/purchase requests/equipment/documents/closeouts/audit +
+// quotes/invoices/payments) is served from the backend via react-query below.
 // ---------------------------------------------------------------------------
 interface LocalState {
-  invoices: Invoice[];
   recommendations: AIRecommendation[];
   dismissedRecIds: string[];
-  // Ephemeral, client-generated audit for local-only actions (portal sync,
-  // payments, etc.). Backend mutations write their own authoritative audit.
+  // Ephemeral, client-generated audit for local-only actions (portal sync).
+  // Backend mutations write their own authoritative audit.
   localAudit: AuditEvent[];
 }
 
@@ -68,6 +73,8 @@ interface AppContextType {
   locations: Location[];
   workOrders: WorkOrder[];
   invoices: Invoice[];
+  payments: Payment[];
+  quotes: Quote[];
   recommendations: AIRecommendation[];
   intake: IntakeItem[];
   inventory: InventoryItem[];
@@ -80,8 +87,8 @@ interface AppContextType {
   setCurrentUserId: (id: string) => void;
   updateWorkOrder: (id: string, data: Partial<WorkOrder>) => void;
   addWorkOrder: (data: WorkOrder) => Promise<WorkOrder | null>;
-  updateInvoice: (id: string, data: Partial<Invoice>) => void;
-  addInvoice: (data: Invoice) => void;
+  createInvoice: (input: InvoiceCreateInput) => Promise<boolean>;
+  createQuote: (input: QuoteInput) => Promise<boolean>;
   dismissRecommendation: (id: string) => void;
   dismissIntake: (id: string) => void;
   transferInventory: (input: TransferInput) => Promise<boolean>;
@@ -106,7 +113,7 @@ interface AppContextType {
   addCustomer: (data: Customer) => Promise<Customer | null>;
   addLocation: (data: Location) => void;
   addEquipment: (data: Equipment) => void;
-  recordPayment: (invoiceId: string, amount: number, type: PaymentType, method?: string) => void;
+  recordPayment: (invoiceId: string, amount: number, type: PaymentType, method?: string) => Promise<boolean>;
   sendPortalUpdate: (workOrderId: string, status: PortalSyncStatus) => void;
 }
 
@@ -135,7 +142,6 @@ function computeDocStatus(
 
 function freshLocal(): LocalState {
   return {
-    invoices: initialData.mockInvoices,
     recommendations: initialData.mockRecommendations,
     dismissedRecIds: [],
     localAudit: [],
@@ -178,6 +184,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const kWorkOrders = getListWorkOrdersQueryKey();
   const kCloseouts = getListCloseoutsQueryKey();
   const kAudit = getListAuditEventsQueryKey();
+  const kInvoices = getListInvoicesQueryKey();
+  const kPayments = getListPaymentsQueryKey();
+  const kQuotes = getListQuotesQueryKey();
 
   const invalidate = useCallback(
     (keys: readonly (readonly unknown[])[]) => {
@@ -198,6 +207,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const workOrdersQuery = useListWorkOrders({ query: { enabled: authed, queryKey: kWorkOrders } });
   const closeoutsQuery = useListCloseouts({ query: { enabled: authed, queryKey: kCloseouts } });
   const auditQuery = useListAuditEvents(undefined, { query: { enabled: authed, queryKey: kAudit } });
+  const invoicesQuery = useListInvoices({ query: { enabled: authed, queryKey: kInvoices } });
+  const paymentsQuery = useListPayments({ query: { enabled: authed, queryKey: kPayments } });
+  const quotesQuery = useListQuotes({ query: { enabled: authed, queryKey: kQuotes } });
 
   // The generated schema types widen enums to `string` and use `null` for
   // optionals; they are structurally the frontend shapes at runtime, so we
@@ -214,6 +226,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const intake = (intakeQuery.data ?? []) as unknown as IntakeItem[];
   const workOrders = (workOrdersQuery.data ?? []) as unknown as WorkOrder[];
   const closeouts = (closeoutsQuery.data ?? []) as unknown as Closeout[];
+  const invoices = (invoicesQuery.data ?? []) as unknown as Invoice[];
+  const payments = (paymentsQuery.data ?? []) as unknown as Payment[];
+  const quotes = (quotesQuery.data ?? []) as unknown as Quote[];
 
   const employees = (employeesQuery.data ?? []).map(mapAuthUserToUser);
   const users = employees.length ? employees : [currentUser];
@@ -332,13 +347,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     mutation: { onSuccess: () => invalidate([kEquipment, kAudit]) },
   });
 
+  // Billing lives on the backend now, gated behind billing approval. Creating an
+  // invoice from a "Ready for Invoice" work order flips its billing status, so
+  // the work order list is invalidated alongside invoices. Recording a payment
+  // updates the invoice's paid balance/status and appends to the payment log.
+  const createInvoiceM = useCreateInvoice({
+    mutation: { onSuccess: () => invalidate([kInvoices, kWorkOrders, kAudit]) },
+  });
+  const recordPaymentM = useRecordPayment({
+    mutation: { onSuccess: () => invalidate([kInvoices, kPayments, kAudit]) },
+  });
+  const createQuoteM = useCreateQuote({
+    mutation: { onSuccess: () => invalidate([kQuotes, kAudit]) },
+  });
+
   const value: AppContextType = {
     currentUser,
     users,
     customers,
     locations,
     workOrders,
-    invoices: local.invoices,
+    invoices,
+    payments,
+    quotes,
     recommendations,
     intake,
     inventory,
@@ -396,27 +427,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     },
 
-    // Billing stays local this sprint.
-    updateInvoice: (id, data) =>
-      setLocal((s) => {
-        const inv = s.invoices.find((i) => i.id === id);
-        const events: AuditInput[] =
-          data.status && inv && data.status !== inv.status
-            ? [{ action: 'Updated', entityType: 'Invoice', entityId: id, summary: `${inv?.number ?? id}: ${data.status}` }]
-            : [];
-        return {
-          ...s,
-          invoices: s.invoices.map((i) => (i.id === id ? { ...i, ...data } : i)),
-          localAudit: events.length ? [...events.map(buildEvent), ...s.localAudit] : s.localAudit,
-        };
-      }),
+    // Billing is backend-owned and gated behind billing approval. Invoices are
+    // generated from a "Ready for Invoice" work order; the backend builds the
+    // lines/amount from approved labor + materials and records its own audit.
+    createInvoice: async (input) => {
+      try {
+        await createInvoiceM.mutateAsync({ data: input });
+        return true;
+      } catch {
+        return false;
+      }
+    },
 
-    addInvoice: (data) =>
-      setLocal((s) => ({
-        ...s,
-        invoices: [data, ...s.invoices],
-        localAudit: [buildEvent({ action: 'Created', entityType: 'Invoice', entityId: data.id, summary: `${data.number} drafted ($${data.amount.toLocaleString()})` }), ...s.localAudit],
-      })),
+    createQuote: async (input) => {
+      try {
+        await createQuoteM.mutateAsync({ data: input });
+        return true;
+      } catch {
+        return false;
+      }
+    },
 
     dismissRecommendation: (id) =>
       setLocal((s) => ({
@@ -589,44 +619,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
       createEquipmentM.mutate({ data: input });
     },
 
-    recordPayment: (invoiceId, amount, type, method = 'Manual') =>
-      setLocal((s) => {
-        const inv = s.invoices.find((i) => i.id === invoiceId);
-        if (!inv) return s;
-        const payment: Payment = {
-          id: genId('pay'),
-          invoiceId,
-          date: new Date().toISOString(),
-          amount,
-          method,
-          type,
-          recordedBy: currentUser.name,
-        };
-        const priorPaid = inv.amountPaid ?? 0;
-        const signed = type === 'Refund' ? -Math.abs(amount) : Math.abs(amount);
-        const amountPaid = Math.max(0, Math.min(inv.amount, priorPaid + signed));
-        const fullyPaid = amountPaid >= inv.amount;
-        const nextStatus: BillingStatus = fullyPaid
-          ? 'Paid'
-          : inv.status === 'Paid'
-            ? 'Invoiced'
-            : inv.status;
-        return {
-          ...s,
-          invoices: s.invoices.map((i) =>
-            i.id === invoiceId
-              ? {
-                  ...i,
-                  payments: [...(i.payments ?? []), payment],
-                  amountPaid,
-                  status: nextStatus,
-                  paidDate: fullyPaid ? new Date().toISOString() : undefined,
-                }
-              : i,
-          ),
-          localAudit: [buildEvent({ action: type, entityType: 'Payment', entityId: invoiceId, summary: `${inv.number}: ${type} $${amount.toLocaleString()} (${method})` }), ...s.localAudit],
-        };
-      }),
+    // Payments are recorded on the backend; it recomputes the invoice's paid
+    // balance/status (Paid when settled) and writes its own audit event. No
+    // gateway/ledger — state only.
+    recordPayment: async (invoiceId, amount, type, method = 'Manual') => {
+      const input: PaymentRecordInput = {
+        invoiceId,
+        amount,
+        method,
+        type: type as PaymentRecordInputType,
+      };
+      try {
+        await recordPaymentM.mutateAsync({ data: input });
+        return true;
+      } catch {
+        return false;
+      }
+    },
 
     sendPortalUpdate: (workOrderId, status) => {
       const wo = workOrders.find((w) => w.id === workOrderId);
@@ -640,7 +649,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     resetData: () => {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       setLocal(freshLocal());
-      invalidate([kCustomers, kLocations, kEmployees, kInventory, kInventoryTx, kPurchaseRequests, kEquipment, kDocuments, kIntake, kWorkOrders, kCloseouts, kAudit]);
+      invalidate([kCustomers, kLocations, kEmployees, kInventory, kInventoryTx, kPurchaseRequests, kEquipment, kDocuments, kIntake, kWorkOrders, kCloseouts, kAudit, kInvoices, kPayments, kQuotes]);
     },
   };
 

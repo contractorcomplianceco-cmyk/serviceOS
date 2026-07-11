@@ -54,6 +54,7 @@ export function mapAuthUserToUser(a: AuthUser): User {
 
 // Where a role lands right after authenticating.
 export function roleHome(role: Role): string {
+  if (role === "Customer Portal User") return "/portal";
   return isFieldRole(role) ? "/tech" : "/today";
 }
 

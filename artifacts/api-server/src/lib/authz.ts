@@ -19,12 +19,13 @@ export type NavKey =
   | "reports"
   | "intelligence"
   | "settings"
+  | "contracts"
   | "portal";
 
 const ALL: NavKey[] = [
   "today", "intake", "work-orders", "dispatch", "technicians", "customers",
   "locations", "inventory", "equipment", "billing", "accounting", "documents",
-  "reports", "intelligence", "settings",
+  "reports", "intelligence", "contracts", "settings",
 ];
 
 // Canonical, backend-enforced role → nav access map (12 roles).
@@ -33,8 +34,8 @@ const ALL: NavKey[] = [
 // maps identical so client nav visibility never diverges from server authz.
 export const ROLE_NAV: Record<Role, NavKey[]> = {
   Administrator: ALL,
-  "Service Manager": ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "billing", "documents", "reports", "intelligence"],
-  Scheduler: ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "documents", "intelligence"],
+  "Service Manager": ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "billing", "documents", "reports", "intelligence", "contracts"],
+  Scheduler: ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "documents", "intelligence", "contracts"],
   Supervisor: ["today", "work-orders", "dispatch", "technicians", "customers", "locations", "equipment", "inventory", "documents", "reports", "intelligence"],
   "Lead Technician": ["today", "work-orders", "dispatch", "technicians", "customers", "locations", "equipment", "inventory"],
   Technician: ["today", "work-orders", "customers", "locations", "equipment", "inventory"],
@@ -48,6 +49,58 @@ export const ROLE_NAV: Record<Role, NavKey[]> = {
 
 export function isValidRole(value: string): value is Role {
   return (ROLES as readonly string[]).includes(value);
+}
+
+export function isPortalUser(role: Role): boolean {
+  return role === "Customer Portal User";
+}
+
+// Roles that may create quotes and invoices. Invoice creation is a human
+// billing decision — nothing auto-invoices (HITL guardrail).
+const BILLING_MANAGE_ROLES: Role[] = [
+  "Administrator",
+  "Service Manager",
+  "Billing",
+];
+export function canManageBilling(role: Role): boolean {
+  return BILLING_MANAGE_ROLES.includes(role);
+}
+
+// Quotes can also be authored by Sales.
+const QUOTE_MANAGE_ROLES: Role[] = [
+  "Administrator",
+  "Service Manager",
+  "Billing",
+  "Sales",
+];
+export function canManageQuotes(role: Role): boolean {
+  return QUOTE_MANAGE_ROLES.includes(role);
+}
+
+// Recording a payment updates AR state (no gateway, no ledger).
+const PAYMENT_RECORD_ROLES: Role[] = [
+  "Administrator",
+  "Service Manager",
+  "Billing",
+  "Bookkeeper",
+];
+export function canRecordPayment(role: Role): boolean {
+  return PAYMENT_RECORD_ROLES.includes(role);
+}
+
+// Roles that may create/edit service contracts and recurrence schedules.
+const CONTRACT_MANAGE_ROLES: Role[] = [
+  "Administrator",
+  "Service Manager",
+  "Scheduler",
+];
+export function canManageContracts(role: Role): boolean {
+  return CONTRACT_MANAGE_ROLES.includes(role);
+}
+
+// Only privileged roles may trigger the recurrence generation worker manually.
+export function canRunRecurrence(role: Role): boolean {
+  return role === "Administrator" || role === "Service Manager";
 }
 
 export function hasNavAccess(role: Role, key: NavKey): boolean {

@@ -13,6 +13,13 @@ import type {
   DocumentVersion,
   DocumentReminder,
   FileRecord,
+  Quote,
+  Invoice,
+  Payment,
+  ServiceContract,
+  ContractReminder,
+  RecurrenceSchedule,
+  RecurrenceOccurrence,
 } from "@workspace/db";
 import type { DerivedBalances } from "./inventory-ledger";
 
@@ -343,5 +350,151 @@ export function toCloseout(c: Closeout) {
     reviewedBy: c.reviewedBy ?? null,
     reviewedAt: iso(c.reviewedAt),
     reviewNote: c.reviewNote ?? null,
+  };
+}
+
+/** Map a DB quote row to the API Quote shape. */
+export function toQuote(q: Quote) {
+  return {
+    id: q.id,
+    tenantId: q.tenantId,
+    customerId: q.customerId,
+    locationId: q.locationId ?? null,
+    workOrderId: q.workOrderId ?? null,
+    number: q.number,
+    title: q.title,
+    lines: q.lines,
+    amount: q.amount,
+    status: q.status,
+    notes: q.notes ?? null,
+    validUntil: q.validUntil ?? null,
+    decidedAt: iso(q.decidedAt),
+    decidedByName: q.decidedByName ?? null,
+    decisionNote: q.decisionNote ?? null,
+    createdAt: q.createdAt.toISOString(),
+    updatedAt: q.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB invoice row (plus its payments) to the API Invoice shape. */
+export function toInvoice(i: Invoice, payments: Payment[] = []) {
+  return {
+    id: i.id,
+    tenantId: i.tenantId,
+    customerId: i.customerId,
+    workOrderId: i.workOrderId ?? null,
+    number: i.number,
+    lines: i.lines,
+    amount: i.amount,
+    amountPaid: i.amountPaid,
+    status: i.status,
+    issueDate: i.issueDate ?? null,
+    dueDate: i.dueDate,
+    paidDate: i.paidDate ?? null,
+    notes: i.notes ?? null,
+    payments: payments.map(toPayment),
+    createdAt: i.createdAt.toISOString(),
+    updatedAt: i.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB payment row to the API Payment shape. */
+export function toPayment(p: Payment) {
+  return {
+    id: p.id,
+    tenantId: p.tenantId,
+    invoiceId: p.invoiceId,
+    customerId: p.customerId,
+    date: p.date,
+    amount: p.amount,
+    method: p.method,
+    type: p.type,
+    recordedByUserId: p.recordedByUserId ?? null,
+    recordedByName: p.recordedByName,
+    note: p.note ?? null,
+    createdAt: p.createdAt.toISOString(),
+  };
+}
+
+/** Map a DB service contract row to the API ServiceContract shape. */
+export function toServiceContract(c: ServiceContract) {
+  return {
+    id: c.id,
+    tenantId: c.tenantId,
+    customerId: c.customerId,
+    locationId: c.locationId ?? null,
+    name: c.name,
+    description: c.description ?? null,
+    laborRate: c.laborRate ?? null,
+    afterHoursRate: c.afterHoursRate ?? null,
+    value: c.value ?? null,
+    includedServices: c.includedServices,
+    coveredEquipmentIds: c.coveredEquipmentIds,
+    startDate: c.startDate,
+    renewalDate: c.renewalDate,
+    status: c.status,
+    notes: c.notes ?? null,
+    createdAt: c.createdAt.toISOString(),
+    updatedAt: c.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB contract reminder row to the API ContractReminder shape. */
+export function toContractReminder(r: ContractReminder) {
+  return {
+    id: r.id,
+    tenantId: r.tenantId,
+    contractId: r.contractId,
+    customerId: r.customerId,
+    type: r.type,
+    dueDate: r.dueDate,
+    message: r.message,
+    status: r.status,
+    createdAt: r.createdAt.toISOString(),
+  };
+}
+
+/** Map a DB recurrence schedule row to the API RecurrenceSchedule shape. */
+export function toRecurrenceSchedule(s: RecurrenceSchedule) {
+  return {
+    id: s.id,
+    tenantId: s.tenantId,
+    contractId: s.contractId ?? null,
+    customerId: s.customerId,
+    locationId: s.locationId,
+    title: s.title,
+    description: s.description ?? null,
+    workOrderType: s.workOrderType,
+    priority: s.priority,
+    frequency: s.frequency,
+    interval: s.interval,
+    weekdays: s.weekdays,
+    monthDays: s.monthDays,
+    blackoutDates: s.blackoutDates,
+    timeWindow: s.timeWindow ?? null,
+    assignedTechnicianId: s.assignedTechnicianId ?? null,
+    startDate: s.startDate,
+    endDate: s.endDate ?? null,
+    occurrenceLimit: s.occurrenceLimit ?? null,
+    occurrencesGenerated: s.occurrencesGenerated,
+    lastGeneratedDate: s.lastGeneratedDate ?? null,
+    nextRunDate: s.nextRunDate ?? null,
+    status: s.status,
+    createdAt: s.createdAt.toISOString(),
+    updatedAt: s.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB recurrence occurrence row to the API RecurrenceOccurrence shape. */
+export function toRecurrenceOccurrence(o: RecurrenceOccurrence) {
+  return {
+    id: o.id,
+    tenantId: o.tenantId,
+    scheduleId: o.scheduleId,
+    sequence: o.sequence,
+    scheduledDate: o.scheduledDate,
+    status: o.status,
+    workOrderId: o.workOrderId ?? null,
+    createdAt: o.createdAt.toISOString(),
   };
 }

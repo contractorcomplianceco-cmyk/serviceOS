@@ -5,13 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { billingClass, money, shortDate } from "@/lib/ui";
-import { AlertTriangle, CheckCircle2, ArrowRight, FileText, Send, Link as LinkIcon, DollarSign, Clock, Download, Building2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ArrowRight, FileText, Link as LinkIcon, DollarSign, Clock, Download, Building2 } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Invoice } from "@/lib/types";
 
 export default function Billing() {
-  const { workOrders, invoices, customers, updateWorkOrder, addInvoice, updateInvoice } = useAppStore();
+  const { workOrders, invoices, customers, createInvoice: generateInvoice } = useAppStore();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -22,33 +22,19 @@ export default function Billing() {
   const pastDue = invoices.filter((i) => i.status === "Past Due");
   const recentInvoices = invoices.filter((i) => i.status === "Invoiced" || i.status === "Ready for Invoice" || i.status === "Paid");
 
-  const createInvoice = (woId: string) => {
+  const createInvoice = async (woId: string) => {
     const wo = workOrders.find((w) => w.id === woId);
     if (!wo) return;
-    const laborLines = wo.labor.map((l) => ({ id: `l-${l.id}`, description: `Labor (${l.type}) ${l.hours}hrs`, quantity: l.hours, rate: l.rate }));
-    const matLines = wo.materials.map((m) => ({ id: `m-${m.id}`, description: m.name, quantity: m.quantity, rate: m.billablePrice }));
-    const lines = [...laborLines, ...matLines];
-    const amount = lines.reduce((s, l) => s + l.quantity * l.rate, 0);
-    const newInvoice: Invoice = { 
-      id: `inv-${Date.now()}`, 
-      number: `INV-${5000 + invoices.length + 1}`, 
-      workOrderId: wo.id, 
-      customerId: wo.customerId, 
-      lines, 
-      amount, 
-      status: "Ready for Invoice", 
-      dueDate: new Date(Date.now() + 30 * 86400000).toISOString(), 
-      createdAt: new Date().toISOString() 
-    };
-    addInvoice(newInvoice);
-    updateWorkOrder(wo.id, { status: "Invoiced", billingStatus: "Invoiced" });
-    toast({ title: "Draft invoice created", description: `${wo.number} → invoice drafted for ${money(amount)}. Review before sending.` });
-  };
-
-  const handleSendInvoice = (inv: Invoice) => {
-    updateInvoice(inv.id, { status: "Invoiced", issueDate: new Date().toISOString() });
-    setSelectedInvoice(null);
-    toast({ title: "Invoice Sent", description: `Invoice ${inv.number} has been sent to the customer.` });
+    if (wo.billingStatus !== "Ready for Invoice") {
+      toast({ title: "Billing approval required", description: `${wo.number} must be approved (Ready for Invoice) before it can be invoiced.`, variant: "destructive" });
+      return;
+    }
+    const ok = await generateInvoice({ workOrderId: wo.id });
+    if (ok) {
+      toast({ title: "Invoice generated", description: `${wo.number} → invoice created from approved labor & materials.` });
+    } else {
+      toast({ title: "Could not generate invoice", description: `${wo.number} could not be invoiced. Check billing approval and try again.`, variant: "destructive" });
+    }
   };
 
   return (
@@ -280,9 +266,6 @@ export default function Billing() {
                   <div className="flex gap-2">
                     <Button variant="outline" className="text-sc-2 hover:text-white border-panel hover:bg-white/[0.05]">
                       <LinkIcon className="w-4 h-4 mr-2" /> Copy Link
-                    </Button>
-                    <Button onClick={() => handleSendInvoice(selectedInvoice)} disabled={selectedInvoice.status !== "Ready for Invoice"} className="text-white blue-glow-soft" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}}>
-                      <Send className="w-4 h-4 mr-2" /> Send Invoice
                     </Button>
                   </div>
                 </DialogFooter>

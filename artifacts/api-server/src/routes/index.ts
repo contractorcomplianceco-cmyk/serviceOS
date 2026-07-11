@@ -16,6 +16,12 @@ import storageRouter from "./storage";
 import intakeRouter from "./intake";
 import workOrdersRouter from "./work-orders";
 import closeoutsRouter from "./closeouts";
+import quotesRouter from "./quotes";
+import invoicesRouter from "./invoices";
+import paymentsRouter from "./payments";
+import contractsRouter from "./contracts";
+import recurrenceRouter from "./recurrence";
+import portalRouter from "./portal";
 
 const router: IRouter = Router();
 
@@ -36,5 +42,11 @@ router.use(storageRouter);
 router.use(intakeRouter);
 router.use(workOrdersRouter);
 router.use(closeoutsRouter);
+router.use(quotesRouter);
+router.use(invoicesRouter);
+router.use(paymentsRouter);
+router.use(contractsRouter);
+router.use(recurrenceRouter);
+router.use(portalRouter);
 
 export default router;

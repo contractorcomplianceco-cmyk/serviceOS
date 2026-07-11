@@ -16,13 +16,15 @@ import {
   Sparkles,
   Settings,
   ClipboardCheck,
+  FileSignature,
+  Repeat,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { canAccess, canApproveCloseouts, NavKey } from "@/lib/permissions";
 import logoIcon from "@/assets/logo-icon.png";
 
-const navItems: { name: string; path: string; key: NavKey; icon: typeof LayoutDashboard }[] = [
+const navItems: { name: string; path: string; key: NavKey; icon: typeof LayoutDashboard; testId?: string }[] = [
   { name: "Today", path: "/today", key: "today", icon: LayoutDashboard },
   { name: "Intake Queue", path: "/intake", key: "intake", icon: Inbox },
   { name: "Work Orders", path: "/work-orders", key: "work-orders", icon: ClipboardList },
@@ -32,6 +34,8 @@ const navItems: { name: string; path: string; key: NavKey; icon: typeof LayoutDa
   { name: "Locations", path: "/locations", key: "locations", icon: MapPin },
   { name: "Inventory", path: "/inventory", key: "inventory", icon: Package },
   { name: "Equipment", path: "/equipment", key: "equipment", icon: HardHat },
+  { name: "Contracts", path: "/contracts", key: "contracts", icon: FileSignature, testId: "contracts" },
+  { name: "Recurring", path: "/recurrence", key: "contracts", icon: Repeat, testId: "recurrence" },
   { name: "Billing", path: "/billing", key: "billing", icon: CreditCard },
   { name: "Accounting", path: "/accounting", key: "accounting", icon: Calculator },
   { name: "Documents", path: "/documents", key: "documents", icon: FileText },
@@ -43,7 +47,7 @@ const navItems: { name: string; path: string; key: NavKey; icon: typeof LayoutDa
 export function Sidebar() {
   const [location] = useLocation();
   const { currentUser, intake } = useAppStore();
-  const visible: { name: string; path: string; key: string; icon: typeof LayoutDashboard }[] =
+  const visible: { name: string; path: string; key: string; icon: typeof LayoutDashboard; testId?: string }[] =
     navItems.filter((item) => canAccess(currentUser.role, item.key));
   if (canApproveCloseouts(currentUser.role)) {
     visible.push({ name: "Supervisor Review", path: "/review", key: "review", icon: ClipboardCheck });
@@ -79,7 +83,7 @@ export function Sidebar() {
           return (
             <Link key={item.path} href={item.path}>
               <div
-                data-testid={`nav-${item.key}`}
+                data-testid={`nav-${item.testId ?? item.key}`}
                 className={cn(
                   "relative flex items-center gap-3 h-[44px] px-3.5 rounded-lg text-sm font-medium transition-all cursor-pointer group",
                   isActive

@@ -2,7 +2,13 @@ import type { NextFunction, Request, Response } from "express";
 import type { User } from "@workspace/db";
 import { getUserForToken } from "../lib/auth/session";
 import { SESSION_COOKIE_NAME } from "../lib/auth/config";
-import { hasNavAccess, isValidRole, type NavKey, type Role } from "../lib/authz";
+import {
+  hasNavAccess,
+  isPortalUser,
+  isValidRole,
+  type NavKey,
+  type Role,
+} from "../lib/authz";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -54,6 +60,54 @@ export function requireRoles(...roles: Role[]) {
     }
     next();
   };
+}
+
+/**
+ * Require the authenticated user to be a Customer Portal User. Portal routes are
+ * tenant- AND customer-scoped: the handler must further restrict every query to
+ * `req.user.customerId`. Non-portal (staff) users are rejected so staff can only
+ * reach staff routes and portal users can only reach portal routes.
+ */
+export function requirePortalUser(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const user = req.user;
+  if (!user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+  if (!isValidRole(user.role) || !isPortalUser(user.role)) {
+    res.status(403).json({ error: "Portal access only" });
+    return;
+  }
+  if (!user.customerId) {
+    res.status(403).json({ error: "Portal user is not linked to a customer" });
+    return;
+  }
+  next();
+}
+
+/**
+ * Require the authenticated user to be a staff member (not a Customer Portal
+ * User). Keeps portal users out of internal staff routes.
+ */
+export function requireStaff(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const user = req.user;
+  if (!user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+  if (isValidRole(user.role) && isPortalUser(user.role)) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+  next();
 }
 
 /**
