@@ -18,12 +18,15 @@ Supporting tables: `sessions`, `login_attempts`, `password_reset_tokens`,
 ## Dev login (demo user switching)
 
 `POST /api/auth/dev-login` authenticates **any active user by id** and is the
-mechanism behind the header/Settings user switcher in the demo. It is gated to
-non-production: it is only wired when `NODE_ENV !== "production"`.
+mechanism behind the header/Settings user switcher in the demo. It (and
+`GET /api/auth/dev-users`) is hard-gated to non-production via a **runtime** check
+(`isProductionRuntime()` reads `NODE_ENV` on every request): when
+`NODE_ENV=production` both return `403` and never set a session cookie.
 
-> Production hardening required: dev-login must be disabled and replaced with a
-> real credential/SSO flow before any production deployment. See
-> `PHASE_2_PRODUCTION_READINESS.md`.
+Real authentication is `POST /api/auth/login` (email + password, argon2 hashing
+with failed-attempt throttling/lockout), which issues the **same** cookie session
+as dev-login. That is the production login path; MFA/SSO remain future
+enhancements. See `PHASE_2_PRODUCTION_READINESS.md`.
 
 ## Test coverage
 
@@ -32,6 +35,9 @@ non-production: it is only wired when `NODE_ENV !== "production"`.
 - Unauthenticated requests to protected routes return `401`.
 - An authenticated user resolves via `/api/auth/me`, and logout clears the session
   (subsequent `/api/auth/me` → `401`).
+- The `dev-login` backdoor is disabled in production: with `NODE_ENV=production`,
+  `POST /api/auth/dev-login` and `GET /api/auth/dev-users` return `403` and set no
+  cookie, while both remain usable outside production.
 
 The test helper (`src/__tests__/helpers.ts`) logs in via `dev-login` and reuses the
 returned session cookie through a Supertest agent, exactly as the browser would.

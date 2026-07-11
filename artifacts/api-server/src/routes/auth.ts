@@ -39,6 +39,7 @@ import {
   SESSION_COOKIE_NAME,
   RESET_TTL_MS,
   isProduction,
+  isProductionRuntime,
 } from "../lib/auth/config";
 import { writeAudit } from "../lib/audit";
 
@@ -335,7 +336,7 @@ router.post("/auth/password-reset/confirm", async (req, res): Promise<void> => {
 // --- Development-only role switcher -----------------------------------------
 
 router.get("/auth/dev-users", async (_req, res): Promise<void> => {
-  if (isProduction) {
+  if (isProductionRuntime()) {
     res.status(403).json({ error: "Disabled in production" });
     return;
   }
@@ -356,7 +357,7 @@ router.get("/auth/dev-users", async (_req, res): Promise<void> => {
 });
 
 router.post("/auth/dev-login", async (req, res): Promise<void> => {
-  if (isProduction) {
+  if (isProductionRuntime()) {
     res.status(403).json({ error: "Disabled in production" });
     return;
   }

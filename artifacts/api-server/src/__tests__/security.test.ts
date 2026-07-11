@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import supertest from "supertest";
+import app from "../app";
 import { loginAs, anon, createSecondTenant, SEED } from "./helpers";
 
 // Security & isolation: authentication, role/nav authorization, portal
@@ -111,6 +113,42 @@ describe("customer portal scoping", () => {
     const admin = await loginAs(SEED.admin);
     const res = await admin.get("/api/portal/me");
     expect(res.status).toBe(403);
+  });
+});
+
+describe("dev-login backdoor lockout", () => {
+  async function withProductionEnv<T>(fn: () => Promise<T>): Promise<T> {
+    const prev = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    try {
+      return await fn();
+    } finally {
+      process.env.NODE_ENV = prev;
+    }
+  }
+
+  it("disables POST /auth/dev-login in production", async () => {
+    await withProductionEnv(async () => {
+      const res = await supertest(app)
+        .post("/api/auth/dev-login")
+        .send({ userId: SEED.admin });
+      expect(res.status).toBe(403);
+      expect(res.headers["set-cookie"]).toBeUndefined();
+    });
+  });
+
+  it("disables GET /auth/dev-users in production", async () => {
+    await withProductionEnv(async () => {
+      const res = await supertest(app).get("/api/auth/dev-users");
+      expect(res.status).toBe(403);
+    });
+  });
+
+  it("still allows dev-login outside production", async () => {
+    const res = await supertest(app)
+      .post("/api/auth/dev-login")
+      .send({ userId: SEED.admin });
+    expect(res.status).toBe(200);
   });
 });
 

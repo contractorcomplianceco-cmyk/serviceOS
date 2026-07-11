@@ -26,7 +26,7 @@ sandbox-ready, what needs credentials, and what is not yet production-ready. It 
 | Audit trail | REAL (app-level) | Written on mutations; not yet tamper-evident/WORM |
 | Data migration (CSV dry-run/import/rollback) | REAL | Dry-run, duplicate/required detection tested |
 | Billing / AR (invoices, partial/credit/refund) | REAL (partial) | `balance = amount − amountPaid` holds; payment→refund round-trip tested; no GL |
-| Authentication (sessions) | SANDBOX | Cookie sessions are real, but **`dev-login` authenticates any user and must be disabled in production** |
+| Authentication (sessions) | REAL | Real credential login (`POST /auth/login`, argon2 + throttling) issues the cookie session; the `dev-login` demo switcher is now hard-disabled when `NODE_ENV=production` (returns 403, no cookie), verified by a test. `SESSION_SECRET` required at startup |
 | Customer portal | SANDBOX | API-scoped and guarded; no external branded self-service experience |
 | GPS smart routing | SIMULATED | Seeded ETA/distance; needs a real geocoding/routing API |
 | ServiceChannel / vendor portals | SIMULATED | State machine only; needs vendor APIs |
@@ -39,11 +39,13 @@ sandbox-ready, what needs credentials, and what is not yet production-ready. It 
 
 ## Must-fix before production
 
-1. **Disable `dev-login`** and replace with real authentication (credentials/SSO,
-   MFA). It is currently the demo user-switcher and would be a critical hole in
-   production.
-2. **Serve over HTTPS** so session cookies are `Secure`; ensure `SESSION_SECRET` is
-   set per environment.
+1. ~~**Disable `dev-login`**~~ **DONE** — `dev-login`/`dev-users` return 403 when
+   `NODE_ENV=production` (runtime check, verified by a test), and real credential
+   login (`POST /auth/login`) issues the same cookie session. MFA/SSO remain future
+   enhancements.
+2. **Serve over HTTPS** so session cookies are `Secure` (the cookie already sets
+   `Secure` in production); ensure `SESSION_SECRET` is set per environment (enforced
+   at startup — the server refuses to boot without it).
 3. **Tenant-isolation review discipline** — isolation is enforced by query filters,
    not Postgres RLS. Every new route must scope by `tenantId`; consider adding RLS
    as defense in depth.
