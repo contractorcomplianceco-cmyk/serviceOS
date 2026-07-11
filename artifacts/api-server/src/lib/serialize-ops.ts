@@ -20,6 +20,11 @@ import type {
   ContractReminder,
   RecurrenceSchedule,
   RecurrenceOccurrence,
+  Notification,
+  NotificationTemplate,
+  NotificationPreference,
+  IntegrationConnection,
+  IntegrationEvent,
 } from "@workspace/db";
 import type { DerivedBalances } from "./inventory-ledger";
 
@@ -496,5 +501,114 @@ export function toRecurrenceOccurrence(o: RecurrenceOccurrence) {
     status: o.status,
     workOrderId: o.workOrderId ?? null,
     createdAt: o.createdAt.toISOString(),
+  };
+}
+
+/** Map a DB notification row to the API Notification shape. */
+export function toNotification(n: Notification) {
+  return {
+    id: n.id,
+    tenantId: n.tenantId,
+    eventType: n.eventType,
+    channel: n.channel,
+    templateId: n.templateId ?? null,
+    recipientType: n.recipientType,
+    recipientUserId: n.recipientUserId ?? null,
+    recipientCustomerId: n.recipientCustomerId ?? null,
+    recipientAddress: n.recipientAddress ?? null,
+    subject: n.subject ?? null,
+    body: n.body,
+    status: n.status,
+    requiresApproval: n.requiresApproval === "true",
+    approvedByUserId: n.approvedByUserId ?? null,
+    approvedAt: iso(n.approvedAt),
+    attempts: n.attempts,
+    maxAttempts: n.maxAttempts,
+    lastError: n.lastError ?? null,
+    nextAttemptAt: iso(n.nextAttemptAt),
+    statusHistory: n.statusHistory,
+    relatedEntityType: n.relatedEntityType ?? null,
+    relatedEntityId: n.relatedEntityId ?? null,
+    readAt: iso(n.readAt),
+    sentAt: iso(n.sentAt),
+    createdAt: n.createdAt.toISOString(),
+    updatedAt: n.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB notification template row to the API shape. */
+export function toNotificationTemplate(t: NotificationTemplate) {
+  return {
+    id: t.id,
+    tenantId: t.tenantId,
+    eventType: t.eventType,
+    channel: t.channel,
+    name: t.name,
+    subject: t.subject ?? null,
+    body: t.body,
+    customerFacing: t.customerFacing,
+    enabled: t.enabled,
+    createdAt: t.createdAt.toISOString(),
+    updatedAt: t.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB notification preference row to the API shape. */
+export function toNotificationPreference(p: NotificationPreference) {
+  return {
+    id: p.id,
+    tenantId: p.tenantId,
+    scope: p.scope,
+    userId: p.userId ?? null,
+    customerId: p.customerId ?? null,
+    eventType: p.eventType,
+    channel: p.channel,
+    enabled: p.enabled,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB integration connection row to the API shape. */
+export function toIntegrationConnection(c: IntegrationConnection) {
+  return {
+    id: c.id,
+    tenantId: c.tenantId,
+    provider: c.provider,
+    name: c.name,
+    state: c.state,
+    environment: c.environment,
+    config: c.config,
+    tokenHint: c.tokenHint ?? null,
+    lastInboundAt: iso(c.lastInboundAt),
+    lastOutboundAt: iso(c.lastOutboundAt),
+    lastError: c.lastError ?? null,
+    createdAt: c.createdAt.toISOString(),
+    updatedAt: c.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB integration event row to the API shape. */
+export function toIntegrationEvent(e: IntegrationEvent) {
+  return {
+    id: e.id,
+    tenantId: e.tenantId,
+    connectionId: e.connectionId,
+    direction: e.direction,
+    eventType: e.eventType,
+    externalId: e.externalId ?? null,
+    entityType: e.entityType ?? null,
+    entityId: e.entityId ?? null,
+    status: e.status,
+    requiresApproval: e.requiresApproval === "true",
+    approvedByUserId: e.approvedByUserId ?? null,
+    approvedAt: iso(e.approvedAt),
+    payload: e.payload,
+    mappedPayload: e.mappedPayload ?? null,
+    attempts: e.attempts,
+    lastError: e.lastError ?? null,
+    statusHistory: e.statusHistory,
+    createdAt: e.createdAt.toISOString(),
+    updatedAt: e.updatedAt.toISOString(),
   };
 }

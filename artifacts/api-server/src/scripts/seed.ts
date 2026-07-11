@@ -17,6 +17,12 @@ import {
   paymentsTable,
   serviceContractsTable,
   recurrenceSchedulesTable,
+  notificationTemplatesTable,
+  notificationPreferencesTable,
+  notificationsTable,
+  integrationConnectionsTable,
+  integrationEventsTable,
+  integrationIdMapTable,
   type InsertUser,
   type InsertCustomer,
   type InsertLocation,
@@ -30,6 +36,12 @@ import {
   type InsertPayment,
   type InsertServiceContract,
   type InsertRecurrenceSchedule,
+  type InsertNotificationTemplate,
+  type InsertNotificationPreference,
+  type InsertNotification,
+  type InsertIntegrationConnection,
+  type InsertIntegrationEvent,
+  type InsertIntegrationIdMap,
 } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import { hashPassword } from "../lib/auth/password";
@@ -280,6 +292,68 @@ const SEED_RECURRENCE: SeedRecurrence[] = [
   },
 ];
 
+// --- Phase 2: Notifications & integrations -------------------------------
+
+type SeedNotificationTemplate = Omit<InsertNotificationTemplate, "tenantId">;
+const SEED_NOTIFICATION_TEMPLATES: SeedNotificationTemplate[] = [
+  { id: "nt1", eventType: "work_order.scheduled", channel: "Email", name: "Work order scheduled (customer email)", subject: "Your service visit {{workOrderNumber}} is scheduled", body: "Hi {{customerName}}, your service ({{workOrderNumber}}) is scheduled for {{scheduledDate}}. Reply to reschedule.", customerFacing: true, enabled: true },
+  { id: "nt2", eventType: "work_order.scheduled", channel: "InApp", name: "Work order scheduled (tech in-app)", subject: "New assignment {{workOrderNumber}}", body: "You are assigned to {{workOrderNumber}} on {{scheduledDate}}.", customerFacing: false, enabled: true },
+  { id: "nt3", eventType: "work_order.completed", channel: "Email", name: "Work order completed (customer email)", subject: "Service {{workOrderNumber}} complete", body: "Hi {{customerName}}, work order {{workOrderNumber}} is now marked {{status}}. A summary will follow.", customerFacing: true, enabled: true },
+  { id: "nt4", eventType: "invoice.issued", channel: "Email", name: "Invoice issued (customer email)", subject: "Invoice {{invoiceNumber}} — {{amount}}", body: "Hi {{customerName}}, invoice {{invoiceNumber}} for {{amount}} is ready. Thank you for your business.", customerFacing: true, enabled: true },
+  { id: "nt5", eventType: "closeout.submitted", channel: "InApp", name: "Closeout pending review (manager in-app)", subject: "Closeout awaiting review — {{workOrderNumber}}", body: "A technician submitted a closeout for {{workOrderNumber}} ({{status}}). Review before billing.", customerFacing: false, enabled: true },
+  { id: "nt6", eventType: "closeout.approved", channel: "InApp", name: "Closeout approved (tech in-app)", subject: "Closeout approved — {{workOrderNumber}}", body: "Your closeout for {{workOrderNumber}} was {{status}}. Labor and materials are posted.", customerFacing: false, enabled: true },
+];
+
+type SeedNotificationPreference = Omit<InsertNotificationPreference, "tenantId">;
+const SEED_NOTIFICATION_PREFERENCES: SeedNotificationPreference[] = [
+  // David Chen opted out of in-app scheduling pings; everything else defaults on.
+  { id: "np1", scope: "user", userId: "u4", eventType: "work_order.scheduled", channel: "InApp", enabled: false },
+  // RaceTrac customer prefers portal-only; opt out of SMS on completion.
+  { id: "np2", scope: "customer", customerId: "c1", eventType: "work_order.completed", channel: "SMS", enabled: false },
+];
+
+type SeedNotification = Omit<InsertNotification, "tenantId">;
+const SEED_NOTIFICATIONS: SeedNotification[] = [
+  // Unread in-app assignment for tech Marcus.
+  { id: "ntf1", eventType: "work_order.scheduled", channel: "InApp", templateId: "nt2", recipientType: "user", recipientUserId: "u5", subject: "New assignment WO-2026-1003", body: "You are assigned to WO-2026-1003 on " + dateOnly(2) + ".", status: "Sent", requiresApproval: "false", sentAt: ts(-1), statusHistory: [{ at: isoFull(-1), status: "Sent", detail: "Delivered to in-app center" }], relatedEntityType: "WorkOrder", relatedEntityId: "wo3" },
+  // Unread manager closeout-review ping for Angela.
+  { id: "ntf2", eventType: "closeout.submitted", channel: "InApp", templateId: "nt5", recipientType: "user", recipientUserId: "u3", subject: "Closeout awaiting review — WO-2026-1001", body: "A technician submitted a closeout for WO-2026-1001 (Pending Review). Review before billing.", status: "Sent", requiresApproval: "false", sentAt: ts(-0.2), statusHistory: [{ at: isoFull(-0.2), status: "Sent", detail: "Delivered to in-app center" }], relatedEntityType: "Closeout", relatedEntityId: "co1" },
+  // Customer-facing email held for approval (HITL) — not yet sent.
+  { id: "ntf3", eventType: "invoice.issued", channel: "Email", templateId: "nt4", recipientType: "customer", recipientCustomerId: "c2", recipientAddress: "maintenance@truefood.com", subject: "Invoice INV-2026-2001 — $1,240.00", body: "Hi True Food Kitchen, invoice INV-2026-2001 for $1,240.00 is ready. Thank you for your business.", status: "PendingApproval", requiresApproval: "true", statusHistory: [{ at: isoFull(-0.5), status: "PendingApproval", detail: "Customer-facing — held for approval before sending" }], relatedEntityType: "Invoice", relatedEntityId: "inv1" },
+  // A failed email delivery (simulated) that can be retried.
+  { id: "ntf4", eventType: "work_order.completed", channel: "Email", templateId: "nt3", recipientType: "customer", recipientCustomerId: "c3", recipientAddress: "ops@ruthschris.com", subject: "Service WO-2026-1002 complete", body: "Hi Ruth's Chris Steakhouse, work order WO-2026-1002 is now marked Completed. A summary will follow.", status: "Failed", requiresApproval: "true", approvedByUserId: "u3", approvedAt: ts(-2), attempts: 3, maxAttempts: 3, lastError: "Simulated transport error (mail-capture adapter)", statusHistory: [{ at: isoFull(-2), status: "Approved", detail: "Approved by manager" }, { at: isoFull(-2), status: "Failed", detail: "Simulated transport error after 3 attempts" }], relatedEntityType: "WorkOrder", relatedEntityId: "wo2" },
+  // A previously read in-app note for Marcus (approved closeout).
+  { id: "ntf5", eventType: "closeout.approved", channel: "InApp", templateId: "nt6", recipientType: "user", recipientUserId: "u5", subject: "Closeout approved — WO-2026-1002", body: "Your closeout for WO-2026-1002 was Approved. Labor and materials are posted.", status: "Sent", requiresApproval: "false", sentAt: ts(-3), readAt: ts(-2.5), statusHistory: [{ at: isoFull(-3), status: "Sent", detail: "Delivered to in-app center" }], relatedEntityType: "Closeout", relatedEntityId: "co2" },
+];
+
+type SeedIntegrationConnection = Omit<InsertIntegrationConnection, "tenantId">;
+const SEED_INTEGRATION_CONNECTIONS: SeedIntegrationConnection[] = [
+  { id: "ic1", provider: "ServiceChannel", name: "ServiceChannel (Sandbox)", state: "Sandbox", environment: "Sandbox", config: { defaultCustomerId: "c1", defaultLocationId: "l1", inboundCount: 2 }, tokenHint: "sk_sandbox_••••4821", lastInboundAt: ts(-0.5) },
+  { id: "ic2", provider: "EmailIntake", name: "Email Intake (Simulated)", state: "Simulated", environment: "Simulation", config: { defaultCustomerId: "c2", defaultLocationId: "l4", mailbox: "dispatch@serviceconnect.app" }, lastInboundAt: ts(-1) },
+  { id: "ic3", provider: "GenericPortal", name: "FMPilot Portal (Simulated)", state: "Simulated", environment: "Simulation", config: { defaultCustomerId: "c5", defaultLocationId: "l7", portalName: "FMPilot" } },
+  { id: "ic4", provider: "VoiceConnect", name: "VoiceConnect (Simulated STT)", state: "Simulated", environment: "Simulation", config: { defaultCustomerId: "c1", defaultLocationId: "l1" } },
+  { id: "ic5", provider: "Routing", name: "Routing Estimator (Straight-line)", state: "Simulated", environment: "Simulation", config: {} },
+  { id: "ic6", provider: "GenericPortal", name: "Corrigo Portal (Not Connected)", state: "ConfigurationRequired", environment: "Simulation", config: {}, lastError: "Field mapping not configured" },
+];
+
+type SeedIntegrationEvent = Omit<InsertIntegrationEvent, "tenantId">;
+const SEED_INTEGRATION_EVENTS: SeedIntegrationEvent[] = [
+  // Inbound WO from ServiceChannel, mapped to a draft intake (idempotent via id-map).
+  { id: "ie1", connectionId: "ic1", direction: "Inbound", eventType: "work_order.created", externalId: "SC-884210", entityType: "Intake", entityId: "in1", status: "Mapped", requiresApproval: "false", payload: { externalWo: "SC-884210", site: "RaceTrac #145", priority: "High", description: "Backflow preventer leaking in mechanical room" }, mappedPayload: { customerId: "c1", locationId: "l1", priority: "High" }, statusHistory: [{ at: isoFull(-0.5), status: "Received", detail: "Inbound work_order.created received" }, { at: isoFull(-0.5), status: "Mapped", detail: "Mapped to Intake draft" }] },
+  // Outbound status update held for approval (HITL — nothing auto-sends).
+  { id: "ie2", connectionId: "ic1", direction: "Outbound", eventType: "work_order.status_update", externalId: "SC-884210", entityType: "WorkOrder", entityId: "wo1", status: "PendingApproval", requiresApproval: "true", payload: { externalWo: "SC-884210", status: "In Progress", note: "Technician on site" }, statusHistory: [{ at: isoFull(-0.3), status: "PendingApproval", detail: "Outbound update queued — awaiting approval" }] },
+  // Inbound email intake, mapped to a draft.
+  { id: "ie3", connectionId: "ic2", direction: "Inbound", eventType: "email.intake", externalId: "EM-55031", entityType: "Intake", entityId: "in2", status: "Mapped", requiresApproval: "false", payload: { from: "dana@truefood.com", subject: "Walk-in cooler not holding temp", body: "Our walk-in is at 52F. Need someone today." }, mappedPayload: { customerId: "c2", locationId: "l4", priority: "High" }, statusHistory: [{ at: isoFull(-1), status: "Received", detail: "Inbound email.intake received" }, { at: isoFull(-1), status: "Mapped", detail: "Mapped to Intake draft" }] },
+  // A failed outbound submission that can be retried.
+  { id: "ie4", connectionId: "ic3", direction: "Outbound", eventType: "invoice.push", externalId: "FMP-2201", entityType: "Invoice", entityId: "inv1", status: "Failed", requiresApproval: "true", approvedByUserId: "u1", approvedAt: ts(-1), attempts: 2, lastError: "Simulated portal timeout (GenericPortal adapter)", payload: { portal: "FMPilot", invoiceNumber: "INV-2026-2001", amount: 1240 }, statusHistory: [{ at: isoFull(-1), status: "Approved", detail: "Approved by administrator" }, { at: isoFull(-1), status: "Failed", detail: "Simulated portal timeout" }] },
+];
+
+type SeedIntegrationIdMap = Omit<InsertIntegrationIdMap, "tenantId">;
+const SEED_INTEGRATION_ID_MAP: SeedIntegrationIdMap[] = [
+  { id: "im1", connectionId: "ic1", externalId: "SC-884210", entityType: "Intake", entityId: "in1" },
+  { id: "im2", connectionId: "ic2", externalId: "EM-55031", entityType: "Intake", entityId: "in2" },
+];
+
 async function seed(): Promise<void> {
   await db
     .insert(tenantsTable)
@@ -439,6 +513,48 @@ async function seed(): Promise<void> {
       .onConflictDoNothing();
   }
 
+  for (const nt of SEED_NOTIFICATION_TEMPLATES) {
+    await db
+      .insert(notificationTemplatesTable)
+      .values({ ...nt, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
+  for (const np of SEED_NOTIFICATION_PREFERENCES) {
+    await db
+      .insert(notificationPreferencesTable)
+      .values({ ...np, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
+  for (const ntf of SEED_NOTIFICATIONS) {
+    await db
+      .insert(notificationsTable)
+      .values({ ...ntf, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
+  for (const ic of SEED_INTEGRATION_CONNECTIONS) {
+    await db
+      .insert(integrationConnectionsTable)
+      .values({ ...ic, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
+  for (const ie of SEED_INTEGRATION_EVENTS) {
+    await db
+      .insert(integrationEventsTable)
+      .values({ ...ie, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
+  for (const im of SEED_INTEGRATION_ID_MAP) {
+    await db
+      .insert(integrationIdMapTable)
+      .values({ ...im, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
   logger.info(
     {
       tenant: TENANT_ID,
@@ -456,6 +572,12 @@ async function seed(): Promise<void> {
       payments: SEED_PAYMENTS.length,
       contracts: SEED_CONTRACTS.length,
       recurrence: SEED_RECURRENCE.length,
+      notificationTemplates: SEED_NOTIFICATION_TEMPLATES.length,
+      notificationPreferences: SEED_NOTIFICATION_PREFERENCES.length,
+      notifications: SEED_NOTIFICATIONS.length,
+      integrationConnections: SEED_INTEGRATION_CONNECTIONS.length,
+      integrationEvents: SEED_INTEGRATION_EVENTS.length,
+      integrationIdMap: SEED_INTEGRATION_ID_MAP.length,
     },
     "Seed complete (demo password set from DEMO_PASSWORD env or dev default; value not logged)",
   );

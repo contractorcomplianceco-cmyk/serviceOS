@@ -1,4 +1,2 @@
-- [ServiceConnect store invariants](serviceconnect-store-invariants.md) — updater-snapshot reads, idempotency guards tied to UI filters, localStorage key bumps.
-- [ServiceConnect auth architecture](serviceconnect-auth.md) — provider ordering, auth gate (both login redirects), IS_DEV-gated dev surfaces, shared logout, seed.
-- [ServiceConnect backend invariants](serviceconnect-backend.md) — inventory is an immutable derived ledger, directional negative-stock guard, server-side HITL/authz, hybrid store must compute display-only fields.
-- [ServiceConnect customer portal isolation](serviceconnect-portal.md) — portal users render a separate shell (bypass staff providers/hooks that 403); Contracts+Recurrence share the `contracts` nav key.
+- [ServiceConnect data access](serviceconnect-data-access.md) — feature-local API surfaces may call generated react-query hooks directly; shared cross-page state goes through AppContext (store.tsx).
+- [ServiceConnect role gating](serviceconnect-role-gating.md) — client permissions.ts must mirror backend authz.ts (ROLE_NAV + helpers) exactly; server is authoritative.

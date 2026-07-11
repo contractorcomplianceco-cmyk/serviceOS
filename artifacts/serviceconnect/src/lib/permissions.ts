@@ -17,12 +17,13 @@ export type NavKey =
   | 'intelligence'
   | 'settings'
   | 'contracts'
+  | 'integrations'
   | 'portal';
 
 const ALL: NavKey[] = [
   'today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers',
   'locations', 'inventory', 'equipment', 'billing', 'accounting', 'documents',
-  'reports', 'intelligence', 'contracts', 'settings',
+  'reports', 'intelligence', 'contracts', 'integrations', 'settings',
 ];
 
 // IMPORTANT: this map is the client mirror of the backend-enforced source of
@@ -31,7 +32,7 @@ const ALL: NavKey[] = [
 // diverges from server-side authorization.
 const ROLE_NAV: Record<Role, NavKey[]> = {
   Administrator: ALL,
-  'Service Manager': ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'billing', 'documents', 'reports', 'intelligence', 'contracts'],
+  'Service Manager': ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'billing', 'documents', 'reports', 'intelligence', 'contracts', 'integrations'],
   Scheduler: ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'documents', 'intelligence', 'contracts'],
   Supervisor: ['today', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'equipment', 'inventory', 'documents', 'reports', 'intelligence'],
   'Lead Technician': ['today', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'equipment', 'inventory'],
@@ -62,6 +63,19 @@ export function isFieldRole(role: Role): boolean {
 // Only these roles may approve or send back technician closeouts.
 export function canApproveCloseouts(role: Role): boolean {
   return role === 'Service Manager' || role === 'Administrator' || role === 'Supervisor';
+}
+
+// Integration access mirrors the backend authz source of truth. Managers may
+// VIEW connections, sync history, and the outbound approval queue; only
+// administrators may change state, simulate inbound, or approve/reject/retry
+// events — every customer-facing outbound send stays behind human approval.
+const INTEGRATION_VIEW_ROLES: Role[] = ['Administrator', 'Service Manager'];
+export function canViewIntegrations(role: Role): boolean {
+  return INTEGRATION_VIEW_ROLES.includes(role);
+}
+
+export function canManageIntegrations(role: Role): boolean {
+  return role === 'Administrator';
 }
 
 const ROLE_DESCRIPTIONS: Record<Role, string> = {

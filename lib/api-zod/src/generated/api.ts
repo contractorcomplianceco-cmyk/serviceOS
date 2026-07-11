@@ -4568,3 +4568,545 @@ export const ListPortalEquipmentResponseItem = zod.object({
 export const ListPortalEquipmentResponse = zod.array(ListPortalEquipmentResponseItem)
 
 
+/**
+ * @summary List the current user's in-app notifications (most recent first)
+ */
+export const ListNotificationsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "eventType": zod.string(),
+  "channel": zod.string(),
+  "templateId": zod.string().nullish(),
+  "recipientType": zod.string(),
+  "recipientUserId": zod.string().nullish(),
+  "recipientCustomerId": zod.string().nullish(),
+  "recipientAddress": zod.string().nullish(),
+  "subject": zod.string().nullish(),
+  "body": zod.string(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "attempts": zod.number(),
+  "maxAttempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "nextAttemptAt": zod.coerce.date().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "readAt": zod.coerce.date().nullish(),
+  "sentAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListNotificationsResponse = zod.array(ListNotificationsResponseItem)
+
+
+/**
+ * @summary Mark all of the current user's in-app notifications read
+ */
+export const MarkAllNotificationsReadResponse = zod.object({
+  "updated": zod.number()
+})
+
+
+/**
+ * @summary Mark one in-app notification read
+ */
+export const MarkNotificationReadParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const MarkNotificationReadResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "eventType": zod.string(),
+  "channel": zod.string(),
+  "templateId": zod.string().nullish(),
+  "recipientType": zod.string(),
+  "recipientUserId": zod.string().nullish(),
+  "recipientCustomerId": zod.string().nullish(),
+  "recipientAddress": zod.string().nullish(),
+  "subject": zod.string().nullish(),
+  "body": zod.string(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "attempts": zod.number(),
+  "maxAttempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "nextAttemptAt": zod.coerce.date().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "readAt": zod.coerce.date().nullish(),
+  "sentAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Retry a failed notification delivery (staff only)
+ */
+export const RetryNotificationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RetryNotificationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "eventType": zod.string(),
+  "channel": zod.string(),
+  "templateId": zod.string().nullish(),
+  "recipientType": zod.string(),
+  "recipientUserId": zod.string().nullish(),
+  "recipientCustomerId": zod.string().nullish(),
+  "recipientAddress": zod.string().nullish(),
+  "subject": zod.string().nullish(),
+  "body": zod.string(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "attempts": zod.number(),
+  "maxAttempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "nextAttemptAt": zod.coerce.date().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "readAt": zod.coerce.date().nullish(),
+  "sentAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Approve a customer-facing notification so it may deliver (staff only)
+ */
+export const ApproveNotificationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ApproveNotificationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "eventType": zod.string(),
+  "channel": zod.string(),
+  "templateId": zod.string().nullish(),
+  "recipientType": zod.string(),
+  "recipientUserId": zod.string().nullish(),
+  "recipientCustomerId": zod.string().nullish(),
+  "recipientAddress": zod.string().nullish(),
+  "subject": zod.string().nullish(),
+  "body": zod.string(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "attempts": zod.number(),
+  "maxAttempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "nextAttemptAt": zod.coerce.date().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "readAt": zod.coerce.date().nullish(),
+  "sentAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List notification templates (staff only)
+ */
+export const ListNotificationTemplatesResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "eventType": zod.string(),
+  "channel": zod.string(),
+  "name": zod.string(),
+  "subject": zod.string().nullish(),
+  "body": zod.string(),
+  "customerFacing": zod.boolean(),
+  "enabled": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListNotificationTemplatesResponse = zod.array(ListNotificationTemplatesResponseItem)
+
+
+/**
+ * @summary Render a template with sample context (staff only)
+ */
+
+
+
+export const PreviewNotificationTemplateBody = zod.object({
+  "templateId": zod.string().min(1),
+  "context": zod.record(zod.string(), zod.string()).optional()
+})
+
+export const PreviewNotificationTemplateResponse = zod.object({
+  "channel": zod.string(),
+  "subject": zod.string().nullish(),
+  "body": zod.string()
+})
+
+
+/**
+ * @summary Send a test in-app notification of a template to yourself (staff only)
+ */
+
+
+
+export const TestSendNotificationBody = zod.object({
+  "templateId": zod.string().min(1)
+})
+
+export const TestSendNotificationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "eventType": zod.string(),
+  "channel": zod.string(),
+  "templateId": zod.string().nullish(),
+  "recipientType": zod.string(),
+  "recipientUserId": zod.string().nullish(),
+  "recipientCustomerId": zod.string().nullish(),
+  "recipientAddress": zod.string().nullish(),
+  "subject": zod.string().nullish(),
+  "body": zod.string(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "attempts": zod.number(),
+  "maxAttempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "nextAttemptAt": zod.coerce.date().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "readAt": zod.coerce.date().nullish(),
+  "sentAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List the current user's notification preferences
+ */
+export const ListNotificationPreferencesResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "scope": zod.string(),
+  "userId": zod.string().nullish(),
+  "customerId": zod.string().nullish(),
+  "eventType": zod.string(),
+  "channel": zod.string(),
+  "enabled": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListNotificationPreferencesResponse = zod.array(ListNotificationPreferencesResponseItem)
+
+
+/**
+ * @summary Set (upsert) one of the current user's notification preferences
+ */
+
+
+
+export const SetNotificationPreferenceBody = zod.object({
+  "eventType": zod.string().min(1),
+  "channel": zod.enum(['InApp', 'Email', 'SMS', 'Push']),
+  "enabled": zod.boolean()
+})
+
+export const SetNotificationPreferenceResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "scope": zod.string(),
+  "userId": zod.string().nullish(),
+  "customerId": zod.string().nullish(),
+  "eventType": zod.string(),
+  "channel": zod.string(),
+  "enabled": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List integration connections for the tenant (staff only)
+ */
+export const ListIntegrationConnectionsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "provider": zod.string(),
+  "name": zod.string(),
+  "state": zod.string(),
+  "environment": zod.string(),
+  "config": zod.record(zod.string(), zod.unknown()),
+  "tokenHint": zod.string().nullish(),
+  "lastInboundAt": zod.coerce.date().nullish(),
+  "lastOutboundAt": zod.coerce.date().nullish(),
+  "lastError": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListIntegrationConnectionsResponse = zod.array(ListIntegrationConnectionsResponseItem)
+
+
+/**
+ * @summary Get an integration connection by id (staff only)
+ */
+export const GetIntegrationConnectionParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetIntegrationConnectionResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "provider": zod.string(),
+  "name": zod.string(),
+  "state": zod.string(),
+  "environment": zod.string(),
+  "config": zod.record(zod.string(), zod.unknown()),
+  "tokenHint": zod.string().nullish(),
+  "lastInboundAt": zod.coerce.date().nullish(),
+  "lastOutboundAt": zod.coerce.date().nullish(),
+  "lastError": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Update connection state, environment, or mapping config (admin only)
+ */
+export const UpdateIntegrationConnectionParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateIntegrationConnectionBody = zod.object({
+  "name": zod.string().optional(),
+  "state": zod.enum(['NotConnected', 'ConfigurationRequired', 'Simulated', 'Sandbox', 'Connected', 'Error', 'Disabled']).optional(),
+  "environment": zod.enum(['Simulation', 'Sandbox', 'Production']).optional(),
+  "config": zod.record(zod.string(), zod.unknown()).optional(),
+  "tokenHint": zod.string().optional()
+})
+
+export const UpdateIntegrationConnectionResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "provider": zod.string(),
+  "name": zod.string(),
+  "state": zod.string(),
+  "environment": zod.string(),
+  "config": zod.record(zod.string(), zod.unknown()),
+  "tokenHint": zod.string().nullish(),
+  "lastInboundAt": zod.coerce.date().nullish(),
+  "lastOutboundAt": zod.coerce.date().nullish(),
+  "lastError": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Simulate an inbound payload from the external system (admin only)
+ */
+export const SimulateIntegrationInboundParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const SimulateIntegrationInboundResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "connectionId": zod.string(),
+  "direction": zod.string(),
+  "eventType": zod.string(),
+  "externalId": zod.string().nullish(),
+  "entityType": zod.string().nullish(),
+  "entityId": zod.string().nullish(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "payload": zod.record(zod.string(), zod.unknown()),
+  "mappedPayload": zod.record(zod.string(), zod.unknown()).nullish(),
+  "attempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List sync history / approval queue for a connection (staff only)
+ */
+export const ListIntegrationEventsParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ListIntegrationEventsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "connectionId": zod.string(),
+  "direction": zod.string(),
+  "eventType": zod.string(),
+  "externalId": zod.string().nullish(),
+  "entityType": zod.string().nullish(),
+  "entityId": zod.string().nullish(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "payload": zod.record(zod.string(), zod.unknown()),
+  "mappedPayload": zod.record(zod.string(), zod.unknown()).nullish(),
+  "attempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListIntegrationEventsResponse = zod.array(ListIntegrationEventsResponseItem)
+
+
+/**
+ * @summary Approve and submit a queued outbound event (admin only)
+ */
+export const ApproveIntegrationEventParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ApproveIntegrationEventResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "connectionId": zod.string(),
+  "direction": zod.string(),
+  "eventType": zod.string(),
+  "externalId": zod.string().nullish(),
+  "entityType": zod.string().nullish(),
+  "entityId": zod.string().nullish(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "payload": zod.record(zod.string(), zod.unknown()),
+  "mappedPayload": zod.record(zod.string(), zod.unknown()).nullish(),
+  "attempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Retry a failed inbound/outbound event (admin only)
+ */
+export const RetryIntegrationEventParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RetryIntegrationEventResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "connectionId": zod.string(),
+  "direction": zod.string(),
+  "eventType": zod.string(),
+  "externalId": zod.string().nullish(),
+  "entityType": zod.string().nullish(),
+  "entityId": zod.string().nullish(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "payload": zod.record(zod.string(), zod.unknown()),
+  "mappedPayload": zod.record(zod.string(), zod.unknown()).nullish(),
+  "attempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Reject a queued outbound event without submitting (admin only)
+ */
+export const RejectIntegrationEventParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RejectIntegrationEventResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "connectionId": zod.string(),
+  "direction": zod.string(),
+  "eventType": zod.string(),
+  "externalId": zod.string().nullish(),
+  "entityType": zod.string().nullish(),
+  "entityId": zod.string().nullish(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "payload": zod.record(zod.string(), zod.unknown()),
+  "mappedPayload": zod.record(zod.string(), zod.unknown()).nullish(),
+  "attempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+

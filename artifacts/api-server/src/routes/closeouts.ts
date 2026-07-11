@@ -29,6 +29,10 @@ import {
 import { postTransaction, NegativeStockError } from "../lib/inventory-ledger";
 import { toCloseout } from "../lib/serialize-ops";
 import { writeAudit } from "../lib/audit";
+import {
+  notifyCloseoutSubmitted,
+  notifyCloseoutApproved,
+} from "../lib/notifications/dispatch-helpers";
 
 const router: IRouter = Router();
 
@@ -155,6 +159,9 @@ router.post(
       },
       req,
     );
+
+    await notifyCloseoutSubmitted(created, wo.number);
+
     res.status(201).json(toCloseout(created));
   },
 );
@@ -433,6 +440,13 @@ router.post(
           req,
         );
       }
+
+      await notifyCloseoutApproved(
+        result.closeout,
+        result.wo.number,
+        result.closeout.technicianId,
+      );
+
       res.json(toCloseout(result.closeout));
     } catch (err) {
       if (err instanceof NegativeStockError) {

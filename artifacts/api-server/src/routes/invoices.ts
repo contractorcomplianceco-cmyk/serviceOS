@@ -13,6 +13,7 @@ import { requireAuth, requireStaff } from "../middleware/auth";
 import { canManageBilling, isValidRole } from "../lib/authz";
 import { toInvoice } from "../lib/serialize-ops";
 import { writeAudit } from "../lib/audit";
+import { notifyInvoiceIssued } from "../lib/notifications/dispatch-helpers";
 
 const router: IRouter = Router();
 
@@ -149,6 +150,9 @@ router.post(
       },
       req,
     );
+
+    await notifyInvoiceIssued(row!);
+
     res.status(201).json(toInvoice(row!));
   },
 );

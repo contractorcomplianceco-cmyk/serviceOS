@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Bell, Search, Mail, MessageSquare, UserCircle, Wrench, Building2, MapPin, HardHat, Users, FileText, LogOut } from "lucide-react";
+import { Search, Mail, MessageSquare, UserCircle, Wrench, Building2, MapPin, HardHat, Users, FileText, LogOut } from "lucide-react";
+import { NotificationCenter } from "./NotificationCenter";
 
 interface SearchResult {
   id: string;
@@ -27,7 +28,7 @@ interface SearchGroup {
 }
 
 export function Header() {
-  const { currentUser, users, setCurrentUserId, recommendations, workOrders, customers, locations, equipment, invoices } = useAppStore();
+  const { currentUser, users, setCurrentUserId, workOrders, customers, locations, equipment, invoices } = useAppStore();
   const { logout } = useAuth();
   const [, navigate] = useLocation();
 
@@ -35,7 +36,6 @@ export function Header() {
     await logout();
     navigate("/login");
   };
-  const urgentCount = recommendations.filter((r) => r.severity === "urgent").length;
 
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -198,19 +198,7 @@ export function Header() {
 
         {/* Icon actions */}
         <div className="flex items-center gap-1.5">
-          <button
-            className="relative w-9 h-9 rounded-lg flex items-center justify-center text-sc-2 hover:text-white hover:bg-white/[0.05] transition-colors"
-            data-testid="button-notifications"
-            aria-label="Notifications"
-          >
-            <Bell className="h-[18px] w-[18px]" />
-            {urgentCount > 0 && (
-              <span
-                className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full"
-                style={{ background: "var(--sc-red)", boxShadow: "0 0 0 2px var(--sc-bg-deep)" }}
-              />
-            )}
-          </button>
+          <NotificationCenter />
           <button
             className="w-9 h-9 rounded-lg flex items-center justify-center text-sc-2 hover:text-white hover:bg-white/[0.05] transition-colors"
             data-testid="button-mail"

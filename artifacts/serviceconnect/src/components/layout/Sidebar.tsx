@@ -18,6 +18,7 @@ import {
   ClipboardCheck,
   FileSignature,
   Repeat,
+  Plug,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
@@ -41,6 +42,7 @@ const navItems: { name: string; path: string; key: NavKey; icon: typeof LayoutDa
   { name: "Documents", path: "/documents", key: "documents", icon: FileText },
   { name: "Reports", path: "/reports", key: "reports", icon: BarChart3 },
   { name: "Intelligence", path: "/intelligence", key: "intelligence", icon: Sparkles },
+  { name: "Integrations", path: "/integrations", key: "integrations", icon: Plug },
   { name: "Settings", path: "/settings", key: "settings", icon: Settings },
 ];
 

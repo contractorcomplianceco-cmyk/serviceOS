@@ -40,6 +40,10 @@ import {
 } from "../lib/authz";
 import { toWorkOrder } from "../lib/serialize-ops";
 import { writeAudit } from "../lib/audit";
+import {
+  notifyWorkOrderScheduled,
+  notifyWorkOrderCompleted,
+} from "../lib/notifications/dispatch-helpers";
 
 const router: IRouter = Router();
 
@@ -329,6 +333,17 @@ router.patch(
         req,
       );
     }
+
+    // Lifecycle notifications (best-effort, customer-facing ones held for
+    // approval inside the engine). A schedule action notifies the customer +
+    // assigned tech; a transition into Completed notifies the customer.
+    if (isScheduling) {
+      await notifyWorkOrderScheduled(updated);
+    }
+    if (d.status === "Completed" && wo.status !== "Completed") {
+      await notifyWorkOrderCompleted(updated);
+    }
+
     res.json(toWorkOrder(updated));
   },
 );

@@ -28,6 +28,7 @@ import Recurrence from "@/pages/Recurrence";
 import Documents from "@/pages/Documents";
 import Reports from "@/pages/Reports";
 import Intelligence from "@/pages/Intelligence";
+import Integrations from "@/pages/Integrations";
 import Settings from "@/pages/Settings";
 import TechnicianMobile from "@/pages/TechnicianMobile";
 import VoiceConnect from "@/pages/VoiceConnect";
@@ -108,6 +109,7 @@ function Router() {
       <Route path="/documents">{() => <Protected allow={nav("documents")}><Documents /></Protected>}</Route>
       <Route path="/reports">{() => <Protected allow={nav("reports")}><Reports /></Protected>}</Route>
       <Route path="/intelligence">{() => <Protected allow={nav("intelligence")}><Intelligence /></Protected>}</Route>
+      <Route path="/integrations">{() => <Protected allow={nav("integrations")}><Integrations /></Protected>}</Route>
       <Route path="/settings">{() => <Protected allow={nav("settings")}><Settings /></Protected>}</Route>
       <Route path="/review">{() => <Protected allow={canApproveCloseouts}><SupervisorReview /></Protected>}</Route>
       <Route path="/tech">{() => <Protected allow={isFieldRole}><TechnicianMobile /></Protected>}</Route>

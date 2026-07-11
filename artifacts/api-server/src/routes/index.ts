@@ -21,6 +21,8 @@ import invoicesRouter from "./invoices";
 import paymentsRouter from "./payments";
 import contractsRouter from "./contracts";
 import recurrenceRouter from "./recurrence";
+import notificationsRouter from "./notifications";
+import integrationsRouter from "./integrations";
 import portalRouter from "./portal";
 
 const router: IRouter = Router();
@@ -47,6 +49,8 @@ router.use(invoicesRouter);
 router.use(paymentsRouter);
 router.use(contractsRouter);
 router.use(recurrenceRouter);
+router.use(notificationsRouter);
+router.use(integrationsRouter);
 router.use(portalRouter);
 
 export default router;

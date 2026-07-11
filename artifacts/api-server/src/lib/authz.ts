@@ -20,12 +20,13 @@ export type NavKey =
   | "intelligence"
   | "settings"
   | "contracts"
+  | "integrations"
   | "portal";
 
 const ALL: NavKey[] = [
   "today", "intake", "work-orders", "dispatch", "technicians", "customers",
   "locations", "inventory", "equipment", "billing", "accounting", "documents",
-  "reports", "intelligence", "contracts", "settings",
+  "reports", "intelligence", "contracts", "integrations", "settings",
 ];
 
 // Canonical, backend-enforced role → nav access map (12 roles).
@@ -34,7 +35,7 @@ const ALL: NavKey[] = [
 // maps identical so client nav visibility never diverges from server authz.
 export const ROLE_NAV: Record<Role, NavKey[]> = {
   Administrator: ALL,
-  "Service Manager": ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "billing", "documents", "reports", "intelligence", "contracts"],
+  "Service Manager": ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "billing", "documents", "reports", "intelligence", "contracts", "integrations"],
   Scheduler: ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "documents", "intelligence", "contracts"],
   Supervisor: ["today", "work-orders", "dispatch", "technicians", "customers", "locations", "equipment", "inventory", "documents", "reports", "intelligence"],
   "Lead Technician": ["today", "work-orders", "dispatch", "technicians", "customers", "locations", "equipment", "inventory"],
@@ -101,6 +102,20 @@ export function canManageContracts(role: Role): boolean {
 // Only privileged roles may trigger the recurrence generation worker manually.
 export function canRunRecurrence(role: Role): boolean {
   return role === "Administrator" || role === "Service Manager";
+}
+
+// Roles that may VIEW integration connections, sync history, and the outbound
+// approval queue. Read access for managers; write access is narrower.
+const INTEGRATION_VIEW_ROLES: Role[] = ["Administrator", "Service Manager"];
+export function canViewIntegrations(role: Role): boolean {
+  return INTEGRATION_VIEW_ROLES.includes(role);
+}
+
+// Only administrators may change connection state/config, simulate inbound
+// traffic, or approve/reject/retry outbound events. Every customer-facing
+// outbound submission stays behind this human approval (HITL guardrail).
+export function canManageIntegrations(role: Role): boolean {
+  return role === "Administrator";
 }
 
 export function hasNavAccess(role: Role, key: NavKey): boolean {

@@ -625,6 +625,221 @@ export interface ReadinessStatus {
   database: string;
 }
 
+export interface NotificationStatusEvent {
+  at: string;
+  status: string;
+  detail: string;
+}
+
+export interface Notification {
+  id: string;
+  tenantId: string;
+  eventType: string;
+  channel: string;
+  /** @nullable */
+  templateId?: string | null;
+  recipientType: string;
+  /** @nullable */
+  recipientUserId?: string | null;
+  /** @nullable */
+  recipientCustomerId?: string | null;
+  /** @nullable */
+  recipientAddress?: string | null;
+  /** @nullable */
+  subject?: string | null;
+  body: string;
+  status: string;
+  requiresApproval: boolean;
+  /** @nullable */
+  approvedByUserId?: string | null;
+  /** @nullable */
+  approvedAt?: string | null;
+  attempts: number;
+  maxAttempts: number;
+  /** @nullable */
+  lastError?: string | null;
+  /** @nullable */
+  nextAttemptAt?: string | null;
+  statusHistory: NotificationStatusEvent[];
+  /** @nullable */
+  relatedEntityType?: string | null;
+  /** @nullable */
+  relatedEntityId?: string | null;
+  /** @nullable */
+  readAt?: string | null;
+  /** @nullable */
+  sentAt?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface NotificationReadResult {
+  updated: number;
+}
+
+export interface NotificationTemplate {
+  id: string;
+  tenantId: string;
+  eventType: string;
+  channel: string;
+  name: string;
+  /** @nullable */
+  subject?: string | null;
+  body: string;
+  customerFacing: boolean;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type NotificationPreviewInputContext = {[key: string]: string};
+
+export interface NotificationPreviewInput {
+  /** @minLength 1 */
+  templateId: string;
+  context?: NotificationPreviewInputContext;
+}
+
+export interface NotificationPreviewResult {
+  channel: string;
+  /** @nullable */
+  subject?: string | null;
+  body: string;
+}
+
+export interface NotificationTestSendInput {
+  /** @minLength 1 */
+  templateId: string;
+}
+
+export interface NotificationPreference {
+  id: string;
+  tenantId: string;
+  scope: string;
+  /** @nullable */
+  userId?: string | null;
+  /** @nullable */
+  customerId?: string | null;
+  eventType: string;
+  channel: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type NotificationPreferenceInputChannel = typeof NotificationPreferenceInputChannel[keyof typeof NotificationPreferenceInputChannel];
+
+
+export const NotificationPreferenceInputChannel = {
+  InApp: 'InApp',
+  Email: 'Email',
+  SMS: 'SMS',
+  Push: 'Push',
+} as const;
+
+export interface NotificationPreferenceInput {
+  /** @minLength 1 */
+  eventType: string;
+  channel: NotificationPreferenceInputChannel;
+  enabled: boolean;
+}
+
+export interface IntegrationStatusEvent {
+  at: string;
+  status: string;
+  detail: string;
+}
+
+export type IntegrationConnectionConfig = { [key: string]: unknown };
+
+export interface IntegrationConnection {
+  id: string;
+  tenantId: string;
+  provider: string;
+  name: string;
+  state: string;
+  environment: string;
+  config: IntegrationConnectionConfig;
+  /** @nullable */
+  tokenHint?: string | null;
+  /** @nullable */
+  lastInboundAt?: string | null;
+  /** @nullable */
+  lastOutboundAt?: string | null;
+  /** @nullable */
+  lastError?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type IntegrationConnectionUpdateState = typeof IntegrationConnectionUpdateState[keyof typeof IntegrationConnectionUpdateState];
+
+
+export const IntegrationConnectionUpdateState = {
+  NotConnected: 'NotConnected',
+  ConfigurationRequired: 'ConfigurationRequired',
+  Simulated: 'Simulated',
+  Sandbox: 'Sandbox',
+  Connected: 'Connected',
+  Error: 'Error',
+  Disabled: 'Disabled',
+} as const;
+
+export type IntegrationConnectionUpdateEnvironment = typeof IntegrationConnectionUpdateEnvironment[keyof typeof IntegrationConnectionUpdateEnvironment];
+
+
+export const IntegrationConnectionUpdateEnvironment = {
+  Simulation: 'Simulation',
+  Sandbox: 'Sandbox',
+  Production: 'Production',
+} as const;
+
+export type IntegrationConnectionUpdateConfig = { [key: string]: unknown };
+
+export interface IntegrationConnectionUpdate {
+  name?: string;
+  state?: IntegrationConnectionUpdateState;
+  environment?: IntegrationConnectionUpdateEnvironment;
+  config?: IntegrationConnectionUpdateConfig;
+  tokenHint?: string;
+}
+
+export type IntegrationEventPayload = { [key: string]: unknown };
+
+/**
+ * @nullable
+ */
+export type IntegrationEventMappedPayload = { [key: string]: unknown } | null;
+
+export interface IntegrationEvent {
+  id: string;
+  tenantId: string;
+  connectionId: string;
+  direction: string;
+  eventType: string;
+  /** @nullable */
+  externalId?: string | null;
+  /** @nullable */
+  entityType?: string | null;
+  /** @nullable */
+  entityId?: string | null;
+  status: string;
+  requiresApproval: boolean;
+  /** @nullable */
+  approvedByUserId?: string | null;
+  /** @nullable */
+  approvedAt?: string | null;
+  payload: IntegrationEventPayload;
+  /** @nullable */
+  mappedPayload?: IntegrationEventMappedPayload;
+  attempts: number;
+  /** @nullable */
+  lastError?: string | null;
+  statusHistory: IntegrationStatusEvent[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface AuditEvent {
   id: string;
   tenantId: string;
