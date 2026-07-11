@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { Loader2, AlertCircle, MessageSquarePlus, Plus, CheckCircle2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Loader2, AlertCircle, MessageSquarePlus, Plus, CheckCircle2, Paperclip, X } from "lucide-react";
 import {
   useListPortalRequests,
   useCreatePortalRequest,
   useGetPortalMe,
+  useRequestUploadUrl,
   PortalRequestInputPriority,
+  type PortalRequestAttachment,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,15 +29,55 @@ export default function PortalRequests() {
   const { data, isLoading, isError } = useListPortalRequests();
   const meQuery = useGetPortalMe();
   const createMutation = useCreatePortalRequest();
+  const requestUpload = useRequestUploadUrl();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const locations = meQuery.data?.locations ?? [];
   const [locationId, setLocationId] = useState("");
   const [priority, setPriority] = useState<string>(PortalRequestInputPriority.Medium);
   const [description, setDescription] = useState("");
   const [requestedDate, setRequestedDate] = useState("");
+  const [attachments, setAttachments] = useState<PortalRequestAttachment[]>([]);
+  const [uploading, setUploading] = useState(false);
 
-  const canSubmit = !!locationId && description.trim().length > 0 && !createMutation.isPending;
+  const canSubmit =
+    !!locationId && description.trim().length > 0 && !createMutation.isPending && !uploading;
+
+  // Upload each file to object storage first (signed PUT), then keep only the
+  // returned objectPath + verified metadata to attach to the request. The
+  // server re-verifies the bytes on submit, so this is a convenience, not trust.
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const contentType = file.type || "application/octet-stream";
+        const { uploadURL, objectPath } = await requestUpload.mutateAsync({
+          data: { name: file.name, size: file.size, contentType },
+        });
+        const put = await fetch(uploadURL, {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": contentType },
+          body: file,
+        });
+        if (!put.ok) throw new Error("upload failed");
+        setAttachments((prev) => [
+          ...prev,
+          { objectPath, name: file.name, contentType, size: file.size },
+        ]);
+      }
+    } catch {
+      toast({ title: "Upload failed", description: "Could not attach one or more files.", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const removeAttachment = (objectPath: string) =>
+    setAttachments((prev) => prev.filter((a) => a.objectPath !== objectPath));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,12 +89,14 @@ export default function PortalRequests() {
           priority: priority as PortalRequestInputPriority,
           description: description.trim(),
           ...(requestedDate ? { requestedDate } : {}),
+          ...(attachments.length ? { attachments } : {}),
         },
       });
       toast({ title: "Request submitted", description: "Our team will review your request shortly." });
       setDescription("");
       setRequestedDate("");
       setPriority(PortalRequestInputPriority.Medium);
+      setAttachments([]);
     } catch {
       toast({ title: "Submission failed", description: "Please try again.", variant: "destructive" });
     }
@@ -126,6 +170,40 @@ export default function PortalRequests() {
                 placeholder="Describe the issue or service you need…"
                 data-testid="input-request-description"
               />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sc-2 text-xs uppercase tracking-wider font-semibold">Attachments</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => handleFiles(e.target.files)}
+                data-testid="input-request-attachments"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-panel text-sc-2"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                data-testid="button-add-attachment"
+              >
+                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Paperclip className="w-4 h-4 mr-1.5" /> Add photos or documents</>}
+              </Button>
+              {attachments.length > 0 && (
+                <ul className="space-y-1.5 pt-1" data-testid="attachment-list">
+                  {attachments.map((a) => (
+                    <li key={a.objectPath} className="flex items-center justify-between gap-2 text-xs sc-panel px-2.5 py-1.5" data-testid={`attachment-${a.objectPath}`}>
+                      <span className="truncate text-sc-2">{a.name}</span>
+                      <button type="button" onClick={() => removeAttachment(a.objectPath)} className="shrink-0 text-sc-3 hover:text-destructive" data-testid={`remove-attachment-${a.objectPath}`}>
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <Button type="submit" className="w-full bg-primary text-white font-semibold" disabled={!canSubmit} data-testid="button-submit-request">

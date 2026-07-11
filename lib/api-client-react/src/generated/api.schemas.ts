@@ -533,6 +533,17 @@ export const PortalRequestInputPriority = {
   Emergency: 'Emergency',
 } as const;
 
+export interface PortalRequestAttachment {
+  /** @minLength 1 */
+  objectPath: string;
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  contentType: string;
+  /** @minimum 1 */
+  size: number;
+}
+
 export interface PortalRequestInput {
   /** @minLength 1 */
   locationId: string;
@@ -540,6 +551,7 @@ export interface PortalRequestInput {
   /** @minLength 1 */
   description: string;
   requestedDate?: string;
+  attachments?: PortalRequestAttachment[];
 }
 
 export interface PortalQuote {

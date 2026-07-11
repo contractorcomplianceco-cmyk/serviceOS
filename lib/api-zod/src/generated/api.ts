@@ -4406,11 +4406,21 @@ export const ListPortalRequestsResponse = zod.array(ListPortalRequestsResponseIt
 
 
 
+
+
+
+
 export const CreatePortalRequestBody = zod.object({
   "locationId": zod.string().min(1),
   "priority": zod.enum(['Low', 'Medium', 'High', 'Emergency']).optional(),
   "description": zod.string().min(1),
-  "requestedDate": zod.coerce.date().optional()
+  "requestedDate": zod.coerce.date().optional(),
+  "attachments": zod.array(zod.object({
+  "objectPath": zod.string().min(1),
+  "name": zod.string().min(1),
+  "contentType": zod.string().min(1),
+  "size": zod.number().min(1)
+})).optional()
 })
 
 export const CreatePortalRequestResponse = zod.object({

@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { randomUUID } from "crypto";
 import { and, eq, inArray } from "drizzle-orm";
 import {
   db,
@@ -10,6 +11,7 @@ import {
   paymentsTable,
   documentsTable,
   equipmentTable,
+  filesTable,
 } from "@workspace/db";
 import {
   UpdatePortalProfileBody,
@@ -27,6 +29,9 @@ import {
   toPortalDocument,
   toPortalEquipment,
 } from "../lib/serialize-portal";
+import { isCustomerVisibleDocument } from "../lib/authz";
+import { getStorageAdapter } from "../lib/storage";
+import { checkFilePolicy, normalizeContentType } from "../lib/file-policy";
 import { writeAudit } from "../lib/audit";
 
 const router: IRouter = Router();
@@ -35,6 +40,11 @@ const router: IRouter = Router();
 const VISIBLE_QUOTE_STATUSES = ["Sent", "Approved", "Rejected", "Expired"];
 // Invoice statuses that are safe to expose (internal pre-invoice states hidden).
 const VISIBLE_INVOICE_STATUSES = ["Invoiced", "Paid", "Past Due"];
+// portalSyncStatus values that mean a work order has been published to the
+// portal. Everything else ("Draft", "Needs Approval", "Ready to Send",
+// "Manual Copy Needed") is an internal, not-yet-approved state that must NEVER
+// reach the customer — recurrence-generated drafts land in "Draft".
+const VISIBLE_WO_SYNC_STATUSES = ["Sent", "Synced"];
 // Work order statuses considered "open" for dashboard counts.
 const CLOSED_WO_STATUSES = ["Completed", "Closed", "Cancelled", "Invoiced"];
 
@@ -193,7 +203,12 @@ router.get(
         ),
     ]);
 
-    const openWorkOrders = wos.filter(
+    // Only portal-published work orders may inform any customer-facing count or
+    // list — never internal drafts / unapproved sync states.
+    const visibleWos = wos.filter((w) =>
+      VISIBLE_WO_SYNC_STATUSES.includes(w.portalSyncStatus),
+    );
+    const openWorkOrders = visibleWos.filter(
       (w) => !CLOSED_WO_STATUSES.includes(w.status),
     ).length;
     const pendingQuotes = quotes.filter((q) => q.status === "Sent").length;
@@ -206,7 +221,7 @@ router.get(
     );
 
     const now = Date.now();
-    const upcomingVisits = wos
+    const upcomingVisits = visibleWos
       .filter((w) => w.scheduledStart && w.scheduledStart.getTime() >= now)
       .sort(
         (a, b) => a.scheduledStart!.getTime() - b.scheduledStart!.getTime(),
@@ -219,7 +234,7 @@ router.get(
         locationId: w.locationId,
       }));
 
-    const recentWorkOrders = [...wos]
+    const recentWorkOrders = [...visibleWos]
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, 5)
       .map(toPortalWorkOrder);
@@ -251,7 +266,12 @@ router.get(
         ),
       )
       .orderBy(workOrdersTable.createdAt);
-    res.json(rows.reverse().map(toPortalWorkOrder));
+    res.json(
+      rows
+        .filter((w) => VISIBLE_WO_SYNC_STATUSES.includes(w.portalSyncStatus))
+        .reverse()
+        .map(toPortalWorkOrder),
+    );
   },
 );
 
@@ -276,7 +296,9 @@ router.get(
           eq(workOrdersTable.customerId, user.customerId!),
         ),
       );
-    if (!row) {
+    // 404 (not 403) for not-yet-published work orders so their existence isn't
+    // even confirmed to the customer.
+    if (!row || !VISIBLE_WO_SYNC_STATUSES.includes(row.portalSyncStatus)) {
       res.status(404).json({ error: "Work order not found" });
       return;
     }
@@ -337,6 +359,71 @@ router.post(
         ? d.requestedDate.toISOString().slice(0, 10)
         : (d.requestedDate ?? new Date().toISOString().slice(0, 10));
 
+    // Verify every uploaded attachment against the ACTUAL stored bytes — never
+    // trust the client's declared metadata (a signed PUT can upload anything,
+    // then register compliant-looking JSON). This mirrors the /files guard.
+    const storage = getStorageAdapter();
+    const attachmentEntries: {
+      id: string;
+      name: string;
+      type: "Photo" | "Document" | "PDF";
+      uploadedBy: string;
+      date: string;
+    }[] = [];
+    const fileInserts: {
+      objectPath: string;
+      name: string;
+      contentType: string;
+      size: number;
+    }[] = [];
+    for (const att of d.attachments ?? []) {
+      const objectPath = storage.normalizeObjectPath(att.objectPath);
+      // Portal customers may only reference objects in the fresh signed-upload
+      // namespace — never arbitrary /objects/* paths. Combined with the
+      // unguessable random upload id, this keeps a customer from binding an
+      // object they didn't just upload through the portal's own upload flow.
+      if (!objectPath.startsWith("/objects/uploads/")) {
+        res.status(400).json({ error: "Attachment path is not a portal upload" });
+        return;
+      }
+      const stat = await storage.statObject(objectPath);
+      if (!stat) {
+        res.status(400).json({ error: "Attachment could not be verified" });
+        return;
+      }
+      const policyError = checkFilePolicy({
+        size: stat.size,
+        contentType: stat.contentType,
+      });
+      if (policyError) {
+        res.status(400).json({ error: policyError });
+        return;
+      }
+      if (
+        stat.size !== att.size ||
+        normalizeContentType(stat.contentType) !==
+          normalizeContentType(att.contentType)
+      ) {
+        res.status(400).json({
+          error: "Declared attachment metadata does not match the uploaded file",
+        });
+        return;
+      }
+      attachmentEntries.push({
+        id: randomUUID(),
+        name: att.name,
+        type: stat.contentType.startsWith("image/") ? "Photo" : "Document",
+        uploadedBy: user.name,
+        date: new Date().toISOString(),
+      });
+      fileInserts.push({
+        objectPath,
+        name: att.name,
+        contentType: stat.contentType,
+        size: stat.size,
+      });
+    }
+
     const existing = await db
       .select({ id: workOrdersTable.id })
       .from(workOrdersTable)
@@ -359,8 +446,32 @@ router.post(
         dueDate: requestedDate,
         description: d.description,
         portalSyncStatus: "Synced",
+        attachments: attachmentEntries,
       })
       .returning();
+
+    // Persist file rows (with an ACL owner) linked to the new work order so the
+    // customer's uploads are visible to staff during triage.
+    for (const f of fileInserts) {
+      try {
+        await storage.setObjectAcl(f.objectPath, user.id, "private");
+      } catch (err) {
+        req.log.warn({ err }, "Could not set ACL on portal attachment");
+      }
+      await db.insert(filesTable).values({
+        tenantId: user.tenantId,
+        objectPath: f.objectPath,
+        name: f.name,
+        contentType: f.contentType,
+        size: f.size,
+        entityType: "WorkOrder",
+        entityId: row!.id,
+        version: 1,
+        visibility: "All Staff",
+        uploadedByUserId: user.id,
+        uploadedByName: user.name,
+      });
+    }
     await writeAudit(
       {
         tenantId: user.tenantId,
@@ -529,7 +640,15 @@ router.get(
         ),
       )
       .orderBy(documentsTable.createdAt);
-    res.json(rows.reverse().map(toPortalDocument));
+    // Every staff visibility class ("All Staff", "Managers Only", "Billing
+    // Only") is INTERNAL. Only documents explicitly marked customer-facing may
+    // reach the portal — otherwise internal contracts/W-9s/billing rules leak.
+    res.json(
+      rows
+        .filter((d) => isCustomerVisibleDocument(d.visibility))
+        .reverse()
+        .map(toPortalDocument),
+    );
   },
 );
 

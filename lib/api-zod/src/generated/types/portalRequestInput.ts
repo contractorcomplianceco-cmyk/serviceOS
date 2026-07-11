@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { PortalRequestAttachment } from './portalRequestAttachment';
 import type { PortalRequestInputPriority } from './portalRequestInputPriority';
 
 export interface PortalRequestInput {
@@ -14,4 +15,5 @@ export interface PortalRequestInput {
   /** @minLength 1 */
   description: string;
   requestedDate?: Date;
+  attachments?: PortalRequestAttachment[];
 }

@@ -16,3 +16,12 @@ description: Why the customer portal is a separate app shell from the staff app,
 
 ## Recurrence worker only drafts
 - The recurrence run/generation produces Draft work orders + renewal reminders — never auto-schedules/sends/invoices. This is the same HITL guardrail as RoseOS. Any UI or worker change must preserve draft-only output.
+
+## Portal request attachments reuse the staff /files verification pattern
+- `POST /portal/requests` verifies each attachment against the ACTUAL stored bytes (statObject → checkFilePolicy → declared size/contentType must match), sets an ACL owner, and links filesTable rows to the new Draft work order — identical to the staff `/files` POST route. Additionally restricts paths to the `/objects/uploads/` namespace (both local + object-storage backends normalize signed uploads to `/objects/uploads/<randomUUID>`).
+- **Why:** the trusted source of truth is the stored object, never client JSON. Namespace + unguessable random upload id keep a customer from binding an object they didn't just upload.
+- **How to apply:** a full pending-upload-token ownership model (single-use token keyed by objectPath+userId) was deliberately NOT added — it doesn't exist for staff uploads either and would diverge. If ever hardening object ownership, do it uniformly across `/files` and `/portal/requests`, not portal-only.
+
+## Portal document visibility gate
+- Portal (`/portal/documents`) shows a doc ONLY when `visibility === "Customer Visible"` (`isCustomerVisibleDocument` in authz.ts). Every staff class ("All Staff"/"Managers Only"/"Billing Only") is INTERNAL. Sharing a doc to the portal does NOT hide it from staff (canViewDocumentVisibility returns true for any non-restricted class).
+- Portal work orders are gated by `portalSyncStatus ∈ {Sent, Synced}`; detail route returns 404 (not 403) for non-visible so existence isn't confirmed.

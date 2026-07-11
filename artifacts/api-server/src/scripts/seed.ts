@@ -165,14 +165,14 @@ const SEED_EQUIPMENT: Omit<InsertEquipment, "tenantId">[] = [
 ];
 
 const SEED_DOCUMENTS: Omit<InsertDocument, "tenantId">[] = [
-  { id: "d1", customerId: "c1", name: "RaceTrac COI 2026", type: "COI", expiration: dateOnly(45), visibility: "All Staff" },
+  { id: "d1", customerId: "c1", name: "RaceTrac COI 2026", type: "COI", expiration: dateOnly(45), visibility: "Customer Visible" },
   { id: "d2", customerId: "c1", name: "RaceTrac Master Contract", type: "Contract", visibility: "Managers Only" },
   { id: "d3", customerId: "c4", name: "Heartland W-9", type: "W-9", visibility: "Billing Only" },
-  { id: "d4", customerId: "c4", name: "Heartland COI", type: "COI", expiration: dateOnly(9), visibility: "All Staff" },
+  { id: "d4", customerId: "c4", name: "Heartland COI", type: "COI", expiration: dateOnly(9), visibility: "Customer Visible" },
   { id: "d5", customerId: "c3", name: "Ruth's Chris Billing Rules", type: "Billing Rules", visibility: "Billing Only" },
-  { id: "d6", customerId: "c2", name: "True Food COI", type: "COI", expiration: dateOnly(-5), visibility: "All Staff" },
-  { id: "d7", customerId: "c5", name: "Cracker Barrel Portal Rules", type: "Portal Rules", visibility: "All Staff" },
-  { id: "d8", customerId: "c6", name: "Publix Site Instructions", type: "Site Instructions", visibility: "All Staff" },
+  { id: "d6", customerId: "c2", name: "True Food COI", type: "COI", expiration: dateOnly(-5), visibility: "Customer Visible" },
+  { id: "d7", customerId: "c5", name: "Cracker Barrel Portal Rules", type: "Portal Rules", visibility: "Customer Visible" },
+  { id: "d8", customerId: "c6", name: "Publix Site Instructions", type: "Site Instructions", visibility: "Customer Visible" },
 ];
 
 type SeedQuote = Omit<InsertQuote, "tenantId">;

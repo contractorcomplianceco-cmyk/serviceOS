@@ -212,3 +212,13 @@ export function canViewDocumentVisibility(
   }
   return true;
 }
+
+// Customer-portal document gate. Every staff visibility class ("All Staff",
+// "Managers Only", "Billing Only") is INTERNAL — none are customer-facing. A
+// document only reaches the portal when staff explicitly mark it "Customer
+// Visible". Staff can still see these too (canViewDocumentVisibility returns
+// true for any non-restricted class), so sharing a doc never hides it internally.
+export const CUSTOMER_VISIBLE_DOCUMENT = "Customer Visible";
+export function isCustomerVisibleDocument(visibility: string): boolean {
+  return visibility === CUSTOMER_VISIBLE_DOCUMENT;
+}

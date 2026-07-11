@@ -94,6 +94,7 @@ export * from './portalPayment';
 export * from './portalProfile';
 export * from './portalProfileUpdate';
 export * from './portalQuote';
+export * from './portalRequestAttachment';
 export * from './portalRequestInput';
 export * from './portalRequestInputPriority';
 export * from './portalUpdate';

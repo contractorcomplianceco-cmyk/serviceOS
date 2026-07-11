@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { shortDate } from "@/lib/ui";
-import { Search, Repeat, Plus, Play, Pause, SkipForward, Ban, Zap, CalendarClock } from "lucide-react";
+import { Search, Repeat, Plus, Play, Pause, SkipForward, Ban, Zap, CalendarClock, X, CalendarCog } from "lucide-react";
 import {
   useListRecurrenceSchedules,
   useCreateRecurrenceSchedule,
@@ -21,12 +21,15 @@ import {
   useResumeRecurrence,
   useEndRecurrence,
   useSkipRecurrence,
+  useRescheduleRecurrence,
   getListRecurrenceSchedulesQueryKey,
   getListWorkOrdersQueryKey,
   RecurrenceScheduleInputFrequency,
   type RecurrenceSchedule,
   type RecurrenceScheduleInputFrequency as Freq,
 } from "@workspace/api-client-react";
+
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function scheduleStatusClass(status: string): string {
   switch (status) {
@@ -58,6 +61,7 @@ export default function Recurrence() {
   const resume = useResumeRecurrence();
   const end = useEndRecurrence();
   const skip = useSkipRecurrence();
+  const reschedule = useRescheduleRecurrence();
 
   const schedules = schedulesQuery.data ?? [];
 
@@ -69,6 +73,27 @@ export default function Recurrence() {
   const customerName = (id: string) => customers.find((c) => c.id === id)?.name ?? "Unknown customer";
 
   const [createOpen, setCreateOpen] = useState(false);
+  const [rescheduleFor, setRescheduleFor] = useState<RecurrenceSchedule | null>(null);
+  const [rNextRun, setRNextRun] = useState("");
+
+  const handleReschedule = () => {
+    if (!rescheduleFor || !rNextRun) {
+      toast({ title: "Date required", description: "Pick the next run date." });
+      return;
+    }
+    reschedule.mutate(
+      { id: rescheduleFor.id, data: { nextRunDate: rNextRun } },
+      {
+        onSuccess: () => {
+          toast({ title: "Next run rescheduled", description: `${rescheduleFor.title} now runs ${shortDate(rNextRun)}.` });
+          invalidate();
+          setRescheduleFor(null);
+          setRNextRun("");
+        },
+        onError: () => toast({ title: "Reschedule failed", description: "Please try again." }),
+      },
+    );
+  };
   const [fCustomerId, setFCustomerId] = useState("");
   const [fLocationId, setFLocationId] = useState("");
   const [fTitle, setFTitle] = useState("");
@@ -77,6 +102,11 @@ export default function Recurrence() {
   const [fStartDate, setFStartDate] = useState("");
   const [fEndDate, setFEndDate] = useState("");
   const [fDescription, setFDescription] = useState("");
+  const [fWeekdays, setFWeekdays] = useState<number[]>([]);
+  const [fMonthDays, setFMonthDays] = useState<number[]>([]);
+  const [fBlackoutDates, setFBlackoutDates] = useState<string[]>([]);
+  const [fBlackoutInput, setFBlackoutInput] = useState("");
+  const [fOccurrenceLimit, setFOccurrenceLimit] = useState("");
   const [previewDates, setPreviewDates] = useState<string[]>([]);
 
   const customerLocations = locations.filter((l) => l.customerId === fCustomerId);
@@ -90,8 +120,37 @@ export default function Recurrence() {
     setFStartDate("");
     setFEndDate("");
     setFDescription("");
+    setFWeekdays([]);
+    setFMonthDays([]);
+    setFBlackoutDates([]);
+    setFBlackoutInput("");
+    setFOccurrenceLimit("");
     setPreviewDates([]);
   };
+
+  const toggleWeekday = (day: number) =>
+    setFWeekdays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort((a, b) => a - b)));
+  const toggleMonthDay = (day: number) =>
+    setFMonthDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort((a, b) => a - b)));
+  const addBlackout = () => {
+    if (!fBlackoutInput) return;
+    setFBlackoutDates((prev) => (prev.includes(fBlackoutInput) ? prev : [...prev, fBlackoutInput].sort()));
+    setFBlackoutInput("");
+  };
+  const removeBlackout = (d: string) => setFBlackoutDates((prev) => prev.filter((x) => x !== d));
+
+  // Only send the recurrence controls that apply to the chosen frequency, so a
+  // stale weekday/monthDay selection can't leak into an unrelated cadence.
+  const recurrenceExtras = () => ({
+    weekdays: fFrequency === "Weekly" && fWeekdays.length ? fWeekdays : undefined,
+    monthDays:
+      (fFrequency === "Monthly" || fFrequency === "Quarterly" || fFrequency === "SemiAnnual" || fFrequency === "Annual") &&
+      fMonthDays.length
+        ? fMonthDays
+        : undefined,
+    blackoutDates: fBlackoutDates.length ? fBlackoutDates : undefined,
+    occurrenceLimit: fOccurrenceLimit ? Number(fOccurrenceLimit) : undefined,
+  });
 
   const handlePreview = () => {
     if (!fStartDate) {
@@ -106,6 +165,7 @@ export default function Recurrence() {
           startDate: fStartDate,
           endDate: fEndDate || undefined,
           count: 6,
+          ...recurrenceExtras(),
         },
       },
       {
@@ -131,6 +191,7 @@ export default function Recurrence() {
           startDate: fStartDate,
           endDate: fEndDate || undefined,
           description: fDescription.trim() || undefined,
+          ...recurrenceExtras(),
         },
       },
       {
@@ -244,6 +305,11 @@ export default function Recurrence() {
                     <SkipForward className="w-3.5 h-3.5 mr-1.5" /> Skip Next
                   </Button>
                 )}
+                {(s.status === "Active" || s.status === "Paused") && (
+                  <Button size="sm" variant="outline" className="border-panel text-sc-2" onClick={() => { setRescheduleFor(s); setRNextRun(s.nextRunDate ?? ""); }} disabled={reschedule.isPending} data-testid={`button-reschedule-${s.id}`}>
+                    <CalendarCog className="w-3.5 h-3.5 mr-1.5" /> Reschedule
+                  </Button>
+                )}
                 {s.status !== "Ended" && s.status !== "Completed" && (
                   <Button size="sm" variant="outline" className="border-destructive/30 text-destructive" onClick={() => doAction(end, s.id, "ended")} disabled={end.isPending} data-testid={`button-end-${s.id}`}>
                     <Ban className="w-3.5 h-3.5 mr-1.5" /> End
@@ -301,6 +367,69 @@ export default function Recurrence() {
                 <Input type="number" min="1" value={fInterval} onChange={(e) => setFInterval(e.target.value)} className="bg-elevated border-panel text-sc" data-testid="input-schedule-interval" />
               </div>
             </div>
+            {fFrequency === "Weekly" && (
+              <div className="space-y-2">
+                <Label className="text-sc-2">Days of week</Label>
+                <div className="flex flex-wrap gap-1.5" data-testid="weekday-picker">
+                  {WEEKDAY_LABELS.map((lbl, i) => (
+                    <button
+                      key={lbl}
+                      type="button"
+                      onClick={() => toggleWeekday(i)}
+                      className={`px-2.5 py-1 rounded-md text-xs border transition-colors ${fWeekdays.includes(i) ? "bg-blue-500/15 text-blue-500 border-blue-500/30" : "border-panel text-sc-2 hover:bg-elevated"}`}
+                      data-testid={`weekday-${i}`}
+                    >
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-sc-3">Leave empty to use the start date's weekday.</p>
+              </div>
+            )}
+            {(fFrequency === "Monthly" || fFrequency === "Quarterly" || fFrequency === "SemiAnnual" || fFrequency === "Annual") && (
+              <div className="space-y-2">
+                <Label className="text-sc-2">Days of month</Label>
+                <div className="flex flex-wrap gap-1" data-testid="monthday-picker">
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => toggleMonthDay(d)}
+                      className={`w-7 h-7 rounded-md text-xs border transition-colors ${fMonthDays.includes(d) ? "bg-blue-500/15 text-blue-500 border-blue-500/30" : "border-panel text-sc-2 hover:bg-elevated"}`}
+                      data-testid={`monthday-${d}`}
+                    >
+                      {d}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-sc-3">Leave empty to use the start date's day-of-month.</p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label className="text-sc-2">Blackout dates (optional)</Label>
+              <div className="flex gap-2">
+                <Input type="date" value={fBlackoutInput} onChange={(e) => setFBlackoutInput(e.target.value)} className="bg-elevated border-panel text-sc" data-testid="input-blackout-date" />
+                <Button type="button" variant="outline" className="border-panel text-sc-2 shrink-0" onClick={addBlackout} data-testid="button-add-blackout">Add</Button>
+              </div>
+              {fBlackoutDates.length > 0 && (
+                <div className="flex flex-wrap gap-1.5" data-testid="blackout-list">
+                  {fBlackoutDates.map((d) => (
+                    <Badge key={d} variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 gap-1 pr-1" data-testid={`blackout-${d}`}>
+                      {shortDate(d)}
+                      <button type="button" onClick={() => removeBlackout(d)} className="hover:text-amber-800" data-testid={`remove-blackout-${d}`}>
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-sc-3">Occurrences landing on these dates are skipped.</p>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sc-2">Occurrence limit (optional)</Label>
+              <Input type="number" min="1" value={fOccurrenceLimit} onChange={(e) => setFOccurrenceLimit(e.target.value)} placeholder="No limit" className="bg-elevated border-panel text-sc" data-testid="input-occurrence-limit" />
+              <p className="text-xs text-sc-3">Auto-completes the schedule after this many draft work orders.</p>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label className="text-sc-2">Start date</Label>
@@ -333,6 +462,29 @@ export default function Recurrence() {
             <Button variant="outline" className="border-panel text-sc-2" onClick={() => setCreateOpen(false)}>Cancel</Button>
             <Button className="text-white" style={{ background: "var(--sc-btn)", border: "1px solid var(--sc-btn-highlight)" }} onClick={handleCreate} disabled={createSchedule.isPending} data-testid="button-submit-schedule">
               Create Schedule
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={rescheduleFor !== null} onOpenChange={(open) => { if (!open) { setRescheduleFor(null); setRNextRun(""); } }}>
+        <DialogContent className="max-w-sm bg-card border-panel text-sc">
+          <DialogHeader className="border-b border-panel pb-4">
+            <DialogTitle className="text-lg text-sc flex items-center gap-2">
+              <CalendarCog className="w-4 h-4 text-sc-blue" /> Reschedule Next Run
+            </DialogTitle>
+            <DialogDescription className="text-sc-3">
+              Move the next draft-generation date for {rescheduleFor?.title}. Existing drafts are untouched.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label className="text-sc-2">Next run date</Label>
+            <Input type="date" value={rNextRun} onChange={(e) => setRNextRun(e.target.value)} className="bg-elevated border-panel text-sc" data-testid="input-reschedule-date" />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" className="border-panel text-sc-2" onClick={() => { setRescheduleFor(null); setRNextRun(""); }}>Cancel</Button>
+            <Button className="text-white" style={{ background: "var(--sc-btn)", border: "1px solid var(--sc-btn-highlight)" }} onClick={handleReschedule} disabled={reschedule.isPending} data-testid="button-submit-reschedule">
+              Reschedule
             </Button>
           </DialogFooter>
         </DialogContent>

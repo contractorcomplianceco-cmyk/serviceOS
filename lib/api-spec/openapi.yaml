@@ -3265,6 +3265,19 @@ components:
           enum: [Low, Medium, High, Emergency]
         description: { type: string, minLength: 1 }
         requestedDate: { type: string, format: date }
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalRequestAttachment"
+
+    PortalRequestAttachment:
+      type: object
+      required: [objectPath, name, contentType, size]
+      properties:
+        objectPath: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        contentType: { type: string, minLength: 1 }
+        size: { type: integer, minimum: 1 }
 
     PortalQuote:
       type: object
