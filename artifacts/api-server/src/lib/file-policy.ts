@@ -26,6 +26,11 @@ export interface FilePolicyInput {
   contentType: string;
 }
 
+/** Strip parameters (e.g. "; charset=utf-8") and lowercase for comparison. */
+export function normalizeContentType(ct: string): string {
+  return (ct.split(";")[0] ?? "").trim().toLowerCase();
+}
+
 /** Returns an error message when the file violates policy, else null. */
 export function checkFilePolicy(input: FilePolicyInput): string | null {
   if (!Number.isFinite(input.size) || input.size <= 0) {

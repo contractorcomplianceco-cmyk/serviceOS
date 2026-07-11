@@ -19,6 +19,11 @@ description: Durable guardrails for the ServiceConnect api-server (inventory led
 - RoseOS never auto-commits. Purchase requests go Requested → Approved → Received; receiving is the ONLY step that posts stock into the ledger. Document extraction is simulated but persisted as a draft requiring human approval.
 - **Why:** the whole product thesis is guardrailed AI. Approval/authz lives in the backend, not just hidden UI.
 
+## Storage is behind a swappable adapter; file policy is verified server-side
+- Routes never touch GCS directly — they go through `StorageAdapter` (lib/storage). Two backends are selected by env: object-storage (Replit App Storage, prod; active when PRIVATE_OBJECT_DIR + PUBLIC_OBJECT_SEARCH_PATHS are set) and local-filesystem (dev fallback). `STORAGE_BACKEND=local|object` forces one.
+- **Why:** the task requires a dev-local + production split, and keeping ACL/policy checks ABOVE the adapter means both backends share identical guarantees.
+- Type/size policy must be verified against the ACTUAL stored object, never the client JSON. `/files` calls `adapter.statObject`, re-runs `checkFilePolicy` on real bytes, rejects on declared-vs-actual mismatch, and persists the verified values. **Why:** signed PUT URLs let a client upload arbitrary bytes then register compliant-looking metadata — trusting the request body is a real bypass.
+
 ## Frontend store is a hybrid (backend + local)
 - The operational spine is served from the backend via generated React Query hooks; invoices/payments + AI recommendations stay local. When moving a slice from local to backend, remove it from the local state shape AND add a list query.
 - **Generated LIST response types are inline/unnamed and widen enums to `string`**, so the store casts them `as unknown as <DomainType>[]`. Mutation BODY types ARE named — import those from the api-client barrel.

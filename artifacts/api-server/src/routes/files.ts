@@ -5,12 +5,11 @@ import { CreateFileBody } from "@workspace/api-zod";
 import { requireAuth } from "../middleware/auth";
 import { isValidRole, canViewDocumentVisibility } from "../lib/authz";
 import { toFileRecord } from "../lib/serialize-ops";
-import { ObjectStorageService } from "../lib/objectStorage";
-import { checkFilePolicy } from "../lib/file-policy";
+import { getStorageAdapter } from "../lib/storage";
+import { checkFilePolicy, normalizeContentType } from "../lib/file-policy";
 import { writeAudit } from "../lib/audit";
 
 const router: IRouter = Router();
-const objectStorage = new ObjectStorageService();
 
 // GET /files?entityType=&entityId= — list file metadata the caller may see.
 router.get("/files", requireAuth, async (req, res): Promise<void> => {
@@ -44,29 +43,49 @@ router.post("/files", requireAuth, async (req, res): Promise<void> => {
     return;
   }
   const d = parsed.data;
-  const policyError = checkFilePolicy({ size: d.size, contentType: d.contentType });
-  if (policyError) {
-    res.status(400).json({ error: policyError });
+  const declaredPolicyError = checkFilePolicy({
+    size: d.size,
+    contentType: d.contentType,
+  });
+  if (declaredPolicyError) {
+    res.status(400).json({ error: declaredPolicyError });
     return;
   }
-  const objectPath = objectStorage.normalizeObjectEntityPath(d.objectPath);
+  const storage = getStorageAdapter();
+  const objectPath = storage.normalizeObjectPath(d.objectPath);
   if (!objectPath.startsWith("/objects/")) {
     res.status(400).json({ error: "Object path is not a stored entity" });
     return;
   }
-  // Verify the object actually exists in storage before persisting metadata, so
-  // a client cannot record a row for an upload that never completed.
-  try {
-    await objectStorage.getObjectEntityFile(objectPath);
-  } catch {
+  // Server-side verification: the trusted source of truth is the stored object,
+  // NOT the client JSON. Read the ACTUAL persisted metadata and (1) confirm the
+  // upload exists, (2) enforce the type/size policy against the real bytes, and
+  // (3) reject when the client-declared size/contentType do not match what was
+  // actually stored. This makes upload policy untamperable by the client.
+  const stat = await storage.statObject(objectPath);
+  if (!stat) {
     res.status(400).json({ error: "Uploaded object could not be verified" });
     return;
   }
+  const actualPolicyError = checkFilePolicy({
+    size: stat.size,
+    contentType: stat.contentType,
+  });
+  if (actualPolicyError) {
+    res.status(400).json({ error: actualPolicyError });
+    return;
+  }
+  if (
+    stat.size !== d.size ||
+    normalizeContentType(stat.contentType) !== normalizeContentType(d.contentType)
+  ) {
+    res
+      .status(400)
+      .json({ error: "Declared file metadata does not match the uploaded object" });
+    return;
+  }
   try {
-    await objectStorage.trySetObjectEntityAclPolicy(objectPath, {
-      owner: user.id,
-      visibility: "private",
-    });
+    await storage.setObjectAcl(objectPath, user.id, "private");
   } catch (err) {
     req.log.warn({ err }, "Could not set ACL policy on uploaded object");
   }
@@ -97,8 +116,8 @@ router.post("/files", requireAuth, async (req, res): Promise<void> => {
       tenantId: user.tenantId,
       objectPath,
       name: d.name,
-      contentType: d.contentType,
-      size: d.size,
+      contentType: stat.contentType,
+      size: stat.size,
       entityType,
       entityId,
       version: nextVersion,
