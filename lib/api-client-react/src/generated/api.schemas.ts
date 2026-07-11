@@ -5,6 +5,473 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface RecommendationEvidence {
+  label: string;
+  value: string;
+}
+
+export interface RecommendationLifecycleEvent {
+  at: string;
+  actorId: string;
+  actor: string;
+  action: string;
+  detail: string;
+}
+
+export type RecommendationSeverity = typeof RecommendationSeverity[keyof typeof RecommendationSeverity];
+
+
+export const RecommendationSeverity = {
+  info: 'info',
+  warning: 'warning',
+  urgent: 'urgent',
+} as const;
+
+export type RecommendationStatus = typeof RecommendationStatus[keyof typeof RecommendationStatus];
+
+
+export const RecommendationStatus = {
+  Open: 'Open',
+  Approved: 'Approved',
+  Edited: 'Edited',
+  Rejected: 'Rejected',
+  Snoozed: 'Snoozed',
+  Resolved: 'Resolved',
+} as const;
+
+export interface Recommendation {
+  id: string;
+  tenantId: string;
+  dedupeKey: string;
+  ruleKey: string;
+  type: string;
+  severity: RecommendationSeverity;
+  title: string;
+  description: string;
+  reason: string;
+  evidence: RecommendationEvidence[];
+  confidence: number;
+  suggestedAction: string;
+  relatedEntityType?: string | null;
+  relatedEntityId?: string | null;
+  status: RecommendationStatus;
+  editedTitle?: string | null;
+  editedDescription?: string | null;
+  assignedToUserId?: string | null;
+  snoozeUntil?: string | null;
+  resolvedByUserId?: string | null;
+  resolvedAt?: string | null;
+  lifecycle: RecommendationLifecycleEvent[];
+  lastGeneratedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GenerateRecommendationsResult {
+  created: number;
+  updated: number;
+  resolved: number;
+  reopened: number;
+}
+
+export interface EditRecommendationInput {
+  /** @minLength 1 */
+  title: string;
+  /** @minLength 1 */
+  description: string;
+}
+
+export interface SnoozeRecommendationInput {
+  snoozeUntil: string;
+}
+
+export interface JobLogEntry {
+  at: string;
+  status: string;
+  detail: string;
+}
+
+export type JobStatus = typeof JobStatus[keyof typeof JobStatus];
+
+
+export const JobStatus = {
+  Pending: 'Pending',
+  Running: 'Running',
+  Succeeded: 'Succeeded',
+  Failed: 'Failed',
+} as const;
+
+export type JobPayload = { [key: string]: unknown };
+
+export type JobResult = { [key: string]: unknown } | null;
+
+export interface Job {
+  id: string;
+  tenantId: string;
+  type: string;
+  status: JobStatus;
+  payload: JobPayload;
+  result?: JobResult;
+  runAt: string;
+  attempts: number;
+  maxAttempts: number;
+  lastError?: string | null;
+  recurringSeconds?: number | null;
+  dedupeKey?: string | null;
+  log: JobLogEntry[];
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  createdByUserId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type EnqueueJobInputPayload = { [key: string]: unknown };
+
+export interface EnqueueJobInput {
+  type: string;
+  payload?: EnqueueJobInputPayload;
+}
+
+export type SavedListFilterOp = typeof SavedListFilterOp[keyof typeof SavedListFilterOp];
+
+
+export const SavedListFilterOp = {
+  eq: 'eq',
+  neq: 'neq',
+  contains: 'contains',
+  in: 'in',
+  gt: 'gt',
+  lt: 'lt',
+  gte: 'gte',
+  lte: 'lte',
+  is_empty: 'is_empty',
+  not_empty: 'not_empty',
+} as const;
+
+export interface SavedListFilter {
+  field: string;
+  op: SavedListFilterOp;
+  value?: string | number | boolean | string[] | null;
+}
+
+export type SavedListEntity = typeof SavedListEntity[keyof typeof SavedListEntity];
+
+
+export const SavedListEntity = {
+  'work-orders': 'work-orders',
+  customers: 'customers',
+  invoices: 'invoices',
+  inventory: 'inventory',
+  equipment: 'equipment',
+} as const;
+
+export type SavedListSortDir = typeof SavedListSortDir[keyof typeof SavedListSortDir];
+
+
+export const SavedListSortDir = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type SavedListVisibility = typeof SavedListVisibility[keyof typeof SavedListVisibility];
+
+
+export const SavedListVisibility = {
+  private: 'private',
+  shared: 'shared',
+  role: 'role',
+} as const;
+
+export interface SavedList {
+  id: string;
+  tenantId: string;
+  name: string;
+  entity: SavedListEntity;
+  filters: SavedListFilter[];
+  search?: string | null;
+  sortField?: string | null;
+  sortDir: SavedListSortDir;
+  visibility: SavedListVisibility;
+  roleRestrictions: string[];
+  ownerUserId: string;
+  favorite: boolean;
+  sortOrder: number;
+  isSeeded: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SavedListInputEntity = typeof SavedListInputEntity[keyof typeof SavedListInputEntity];
+
+
+export const SavedListInputEntity = {
+  'work-orders': 'work-orders',
+  customers: 'customers',
+  invoices: 'invoices',
+  inventory: 'inventory',
+  equipment: 'equipment',
+} as const;
+
+export type SavedListInputSortDir = typeof SavedListInputSortDir[keyof typeof SavedListInputSortDir];
+
+
+export const SavedListInputSortDir = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type SavedListInputVisibility = typeof SavedListInputVisibility[keyof typeof SavedListInputVisibility];
+
+
+export const SavedListInputVisibility = {
+  private: 'private',
+  shared: 'shared',
+  role: 'role',
+} as const;
+
+export interface SavedListInput {
+  /** @minLength 1 */
+  name: string;
+  entity: SavedListInputEntity;
+  filters?: SavedListFilter[];
+  search?: string | null;
+  sortField?: string | null;
+  sortDir?: SavedListInputSortDir;
+  visibility?: SavedListInputVisibility;
+  roleRestrictions?: string[];
+  favorite?: boolean;
+}
+
+export type SavedListUpdateInputSortDir = typeof SavedListUpdateInputSortDir[keyof typeof SavedListUpdateInputSortDir];
+
+
+export const SavedListUpdateInputSortDir = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type SavedListUpdateInputVisibility = typeof SavedListUpdateInputVisibility[keyof typeof SavedListUpdateInputVisibility];
+
+
+export const SavedListUpdateInputVisibility = {
+  private: 'private',
+  shared: 'shared',
+  role: 'role',
+} as const;
+
+export interface SavedListUpdateInput {
+  /** @minLength 1 */
+  name?: string;
+  filters?: SavedListFilter[];
+  search?: string | null;
+  sortField?: string | null;
+  sortDir?: SavedListUpdateInputSortDir;
+  visibility?: SavedListUpdateInputVisibility;
+  roleRestrictions?: string[];
+  favorite?: boolean;
+  sortOrder?: number;
+}
+
+export type SavedListRunResultItemsItem = { [key: string]: unknown };
+
+export interface SavedListRunResult {
+  entity: string;
+  count: number;
+  items: SavedListRunResultItemsItem[];
+}
+
+export interface SearchResult {
+  entity: string;
+  id: string;
+  title: string;
+  subtitle: string;
+  url: string;
+  badge?: string | null;
+}
+
+export interface SearchResults {
+  query: string;
+  results: SearchResult[];
+}
+
+export interface ReportMetric {
+  label: string;
+  value: number;
+  format?: string | null;
+}
+
+export interface ReportSeriesPoint {
+  name: string;
+  value: number;
+}
+
+export type ReportsResponseOperational = {
+  metrics: ReportMetric[];
+  workOrdersByStatus: ReportSeriesPoint[];
+  workOrdersByPriority: ReportSeriesPoint[];
+  techUtilization: ReportSeriesPoint[];
+};
+
+export type ReportsResponseFinancial = {
+  label: string;
+  metrics: ReportMetric[];
+  arAging: ReportSeriesPoint[];
+  revenueByCustomer: ReportSeriesPoint[];
+};
+
+export interface ReportsResponse {
+  generatedAt: string;
+  disclaimer: string;
+  operational: ReportsResponseOperational;
+  financial: ReportsResponseFinancial;
+}
+
+export interface MigrationColumnMap {
+  target: string;
+  source?: string | null;
+}
+
+export interface MigrationFieldSpec {
+  target: string;
+  required: boolean;
+  type: string;
+  label: string;
+}
+
+export interface MigrationEntitySpec {
+  entity: string;
+  label: string;
+  fields: MigrationFieldSpec[];
+  dedupeFields: string[];
+}
+
+export interface MigrationBatchSummary {
+  totalRows: number;
+  validRows: number;
+  errorRows: number;
+  duplicateRows: number;
+  importedRows: number;
+  failedRows: number;
+}
+
+export type MigrationBatchStatus = typeof MigrationBatchStatus[keyof typeof MigrationBatchStatus];
+
+
+export const MigrationBatchStatus = {
+  Draft: 'Draft',
+  Validated: 'Validated',
+  Importing: 'Importing',
+  Imported: 'Imported',
+  RolledBack: 'RolledBack',
+  Failed: 'Failed',
+} as const;
+
+export interface MigrationBatch {
+  id: string;
+  tenantId: string;
+  entity: string;
+  fileName: string;
+  status: MigrationBatchStatus;
+  sourceColumns: string[];
+  mapping: MigrationColumnMap[];
+  dryRun: boolean;
+  summary?: MigrationBatchSummary | null;
+  createdByUserId: string;
+  importedAt?: string | null;
+  rolledBackAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MigrationRowError {
+  field: string;
+  message: string;
+}
+
+export type MigrationRowRaw = {[key: string]: string};
+
+export type MigrationRowMapped = { [key: string]: unknown };
+
+export type MigrationRowStatus = typeof MigrationRowStatus[keyof typeof MigrationRowStatus];
+
+
+export const MigrationRowStatus = {
+  Valid: 'Valid',
+  Error: 'Error',
+  Duplicate: 'Duplicate',
+  Imported: 'Imported',
+  Failed: 'Failed',
+  RolledBack: 'RolledBack',
+} as const;
+
+export interface MigrationRow {
+  id: string;
+  tenantId: string;
+  batchId: string;
+  rowNumber: number;
+  raw: MigrationRowRaw;
+  mapped: MigrationRowMapped;
+  status: MigrationRowStatus;
+  errors: MigrationRowError[];
+  sourceId?: string | null;
+  createdEntityId?: string | null;
+  createdAt: string;
+}
+
+export interface MigrationTemplate {
+  id: string;
+  tenantId: string;
+  name: string;
+  entity: string;
+  mapping: MigrationColumnMap[];
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateMigrationBatchInputEntity = typeof CreateMigrationBatchInputEntity[keyof typeof CreateMigrationBatchInputEntity];
+
+
+export const CreateMigrationBatchInputEntity = {
+  customers: 'customers',
+  locations: 'locations',
+  equipment: 'equipment',
+  inventory: 'inventory',
+  'work-orders': 'work-orders',
+} as const;
+
+export interface CreateMigrationBatchInput {
+  entity: CreateMigrationBatchInputEntity;
+  /** @minLength 1 */
+  fileName: string;
+  /** @minLength 1 */
+  csv: string;
+  mapping?: MigrationColumnMap[];
+}
+
+export interface UpdateMigrationMappingInput {
+  mapping: MigrationColumnMap[];
+}
+
+export type CreateMigrationTemplateInputEntity = typeof CreateMigrationTemplateInputEntity[keyof typeof CreateMigrationTemplateInputEntity];
+
+
+export const CreateMigrationTemplateInputEntity = {
+  customers: 'customers',
+  locations: 'locations',
+  equipment: 'equipment',
+  inventory: 'inventory',
+  'work-orders': 'work-orders',
+} as const;
+
+export interface CreateMigrationTemplateInput {
+  /** @minLength 1 */
+  name: string;
+  entity: CreateMigrationTemplateInputEntity;
+  mapping: MigrationColumnMap[];
+}
+
 export interface QuoteLine {
   id: string;
   description: string;
@@ -1941,5 +2408,22 @@ itemId?: string;
 export type ListFilesParams = {
 entityType?: string;
 entityId?: string;
+};
+
+export type ListRecommendationsParams = {
+status?: string;
+};
+
+export type ListJobsParams = {
+status?: string;
+type?: string;
+};
+
+export type ListSavedListsParams = {
+entity?: string;
+};
+
+export type GlobalSearchParams = {
+q: string;
 };
 

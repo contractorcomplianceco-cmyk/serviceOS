@@ -21,12 +21,13 @@ export type NavKey =
   | "settings"
   | "contracts"
   | "integrations"
+  | "lists"
   | "portal";
 
 const ALL: NavKey[] = [
   "today", "intake", "work-orders", "dispatch", "technicians", "customers",
   "locations", "inventory", "equipment", "billing", "accounting", "documents",
-  "reports", "intelligence", "contracts", "integrations", "settings",
+  "reports", "intelligence", "contracts", "integrations", "lists", "settings",
 ];
 
 // Canonical, backend-enforced role → nav access map (12 roles).
@@ -35,16 +36,16 @@ const ALL: NavKey[] = [
 // maps identical so client nav visibility never diverges from server authz.
 export const ROLE_NAV: Record<Role, NavKey[]> = {
   Administrator: ALL,
-  "Service Manager": ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "billing", "documents", "reports", "intelligence", "contracts", "integrations"],
-  Scheduler: ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "documents", "intelligence", "contracts"],
-  Supervisor: ["today", "work-orders", "dispatch", "technicians", "customers", "locations", "equipment", "inventory", "documents", "reports", "intelligence"],
-  "Lead Technician": ["today", "work-orders", "dispatch", "technicians", "customers", "locations", "equipment", "inventory"],
-  Technician: ["today", "work-orders", "customers", "locations", "equipment", "inventory"],
-  Billing: ["today", "work-orders", "customers", "billing", "accounting", "documents", "reports"],
-  Bookkeeper: ["today", "billing", "accounting", "documents", "reports"],
-  "Inventory Manager": ["today", "work-orders", "inventory", "equipment", "locations", "reports"],
-  Sales: ["today", "intake", "work-orders", "customers", "locations", "reports", "intelligence"],
-  Subcontractor: ["today", "work-orders"],
+  "Service Manager": ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "billing", "documents", "reports", "intelligence", "contracts", "integrations", "lists"],
+  Scheduler: ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "documents", "intelligence", "contracts", "lists"],
+  Supervisor: ["today", "work-orders", "dispatch", "technicians", "customers", "locations", "equipment", "inventory", "documents", "reports", "intelligence", "lists"],
+  "Lead Technician": ["today", "work-orders", "dispatch", "technicians", "customers", "locations", "equipment", "inventory", "lists"],
+  Technician: ["today", "work-orders", "customers", "locations", "equipment", "inventory", "lists"],
+  Billing: ["today", "work-orders", "customers", "billing", "accounting", "documents", "reports", "lists"],
+  Bookkeeper: ["today", "billing", "accounting", "documents", "reports", "lists"],
+  "Inventory Manager": ["today", "work-orders", "inventory", "equipment", "locations", "reports", "lists"],
+  Sales: ["today", "intake", "work-orders", "customers", "locations", "reports", "intelligence", "lists"],
+  Subcontractor: ["today", "work-orders", "lists"],
   "Customer Portal User": ["portal"],
 };
 
@@ -226,6 +227,36 @@ export function canViewDocumentVisibility(
     );
   }
   return true;
+}
+
+// Roles that may act on RoseOS recommendations (approve/edit/reject/snooze/
+// resolve). Acting on a recommendation is a human decision — RoseOS only
+// suggests. View access is governed by the "intelligence" nav.
+const RECOMMENDATION_MANAGE_ROLES: Role[] = [
+  "Administrator",
+  "Service Manager",
+  "Supervisor",
+  "Scheduler",
+];
+export function canManageRecommendations(role: Role): boolean {
+  return RECOMMENDATION_MANAGE_ROLES.includes(role);
+}
+
+// Only administrators may run the CSV migration center (validate/import/roll
+// back). Migration lives under Settings, which is admin-only.
+export function canManageMigration(role: Role): boolean {
+  return role === "Administrator";
+}
+
+// Roles that may view the background job monitor.
+const JOB_VIEW_ROLES: Role[] = ["Administrator", "Service Manager"];
+export function canViewJobs(role: Role): boolean {
+  return JOB_VIEW_ROLES.includes(role);
+}
+
+// Only administrators may manually enqueue/trigger background jobs.
+export function canRunJobs(role: Role): boolean {
+  return role === "Administrator";
 }
 
 // Customer-portal document gate. Every staff visibility class ("All Staff",

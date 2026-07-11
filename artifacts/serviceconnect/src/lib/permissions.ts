@@ -18,12 +18,13 @@ export type NavKey =
   | 'settings'
   | 'contracts'
   | 'integrations'
+  | 'lists'
   | 'portal';
 
 const ALL: NavKey[] = [
   'today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers',
   'locations', 'inventory', 'equipment', 'billing', 'accounting', 'documents',
-  'reports', 'intelligence', 'contracts', 'integrations', 'settings',
+  'reports', 'intelligence', 'contracts', 'integrations', 'lists', 'settings',
 ];
 
 // IMPORTANT: this map is the client mirror of the backend-enforced source of
@@ -32,16 +33,16 @@ const ALL: NavKey[] = [
 // diverges from server-side authorization.
 const ROLE_NAV: Record<Role, NavKey[]> = {
   Administrator: ALL,
-  'Service Manager': ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'billing', 'documents', 'reports', 'intelligence', 'contracts', 'integrations'],
-  Scheduler: ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'documents', 'intelligence', 'contracts'],
-  Supervisor: ['today', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'equipment', 'inventory', 'documents', 'reports', 'intelligence'],
-  'Lead Technician': ['today', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'equipment', 'inventory'],
-  Technician: ['today', 'work-orders', 'customers', 'locations', 'equipment', 'inventory'],
-  Billing: ['today', 'work-orders', 'customers', 'billing', 'accounting', 'documents', 'reports'],
-  Bookkeeper: ['today', 'billing', 'accounting', 'documents', 'reports'],
-  'Inventory Manager': ['today', 'work-orders', 'inventory', 'equipment', 'locations', 'reports'],
-  Sales: ['today', 'intake', 'work-orders', 'customers', 'locations', 'reports', 'intelligence'],
-  Subcontractor: ['today', 'work-orders'],
+  'Service Manager': ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'billing', 'documents', 'reports', 'intelligence', 'contracts', 'integrations', 'lists'],
+  Scheduler: ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'documents', 'intelligence', 'contracts', 'lists'],
+  Supervisor: ['today', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'equipment', 'inventory', 'documents', 'reports', 'intelligence', 'lists'],
+  'Lead Technician': ['today', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'equipment', 'inventory', 'lists'],
+  Technician: ['today', 'work-orders', 'customers', 'locations', 'equipment', 'inventory', 'lists'],
+  Billing: ['today', 'work-orders', 'customers', 'billing', 'accounting', 'documents', 'reports', 'lists'],
+  Bookkeeper: ['today', 'billing', 'accounting', 'documents', 'reports', 'lists'],
+  'Inventory Manager': ['today', 'work-orders', 'inventory', 'equipment', 'locations', 'reports', 'lists'],
+  Sales: ['today', 'intake', 'work-orders', 'customers', 'locations', 'reports', 'intelligence', 'lists'],
+  Subcontractor: ['today', 'work-orders', 'lists'],
   'Customer Portal User': ['portal'],
 };
 
@@ -83,6 +84,30 @@ export function canManageIntegrations(role: Role): boolean {
 // `isStaff` check in `authz.ts` used by the approve/retry routes.
 export function canApproveNotifications(role: Role): boolean {
   return role !== 'Customer Portal User';
+}
+
+// Data migration (BlueFolder CSV import) is destructive and admin-only, mirroring
+// `canManageMigration` in the backend authz source of truth.
+export function canManageMigration(role: Role): boolean {
+  return role === 'Administrator';
+}
+
+// Background job queue: Administrators and Service Managers may view job history;
+// only Administrators may enqueue/run jobs. Mirrors `canViewJobs`/`canRunJobs`.
+const JOB_VIEW_ROLES: Role[] = ['Administrator', 'Service Manager'];
+export function canViewJobs(role: Role): boolean {
+  return JOB_VIEW_ROLES.includes(role);
+}
+
+export function canRunJobs(role: Role): boolean {
+  return role === 'Administrator';
+}
+
+// RoseOS recommendation lifecycle actions (approve/edit/reject/snooze/resolve).
+// Mirrors `canManageRecommendations` in the backend authz source of truth.
+const RECOMMENDATION_MANAGE_ROLES: Role[] = ['Administrator', 'Service Manager', 'Supervisor', 'Scheduler'];
+export function canManageRecommendations(role: Role): boolean {
+  return RECOMMENDATION_MANAGE_ROLES.includes(role);
 }
 
 const ROLE_DESCRIPTIONS: Record<Role, string> = {

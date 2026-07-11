@@ -24,6 +24,12 @@ import recurrenceRouter from "./recurrence";
 import notificationsRouter from "./notifications";
 import integrationsRouter from "./integrations";
 import portalRouter from "./portal";
+import recommendationsRouter from "./recommendations";
+import jobsRouter from "./jobs";
+import savedListsRouter from "./saved-lists";
+import searchRouter from "./search";
+import reportsRouter from "./reports";
+import migrationRouter from "./migration";
 
 const router: IRouter = Router();
 
@@ -52,5 +58,11 @@ router.use(recurrenceRouter);
 router.use(notificationsRouter);
 router.use(integrationsRouter);
 router.use(portalRouter);
+router.use(recommendationsRouter);
+router.use(jobsRouter);
+router.use(savedListsRouter);
+router.use(searchRouter);
+router.use(reportsRouter);
+router.use(migrationRouter);
 
 export default router;

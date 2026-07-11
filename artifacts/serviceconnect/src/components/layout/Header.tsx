@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAppStore } from "@/lib/store";
 import { useAuth, IS_DEV } from "@/lib/auth";
+import { useGlobalSearch, getGlobalSearchQueryKey, type SearchResult } from "@workspace/api-client-react";
 import {
   Select,
   SelectContent,
@@ -9,16 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Mail, MessageSquare, UserCircle, Wrench, Building2, MapPin, HardHat, Users, FileText, LogOut } from "lucide-react";
+import { Search, Mail, MessageSquare, UserCircle, Wrench, Building2, HardHat, FileText, Package, LogOut, Loader2 } from "lucide-react";
 import { NotificationCenter } from "./NotificationCenter";
 
-interface SearchResult {
-  id: string;
-  label: string;
-  sub: string;
-  route: string;
-  testId: string;
-}
+const ENTITY_META: Record<string, { label: string; icon: typeof Wrench }> = {
+  "work-order": { label: "Work Orders", icon: Wrench },
+  customer: { label: "Customers", icon: Building2 },
+  invoice: { label: "Invoices", icon: FileText },
+  inventory: { label: "Inventory", icon: Package },
+  equipment: { label: "Equipment", icon: HardHat },
+};
 
 interface SearchGroup {
   key: string;
@@ -28,7 +29,7 @@ interface SearchGroup {
 }
 
 export function Header() {
-  const { currentUser, users, setCurrentUserId, workOrders, customers, locations, equipment, invoices } = useAppStore();
+  const { currentUser, users, setCurrentUserId } = useAppStore();
   const { logout } = useAuth();
   const [, navigate] = useLocation();
 
@@ -38,6 +39,7 @@ export function Header() {
   };
 
   const [query, setQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -51,53 +53,42 @@ export function Header() {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  // Debounce the query so we don't hit the backend on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(query.trim()), 220);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const searchQuery = useGlobalSearch(
+    { q: debounced },
+    {
+      query: {
+        queryKey: getGlobalSearchQueryKey({ q: debounced }),
+        enabled: debounced.length > 0,
+        staleTime: 10_000,
+      },
+    },
+  );
+
   const groups = useMemo<SearchGroup[]>(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    const match = (...fields: (string | undefined)[]) => fields.some((f) => f?.toLowerCase().includes(q));
-    const cap = 5;
-
-    const woResults: SearchResult[] = workOrders
-      .filter((w) => match(w.number, w.description))
-      .slice(0, cap)
-      .map((w) => ({ id: w.id, label: w.number, sub: w.description, route: `/work-orders/${w.id}`, testId: `search-result-wo-${w.id}` }));
-
-    const custResults: SearchResult[] = customers
-      .filter((c) => match(c.name))
-      .slice(0, cap)
-      .map((c) => ({ id: c.id, label: c.name, sub: c.industry, route: `/customers/${c.id}`, testId: `search-result-customer-${c.id}` }));
-
-    const locResults: SearchResult[] = locations
-      .filter((l) => match(l.name, l.address, l.city))
-      .slice(0, cap)
-      .map((l) => ({ id: l.id, label: l.name, sub: `${l.address}, ${l.city}`, route: `/locations`, testId: `search-result-location-${l.id}` }));
-
-    const equipResults: SearchResult[] = equipment
-      .filter((e) => match(e.assetName, e.serialNumber, e.model))
-      .slice(0, cap)
-      .map((e) => ({ id: e.id, label: e.assetName, sub: `${e.model} · ${e.serialNumber}`, route: `/equipment`, testId: `search-result-equipment-${e.id}` }));
-
-    const techResults: SearchResult[] = users
-      .filter((u) => match(u.name, u.role))
-      .slice(0, cap)
-      .map((u) => ({ id: u.id, label: u.name, sub: u.role, route: `/technicians`, testId: `search-result-user-${u.id}` }));
-
-    const invResults: SearchResult[] = invoices
-      .filter((i) => match(i.number))
-      .slice(0, cap)
-      .map((i) => ({ id: i.id, label: i.number, sub: `${i.status}`, route: `/billing`, testId: `search-result-invoice-${i.id}` }));
-
-    return [
-      { key: "work-orders", label: "Work Orders", icon: Wrench, results: woResults },
-      { key: "customers", label: "Customers", icon: Building2, results: custResults },
-      { key: "locations", label: "Locations", icon: MapPin, results: locResults },
-      { key: "equipment", label: "Equipment", icon: HardHat, results: equipResults },
-      { key: "technicians", label: "Technicians", icon: Users, results: techResults },
-      { key: "invoices", label: "Invoices", icon: FileText, results: invResults },
-    ].filter((g) => g.results.length > 0);
-  }, [query, workOrders, customers, locations, equipment, users, invoices]);
+    const results = searchQuery.data?.results ?? [];
+    if (results.length === 0) return [];
+    const byEntity = new Map<string, SearchResult[]>();
+    for (const r of results) {
+      const arr = byEntity.get(r.entity) ?? [];
+      arr.push(r);
+      byEntity.set(r.entity, arr);
+    }
+    return [...byEntity.entries()].map(([key, res]) => ({
+      key,
+      label: ENTITY_META[key]?.label ?? key,
+      icon: ENTITY_META[key]?.icon ?? FileText,
+      results: res,
+    }));
+  }, [searchQuery.data]);
 
   const totalResults = groups.reduce((n, g) => n + g.results.length, 0);
+  const isSearching = searchQuery.isFetching && debounced.length > 0;
 
   const go = (route: string) => {
     navigate(route);
@@ -135,7 +126,11 @@ export function Header() {
             style={{ background: "var(--sc-panel-2)", border: "1px solid var(--sc-line)" }}
             data-testid="global-search-results"
           >
-            {totalResults === 0 ? (
+            {isSearching && totalResults === 0 ? (
+              <div className="px-4 py-6 flex items-center justify-center gap-2 text-sm text-sc-3" data-testid="text-search-loading">
+                <Loader2 className="w-4 h-4 animate-spin" /> Searching…
+              </div>
+            ) : totalResults === 0 ? (
               <div className="px-4 py-6 text-center text-sm text-sc-3" data-testid="text-search-empty">
                 No results for “{query}”
               </div>
@@ -147,13 +142,18 @@ export function Header() {
                   </div>
                   {g.results.map((r) => (
                     <button
-                      key={r.id}
-                      onClick={() => go(r.route)}
-                      data-testid={`button-${r.testId}`}
-                      className="w-full text-left px-4 py-2 hover:bg-white/[0.05] transition-colors flex flex-col"
+                      key={`${r.entity}-${r.id}`}
+                      onClick={() => go(r.url)}
+                      data-testid={`button-search-result-${r.entity}-${r.id}`}
+                      className="w-full text-left px-4 py-2 hover:bg-white/[0.05] transition-colors flex items-center justify-between gap-3"
                     >
-                      <span className="text-sm font-medium text-sc truncate">{r.label}</span>
-                      <span className="text-xs text-sc-3 truncate">{r.sub}</span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-medium text-sc truncate">{r.title}</span>
+                        <span className="text-xs text-sc-3 truncate">{r.subtitle}</span>
+                      </div>
+                      {r.badge && (
+                        <span className="text-[10px] shrink-0 px-2 py-0.5 rounded-md text-sc-2" style={{ background: "var(--sc-inner)", border: "1px solid var(--sc-line)" }}>{r.badge}</span>
+                      )}
                     </button>
                   ))}
                 </div>

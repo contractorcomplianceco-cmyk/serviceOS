@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ShieldOff, Loader2 } from "lucide-react";
 import { AppProvider } from "@/lib/store";
 import { AuthProvider, useAuth, roleHome } from "@/lib/auth";
-import { canAccess, canApproveCloseouts, isFieldRole, type NavKey } from "@/lib/permissions";
+import { canAccess, canApproveCloseouts, canManageMigration, isFieldRole, type NavKey } from "@/lib/permissions";
 import type { Role } from "@/lib/types";
 import AppLayout from "@/components/layout/AppLayout";
 
@@ -30,6 +30,8 @@ import Reports from "@/pages/Reports";
 import Intelligence from "@/pages/Intelligence";
 import Integrations from "@/pages/Integrations";
 import Settings from "@/pages/Settings";
+import SmartLists from "@/pages/SmartLists";
+import MigrationCenter from "@/pages/MigrationCenter";
 import TechnicianMobile from "@/pages/TechnicianMobile";
 import VoiceConnect from "@/pages/VoiceConnect";
 import SupervisorReview from "@/pages/SupervisorReview";
@@ -110,6 +112,8 @@ function Router() {
       <Route path="/reports">{() => <Protected allow={nav("reports")}><Reports /></Protected>}</Route>
       <Route path="/intelligence">{() => <Protected allow={nav("intelligence")}><Intelligence /></Protected>}</Route>
       <Route path="/integrations">{() => <Protected allow={nav("integrations")}><Integrations /></Protected>}</Route>
+      <Route path="/lists">{() => <Protected allow={nav("lists")}><SmartLists /></Protected>}</Route>
+      <Route path="/settings/migration">{() => <Protected allow={canManageMigration}><MigrationCenter /></Protected>}</Route>
       <Route path="/settings">{() => <Protected allow={nav("settings")}><Settings /></Protected>}</Route>
       <Route path="/review">{() => <Protected allow={canApproveCloseouts}><SupervisorReview /></Protected>}</Route>
       <Route path="/tech">{() => <Protected allow={isFieldRole}><TechnicianMobile /></Protected>}</Route>

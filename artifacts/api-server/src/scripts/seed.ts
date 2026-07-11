@@ -23,6 +23,8 @@ import {
   integrationConnectionsTable,
   integrationEventsTable,
   integrationIdMapTable,
+  savedListsTable,
+  type InsertSavedList,
   type InsertUser,
   type InsertCustomer,
   type InsertLocation,
@@ -49,6 +51,64 @@ import { logger } from "../lib/logger";
 
 const TENANT_ID = "org1";
 const TENANT_NAME = "ServiceConnect Field Services";
+
+// Seeded regional "smart lists" — shared, tenant-wide saved queries owned by the
+// administrator (u1). Marked isSeeded so the demo can distinguish them from
+// user-created lists. Filters use structured clauses interpreted server-side.
+const SEED_SAVED_LISTS: Omit<InsertSavedList, "tenantId">[] = [
+  {
+    id: "sl-tampa-wo",
+    name: "Tampa Work Orders",
+    entity: "work-orders",
+    filters: [{ field: "region", op: "eq", value: "Tampa" }],
+    sortField: "priority",
+    sortDir: "asc",
+    visibility: "shared",
+    ownerUserId: "u1",
+    favorite: true,
+    sortOrder: 0,
+    isSeeded: true,
+  },
+  {
+    id: "sl-orlando-wo",
+    name: "Orlando Work Orders",
+    entity: "work-orders",
+    filters: [{ field: "region", op: "eq", value: "Orlando" }],
+    sortField: "priority",
+    sortDir: "asc",
+    visibility: "shared",
+    ownerUserId: "u1",
+    favorite: true,
+    sortOrder: 1,
+    isSeeded: true,
+  },
+  {
+    id: "sl-emergency-wo",
+    name: "Emergency Work Orders",
+    entity: "work-orders",
+    filters: [{ field: "priority", op: "eq", value: "Emergency" }],
+    sortField: "region",
+    sortDir: "asc",
+    visibility: "shared",
+    ownerUserId: "u1",
+    favorite: false,
+    sortOrder: 2,
+    isSeeded: true,
+  },
+  {
+    id: "sl-open-invoices",
+    name: "Open Invoices",
+    entity: "invoices",
+    filters: [{ field: "status", op: "neq", value: "Paid" }],
+    sortField: "number",
+    sortDir: "asc",
+    visibility: "shared",
+    ownerUserId: "u1",
+    favorite: false,
+    sortOrder: 3,
+    isSeeded: true,
+  },
+];
 
 // Shared demo password for all seeded accounts (>= 8 chars).
 // Overridable via env; the default is a dev-only convenience for the local demo.
@@ -555,6 +615,13 @@ async function seed(): Promise<void> {
       .onConflictDoNothing();
   }
 
+  for (const sl of SEED_SAVED_LISTS) {
+    await db
+      .insert(savedListsTable)
+      .values({ ...sl, tenantId: TENANT_ID })
+      .onConflictDoNothing();
+  }
+
   logger.info(
     {
       tenant: TENANT_ID,
@@ -578,6 +645,7 @@ async function seed(): Promise<void> {
       integrationConnections: SEED_INTEGRATION_CONNECTIONS.length,
       integrationEvents: SEED_INTEGRATION_EVENTS.length,
       integrationIdMap: SEED_INTEGRATION_ID_MAP.length,
+      savedLists: SEED_SAVED_LISTS.length,
     },
     "Seed complete (demo password set from DEMO_PASSWORD env or dev default; value not logged)",
   );

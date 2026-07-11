@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAppStore } from "@/lib/store";
 import { useAuth, IS_DEV } from "@/lib/auth";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,9 +12,41 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { roleDescription } from "@/lib/permissions";
-import { RotateCcw, ShieldCheck, Users, Settings2, UserCircle2, HardHat, FileText, Database, ScrollText, LogOut } from "lucide-react";
+import { roleDescription, canViewJobs, canRunJobs, canManageMigration } from "@/lib/permissions";
+import { RotateCcw, ShieldCheck, Users, Settings2, UserCircle2, HardHat, FileText, Database, ScrollText, LogOut, RefreshCw, Cpu, Loader2, PlayCircle, ChevronRight } from "lucide-react";
 import type { AuditEntityType } from "@/lib/types";
+import {
+  useListJobs,
+  useEnqueueJob,
+  getListJobsQueryKey,
+  type Job,
+} from "@workspace/api-client-react";
+
+const JOB_TYPES = [
+  "recommendations.generate",
+  "notifications.retry",
+  "portal.sync-retry",
+  "contracts.reminders",
+  "recurrence.generate",
+  "migration.process",
+  "closeout.transcribe",
+  "invoice.pdf",
+] as const;
+
+function jobStatusClass(status: string): string {
+  switch (status) {
+    case "Succeeded":
+      return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    case "Running":
+      return "bg-blue-500/10 text-blue-600 border-blue-500/20";
+    case "Pending":
+      return "bg-amber-500/10 text-amber-600 border-amber-500/30";
+    case "Failed":
+      return "bg-destructive/10 text-destructive border-destructive/20";
+    default:
+      return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+  }
+}
 
 export default function Settings() {
   const { users, currentUser, setCurrentUserId, resetData, auditLog } = useAppStore();
@@ -41,6 +74,48 @@ export default function Settings() {
 
   const formatTimestamp = (iso: string) =>
     new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
+  // ---- Background jobs -----------------------------------------------------
+  const qc = useQueryClient();
+  const showJobs = canViewJobs(currentUser.role);
+  const canRun = canRunJobs(currentUser.role);
+  const showMigration = canManageMigration(currentUser.role);
+  const [jobType, setJobType] = useState<string>(JOB_TYPES[0]);
+
+  const jobsQuery = useListJobs(undefined, {
+    query: {
+      enabled: showJobs,
+      queryKey: getListJobsQueryKey(),
+      refetchInterval: 8000,
+    },
+  });
+  const jobs: Job[] = jobsQuery.data ?? [];
+  const enqueueJob = useEnqueueJob();
+
+  const handleEnqueue = () => {
+    enqueueJob.mutate(
+      { data: { type: jobType } },
+      {
+        onSuccess: () => {
+          toast({ title: "Job enqueued", description: `"${jobType}" was added to the queue.` });
+          qc.invalidateQueries({ queryKey: getListJobsQueryKey() });
+        },
+        onError: (e) => toast({ title: "Could not enqueue job", description: String(e), variant: "destructive" }),
+      },
+    );
+  };
+
+  const jobResultSummary = (job: Job): string => {
+    if (job.lastError) return job.lastError;
+    if (job.result && typeof job.result === "object") {
+      const entries = Object.entries(job.result as Record<string, unknown>)
+        .filter(([, v]) => typeof v === "string" || typeof v === "number" || typeof v === "boolean")
+        .slice(0, 3)
+        .map(([k, v]) => `${k}: ${v}`);
+      if (entries.length) return entries.join(" · ");
+    }
+    return "—";
+  };
 
   const guardrails = [
     { label: "AI may auto-schedule jobs", enabled: false, locked: true, desc: "Never automatically assign technicians to jobs." },
@@ -208,6 +283,131 @@ export default function Settings() {
                           </div>
                           <p className="text-sm text-sc-2 mt-0.5 break-words">{e.summary}</p>
                           <p className="text-xs text-sc-3 mt-1">{e.actor} · {formatTimestamp(e.timestamp)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {showMigration && (
+            <Link href="/settings/migration" data-testid="link-migration-center">
+              <Card className="sc-panel overflow-hidden border-0 cursor-pointer hover:bg-white/[0.03] transition-colors" data-testid="card-migration-center">
+                <CardContent className="p-6 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--sc-elevated)", border: "1px solid var(--sc-line)" }}>
+                      <Database className="w-6 h-6 text-sc-blue" />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-semibold text-sc mb-0.5">Data Migration Center</h4>
+                      <p className="text-xs text-sc-3 max-w-md">
+                        Guided, CSV-based controlled migration from BlueFolder — map columns, validate, import, and roll back safely.
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-sc-3 shrink-0" />
+                </CardContent>
+              </Card>
+            </Link>
+          )}
+
+          {showJobs && (
+            <Card className="sc-panel overflow-hidden border-0" data-testid="section-background-jobs">
+              <CardHeader className="py-5 px-6 border-b border-panel" style={{ background: "var(--sc-inner)" }}>
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <CardTitle className="text-lg font-semibold text-sc flex items-center gap-2">
+                      <Cpu className="w-5 h-5 text-sc-blue" /> Background Jobs
+                    </CardTitle>
+                    <CardDescription className="text-sc-3 mt-1 text-sm">
+                      Durable, DB-backed queue for async and recurring work. Auto-refreshes every 8s.
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {canRun && (
+                      <>
+                        <Select value={jobType} onValueChange={setJobType}>
+                          <SelectTrigger
+                            data-testid="select-job-type"
+                            className="w-[190px] h-9 text-sm text-sc rounded-lg shrink-0"
+                            style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}
+                          >
+                            <SelectValue placeholder="Job type" />
+                          </SelectTrigger>
+                          <SelectContent className="text-sc" style={{ background: "var(--sc-panel-2)", border: "1px solid var(--sc-line)" }}>
+                            {JOB_TYPES.map((t) => (
+                              <SelectItem key={t} value={t} data-testid={`job-type-${t}`}>{t}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          size="sm"
+                          className="text-white h-9"
+                          style={{ background: "var(--sc-btn)", border: "1px solid var(--sc-btn-highlight)" }}
+                          onClick={handleEnqueue}
+                          disabled={enqueueJob.isPending}
+                          data-testid="button-enqueue-job"
+                        >
+                          {enqueueJob.isPending ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <PlayCircle className="w-3.5 h-3.5 mr-1.5" />}
+                          Enqueue
+                        </Button>
+                      </>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-panel text-sc-2 h-9"
+                      onClick={() => jobsQuery.refetch()}
+                      disabled={jobsQuery.isFetching}
+                      data-testid="button-refresh-jobs"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${jobsQuery.isFetching ? "animate-spin" : ""}`} />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {jobsQuery.isLoading ? (
+                  <div className="py-12 text-center" data-testid="text-jobs-loading">
+                    <Loader2 className="w-5 h-5 text-sc-blue animate-spin mx-auto" />
+                  </div>
+                ) : jobsQuery.isError ? (
+                  <div className="py-12 text-center text-sm text-destructive" data-testid="text-jobs-error">
+                    Unable to load background jobs.
+                  </div>
+                ) : jobs.length === 0 ? (
+                  <div className="py-12 text-center text-sm text-sc-3" data-testid="text-jobs-empty">
+                    No background jobs recorded yet.
+                  </div>
+                ) : (
+                  <div className="max-h-[520px] overflow-y-auto scrollbar-thin divide-y divide-[color:var(--sc-line-subtle)]">
+                    {jobs.map((job) => (
+                      <div key={job.id} className="flex items-start gap-3 px-6 py-4 hover:bg-white/[0.04] transition-colors" data-testid={`job-row-${job.id}`}>
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "var(--sc-elevated)", border: "1px solid var(--sc-line)" }}>
+                          <Cpu className="w-4 h-4 text-sc-blue" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-semibold text-sc font-mono">{job.type}</span>
+                            <Badge variant="outline" className={`text-[10px] uppercase tracking-wide ${jobStatusClass(job.status)}`} data-testid={`job-status-${job.id}`}>
+                              {job.status}
+                            </Badge>
+                            <span className="text-xs text-sc-3">
+                              attempt {job.attempts}/{job.maxAttempts}
+                            </span>
+                            {job.recurringSeconds ? (
+                              <Badge variant="outline" className="text-[10px] bg-transparent border-panel-strong text-sc-3 uppercase tracking-wide">
+                                every {job.recurringSeconds}s
+                              </Badge>
+                            ) : null}
+                          </div>
+                          <p className="text-xs text-sc-2 mt-1 break-words">{jobResultSummary(job)}</p>
+                          <p className="text-xs text-sc-3 mt-1">
+                            queued {formatTimestamp(job.createdAt)}
+                            {job.finishedAt ? ` · finished ${formatTimestamp(job.finishedAt)}` : job.startedAt ? ` · started ${formatTimestamp(job.startedAt)}` : ""}
+                          </p>
                         </div>
                       </div>
                     ))}

@@ -19,6 +19,7 @@ import {
   FileSignature,
   Repeat,
   Plug,
+  ListFilter,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
@@ -40,6 +41,7 @@ const navItems: { name: string; path: string; key: NavKey; icon: typeof LayoutDa
   { name: "Billing", path: "/billing", key: "billing", icon: CreditCard },
   { name: "Accounting", path: "/accounting", key: "accounting", icon: Calculator },
   { name: "Documents", path: "/documents", key: "documents", icon: FileText },
+  { name: "Smart Lists", path: "/lists", key: "lists", icon: ListFilter },
   { name: "Reports", path: "/reports", key: "reports", icon: BarChart3 },
   { name: "Intelligence", path: "/intelligence", key: "intelligence", icon: Sparkles },
   { name: "Integrations", path: "/integrations", key: "integrations", icon: Plug },

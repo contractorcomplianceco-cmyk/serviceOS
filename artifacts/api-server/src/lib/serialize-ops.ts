@@ -25,6 +25,12 @@ import type {
   NotificationPreference,
   IntegrationConnection,
   IntegrationEvent,
+  Recommendation,
+  Job,
+  SavedList,
+  MigrationBatch,
+  MigrationRow,
+  MigrationTemplate,
 } from "@workspace/db";
 import type { DerivedBalances } from "./inventory-ledger";
 
@@ -610,5 +616,133 @@ export function toIntegrationEvent(e: IntegrationEvent) {
     statusHistory: e.statusHistory,
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB recommendation row to the API Recommendation shape. */
+export function toRecommendation(r: Recommendation) {
+  return {
+    id: r.id,
+    tenantId: r.tenantId,
+    dedupeKey: r.dedupeKey,
+    ruleKey: r.ruleKey,
+    type: r.type,
+    severity: r.severity,
+    title: r.title,
+    description: r.description,
+    reason: r.reason,
+    evidence: r.evidence,
+    confidence: r.confidence,
+    suggestedAction: r.suggestedAction,
+    relatedEntityType: r.relatedEntityType ?? null,
+    relatedEntityId: r.relatedEntityId ?? null,
+    status: r.status,
+    editedTitle: r.editedTitle ?? null,
+    editedDescription: r.editedDescription ?? null,
+    assignedToUserId: r.assignedToUserId ?? null,
+    snoozeUntil: iso(r.snoozeUntil),
+    resolvedByUserId: r.resolvedByUserId ?? null,
+    resolvedAt: iso(r.resolvedAt),
+    lifecycle: r.lifecycle,
+    lastGeneratedAt: r.lastGeneratedAt.toISOString(),
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB job row to the API Job shape. */
+export function toJob(j: Job) {
+  return {
+    id: j.id,
+    tenantId: j.tenantId,
+    type: j.type,
+    status: j.status,
+    payload: j.payload,
+    result: j.result ?? null,
+    runAt: j.runAt.toISOString(),
+    attempts: j.attempts,
+    maxAttempts: j.maxAttempts,
+    lastError: j.lastError ?? null,
+    recurringSeconds: j.recurringSeconds ?? null,
+    dedupeKey: j.dedupeKey ?? null,
+    log: j.log,
+    startedAt: iso(j.startedAt),
+    finishedAt: iso(j.finishedAt),
+    createdByUserId: j.createdByUserId ?? null,
+    createdAt: j.createdAt.toISOString(),
+    updatedAt: j.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB saved-list row to the API SavedList shape. */
+export function toSavedList(s: SavedList) {
+  return {
+    id: s.id,
+    tenantId: s.tenantId,
+    name: s.name,
+    entity: s.entity,
+    filters: s.filters,
+    search: s.search ?? null,
+    sortField: s.sortField ?? null,
+    sortDir: s.sortDir,
+    visibility: s.visibility,
+    roleRestrictions: s.roleRestrictions,
+    ownerUserId: s.ownerUserId,
+    favorite: s.favorite,
+    sortOrder: s.sortOrder,
+    isSeeded: s.isSeeded,
+    createdAt: s.createdAt.toISOString(),
+    updatedAt: s.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB migration-batch row to the API MigrationBatch shape. */
+export function toMigrationBatch(b: MigrationBatch) {
+  return {
+    id: b.id,
+    tenantId: b.tenantId,
+    entity: b.entity,
+    fileName: b.fileName,
+    status: b.status,
+    sourceColumns: b.sourceColumns,
+    mapping: b.mapping,
+    dryRun: b.dryRun,
+    summary: b.summary ?? null,
+    createdByUserId: b.createdByUserId,
+    importedAt: iso(b.importedAt),
+    rolledBackAt: iso(b.rolledBackAt),
+    createdAt: b.createdAt.toISOString(),
+    updatedAt: b.updatedAt.toISOString(),
+  };
+}
+
+/** Map a DB migration-row to the API MigrationRow shape. */
+export function toMigrationRow(r: MigrationRow) {
+  return {
+    id: r.id,
+    tenantId: r.tenantId,
+    batchId: r.batchId,
+    rowNumber: r.rowNumber,
+    raw: r.raw,
+    mapped: r.mapped,
+    status: r.status,
+    errors: r.errors,
+    sourceId: r.sourceId ?? null,
+    createdEntityId: r.createdEntityId ?? null,
+    createdAt: r.createdAt.toISOString(),
+  };
+}
+
+/** Map a DB migration-template row to the API MigrationTemplate shape. */
+export function toMigrationTemplate(t: MigrationTemplate) {
+  return {
+    id: t.id,
+    tenantId: t.tenantId,
+    name: t.name,
+    entity: t.entity,
+    mapping: t.mapping,
+    createdByUserId: t.createdByUserId,
+    createdAt: t.createdAt.toISOString(),
+    updatedAt: t.updatedAt.toISOString(),
   };
 }

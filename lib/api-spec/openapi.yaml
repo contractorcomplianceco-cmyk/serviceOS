@@ -3251,8 +3251,1314 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /recommendations:
+    get:
+      operationId: listRecommendations
+      tags: [recommendations]
+      summary: List RoseOS recommendations for the tenant
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Recommendation"
+  /recommendations/generate:
+    post:
+      operationId: generateRecommendations
+      tags: [recommendations]
+      summary: Regenerate recommendations from live data (admin/manager only)
+      responses:
+        "200":
+          description: Generation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateRecommendationsResult"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /recommendations/{id}/approve:
+    post:
+      operationId: approveRecommendation
+      tags: [recommendations]
+      summary: Approve a recommendation (records the human decision)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recommendation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recommendation"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /recommendations/{id}/reject:
+    post:
+      operationId: rejectRecommendation
+      tags: [recommendations]
+      summary: Reject/dismiss a recommendation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recommendation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recommendation"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /recommendations/{id}/resolve:
+    post:
+      operationId: resolveRecommendation
+      tags: [recommendations]
+      summary: Mark a recommendation resolved
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recommendation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recommendation"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /recommendations/{id}/edit:
+    post:
+      operationId: editRecommendation
+      tags: [recommendations]
+      summary: Edit and approve a recommendation's suggested action text
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditRecommendationInput"
+      responses:
+        "200":
+          description: Recommendation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recommendation"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /recommendations/{id}/snooze:
+    post:
+      operationId: snoozeRecommendation
+      tags: [recommendations]
+      summary: Snooze a recommendation until a future time
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SnoozeRecommendationInput"
+      responses:
+        "200":
+          description: Recommendation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recommendation"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /jobs:
+    get:
+      operationId: listJobs
+      tags: [jobs]
+      summary: List background jobs for the tenant (admin/manager only)
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Job"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: enqueueJob
+      tags: [jobs]
+      summary: Enqueue a background job (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnqueueJobInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /jobs/{id}:
+    get:
+      operationId: getJob
+      tags: [jobs]
+      summary: Get a single background job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /saved-lists:
+    get:
+      operationId: listSavedLists
+      tags: [saved-lists]
+      summary: List saved smart lists visible to the current user
+      parameters:
+        - name: entity
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Saved lists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SavedList"
+    post:
+      operationId: createSavedList
+      tags: [saved-lists]
+      summary: Create a saved smart list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavedListInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedList"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /saved-lists/preview:
+    post:
+      operationId: previewSavedList
+      tags: [saved-lists]
+      summary: Run a smart-list query without saving it
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavedListInput"
+      responses:
+        "200":
+          description: Query result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedListRunResult"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /saved-lists/{id}:
+    patch:
+      operationId: updateSavedList
+      tags: [saved-lists]
+      summary: Update a saved smart list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavedListUpdateInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedList"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteSavedList
+      tags: [saved-lists]
+      summary: Delete a saved smart list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /saved-lists/{id}/run:
+    post:
+      operationId: runSavedList
+      tags: [saved-lists]
+      summary: Run a saved smart list and return matching rows
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Query result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedListRunResult"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /search:
+    get:
+      operationId: globalSearch
+      tags: [search]
+      summary: Backend global search across entities (role/tenant filtered)
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResults"
+
+  /reports:
+    get:
+      operationId: getReports
+      tags: [reports]
+      summary: Backend-derived operational and financial (non-GL) reports
+      responses:
+        "200":
+          description: Reports
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportsResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /migration/entities:
+    get:
+      operationId: listMigrationEntities
+      tags: [migration]
+      summary: List importable entities and their target field specs
+      responses:
+        "200":
+          description: Entity specs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MigrationEntitySpec"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /migration/batches:
+    get:
+      operationId: listMigrationBatches
+      tags: [migration]
+      summary: List migration batches for the tenant (admin only)
+      responses:
+        "200":
+          description: Batches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MigrationBatch"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createMigrationBatch
+      tags: [migration]
+      summary: Upload a CSV and create a migration batch (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMigrationBatchInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MigrationBatch"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /migration/batches/{id}:
+    get:
+      operationId: getMigrationBatch
+      tags: [migration]
+      summary: Get a migration batch
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Batch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MigrationBatch"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteMigrationBatch
+      tags: [migration]
+      summary: Delete a migration batch and its rows (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /migration/batches/{id}/rows:
+    get:
+      operationId: listMigrationRows
+      tags: [migration]
+      summary: List the rows in a migration batch
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MigrationRow"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /migration/batches/{id}/mapping:
+    patch:
+      operationId: updateMigrationMapping
+      tags: [migration]
+      summary: Update the column mapping for a migration batch
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMigrationMappingInput"
+      responses:
+        "200":
+          description: Batch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MigrationBatch"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /migration/batches/{id}/validate:
+    post:
+      operationId: validateMigrationBatch
+      tags: [migration]
+      summary: Dry-run validate a batch (counts valid/error/duplicate rows)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Batch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MigrationBatch"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /migration/batches/{id}/import:
+    post:
+      operationId: importMigrationBatch
+      tags: [migration]
+      summary: Execute the import for valid rows (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Batch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MigrationBatch"
+        "400":
+          description: Invalid state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /migration/batches/{id}/rollback:
+    post:
+      operationId: rollbackMigrationBatch
+      tags: [migration]
+      summary: Roll back an imported batch (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Batch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MigrationBatch"
+        "400":
+          description: Invalid state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /migration/batches/{id}/failed-rows:
+    get:
+      operationId: exportMigrationFailedRows
+      tags: [migration]
+      summary: Export error/duplicate/failed rows as CSV
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: CSV export
+          content:
+            text/csv:
+              schema:
+                type: string
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /migration/templates:
+    get:
+      operationId: listMigrationTemplates
+      tags: [migration]
+      summary: List reusable column-mapping templates
+      responses:
+        "200":
+          description: Templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MigrationTemplate"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createMigrationTemplate
+      tags: [migration]
+      summary: Save a reusable column-mapping template (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMigrationTemplateInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MigrationTemplate"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
+    RecommendationEvidence:
+      type: object
+      required: [label, value]
+      properties:
+        label: { type: string }
+        value: { type: string }
+    RecommendationLifecycleEvent:
+      type: object
+      required: [at, actorId, actor, action, detail]
+      properties:
+        at: { type: string }
+        actorId: { type: string }
+        actor: { type: string }
+        action: { type: string }
+        detail: { type: string }
+    Recommendation:
+      type: object
+      required:
+        [id, tenantId, dedupeKey, ruleKey, type, severity, title, description, reason, evidence, confidence, suggestedAction, status, lifecycle, lastGeneratedAt, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        dedupeKey: { type: string }
+        ruleKey: { type: string }
+        type: { type: string }
+        severity: { type: string, enum: [info, warning, urgent] }
+        title: { type: string }
+        description: { type: string }
+        reason: { type: string }
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecommendationEvidence"
+        confidence: { type: integer }
+        suggestedAction: { type: string }
+        relatedEntityType: { type: string, nullable: true }
+        relatedEntityId: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [Open, Approved, Edited, Rejected, Snoozed, Resolved]
+        editedTitle: { type: string, nullable: true }
+        editedDescription: { type: string, nullable: true }
+        assignedToUserId: { type: string, nullable: true }
+        snoozeUntil: { type: string, nullable: true }
+        resolvedByUserId: { type: string, nullable: true }
+        resolvedAt: { type: string, nullable: true }
+        lifecycle:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecommendationLifecycleEvent"
+        lastGeneratedAt: { type: string }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    GenerateRecommendationsResult:
+      type: object
+      required: [created, updated, resolved, reopened]
+      properties:
+        created: { type: integer }
+        updated: { type: integer }
+        resolved: { type: integer }
+        reopened: { type: integer }
+    EditRecommendationInput:
+      type: object
+      required: [title, description]
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string, minLength: 1 }
+    SnoozeRecommendationInput:
+      type: object
+      required: [snoozeUntil]
+      properties:
+        snoozeUntil: { type: string }
+
+    JobLogEntry:
+      type: object
+      required: [at, status, detail]
+      properties:
+        at: { type: string }
+        status: { type: string }
+        detail: { type: string }
+    Job:
+      type: object
+      required:
+        [id, tenantId, type, status, payload, runAt, attempts, maxAttempts, log, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        type: { type: string }
+        status: { type: string, enum: [Pending, Running, Succeeded, Failed] }
+        payload: { type: object, additionalProperties: true }
+        result: { type: object, additionalProperties: true, nullable: true }
+        runAt: { type: string }
+        attempts: { type: integer }
+        maxAttempts: { type: integer }
+        lastError: { type: string, nullable: true }
+        recurringSeconds: { type: integer, nullable: true }
+        dedupeKey: { type: string, nullable: true }
+        log:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobLogEntry"
+        startedAt: { type: string, nullable: true }
+        finishedAt: { type: string, nullable: true }
+        createdByUserId: { type: string, nullable: true }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    EnqueueJobInput:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string }
+        payload: { type: object, additionalProperties: true }
+
+    SavedListFilter:
+      type: object
+      required: [field, op]
+      properties:
+        field: { type: string }
+        op:
+          type: string
+          enum: [eq, neq, contains, in, gt, lt, gte, lte, is_empty, not_empty]
+        value:
+          nullable: true
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: array
+              items: { type: string }
+    SavedList:
+      type: object
+      required:
+        [id, tenantId, name, entity, filters, sortDir, visibility, roleRestrictions, ownerUserId, favorite, sortOrder, isSeeded, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        name: { type: string }
+        entity:
+          type: string
+          enum: [work-orders, customers, invoices, inventory, equipment]
+        filters:
+          type: array
+          items:
+            $ref: "#/components/schemas/SavedListFilter"
+        search: { type: string, nullable: true }
+        sortField: { type: string, nullable: true }
+        sortDir: { type: string, enum: [asc, desc] }
+        visibility: { type: string, enum: [private, shared, role] }
+        roleRestrictions:
+          type: array
+          items: { type: string }
+        ownerUserId: { type: string }
+        favorite: { type: boolean }
+        sortOrder: { type: integer }
+        isSeeded: { type: boolean }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    SavedListInput:
+      type: object
+      required: [name, entity]
+      properties:
+        name: { type: string, minLength: 1 }
+        entity:
+          type: string
+          enum: [work-orders, customers, invoices, inventory, equipment]
+        filters:
+          type: array
+          items:
+            $ref: "#/components/schemas/SavedListFilter"
+        search: { type: string, nullable: true }
+        sortField: { type: string, nullable: true }
+        sortDir: { type: string, enum: [asc, desc] }
+        visibility: { type: string, enum: [private, shared, role] }
+        roleRestrictions:
+          type: array
+          items: { type: string }
+        favorite: { type: boolean }
+    SavedListUpdateInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        filters:
+          type: array
+          items:
+            $ref: "#/components/schemas/SavedListFilter"
+        search: { type: string, nullable: true }
+        sortField: { type: string, nullable: true }
+        sortDir: { type: string, enum: [asc, desc] }
+        visibility: { type: string, enum: [private, shared, role] }
+        roleRestrictions:
+          type: array
+          items: { type: string }
+        favorite: { type: boolean }
+        sortOrder: { type: integer }
+    SavedListRunResult:
+      type: object
+      required: [entity, count, items]
+      properties:
+        entity: { type: string }
+        count: { type: integer }
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    SearchResult:
+      type: object
+      required: [entity, id, title, subtitle, url]
+      properties:
+        entity: { type: string }
+        id: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        url: { type: string }
+        badge: { type: string, nullable: true }
+    SearchResults:
+      type: object
+      required: [query, results]
+      properties:
+        query: { type: string }
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchResult"
+
+    ReportMetric:
+      type: object
+      required: [label, value]
+      properties:
+        label: { type: string }
+        value: { type: number }
+        format: { type: string, nullable: true }
+    ReportSeriesPoint:
+      type: object
+      required: [name, value]
+      properties:
+        name: { type: string }
+        value: { type: number }
+    ReportsResponse:
+      type: object
+      required:
+        [generatedAt, disclaimer, operational, financial]
+      properties:
+        generatedAt: { type: string }
+        disclaimer: { type: string }
+        operational:
+          type: object
+          required: [metrics, workOrdersByStatus, workOrdersByPriority, techUtilization]
+          properties:
+            metrics:
+              type: array
+              items:
+                $ref: "#/components/schemas/ReportMetric"
+            workOrdersByStatus:
+              type: array
+              items:
+                $ref: "#/components/schemas/ReportSeriesPoint"
+            workOrdersByPriority:
+              type: array
+              items:
+                $ref: "#/components/schemas/ReportSeriesPoint"
+            techUtilization:
+              type: array
+              items:
+                $ref: "#/components/schemas/ReportSeriesPoint"
+        financial:
+          type: object
+          required: [label, metrics, arAging, revenueByCustomer]
+          properties:
+            label: { type: string }
+            metrics:
+              type: array
+              items:
+                $ref: "#/components/schemas/ReportMetric"
+            arAging:
+              type: array
+              items:
+                $ref: "#/components/schemas/ReportSeriesPoint"
+            revenueByCustomer:
+              type: array
+              items:
+                $ref: "#/components/schemas/ReportSeriesPoint"
+
+    MigrationColumnMap:
+      type: object
+      required: [target]
+      properties:
+        target: { type: string }
+        source: { type: string, nullable: true }
+    MigrationFieldSpec:
+      type: object
+      required: [target, required, type, label]
+      properties:
+        target: { type: string }
+        required: { type: boolean }
+        type: { type: string }
+        label: { type: string }
+    MigrationEntitySpec:
+      type: object
+      required: [entity, label, fields, dedupeFields]
+      properties:
+        entity: { type: string }
+        label: { type: string }
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/MigrationFieldSpec"
+        dedupeFields:
+          type: array
+          items: { type: string }
+    MigrationBatchSummary:
+      type: object
+      required: [totalRows, validRows, errorRows, duplicateRows, importedRows, failedRows]
+      properties:
+        totalRows: { type: integer }
+        validRows: { type: integer }
+        errorRows: { type: integer }
+        duplicateRows: { type: integer }
+        importedRows: { type: integer }
+        failedRows: { type: integer }
+    MigrationBatch:
+      type: object
+      required:
+        [id, tenantId, entity, fileName, status, sourceColumns, mapping, dryRun, createdByUserId, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        entity: { type: string }
+        fileName: { type: string }
+        status:
+          type: string
+          enum: [Draft, Validated, Importing, Imported, RolledBack, Failed]
+        sourceColumns:
+          type: array
+          items: { type: string }
+        mapping:
+          type: array
+          items:
+            $ref: "#/components/schemas/MigrationColumnMap"
+        dryRun: { type: boolean }
+        summary:
+          allOf:
+            - $ref: "#/components/schemas/MigrationBatchSummary"
+          nullable: true
+        createdByUserId: { type: string }
+        importedAt: { type: string, nullable: true }
+        rolledBackAt: { type: string, nullable: true }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    MigrationRowError:
+      type: object
+      required: [field, message]
+      properties:
+        field: { type: string }
+        message: { type: string }
+    MigrationRow:
+      type: object
+      required: [id, tenantId, batchId, rowNumber, raw, mapped, status, errors, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        batchId: { type: string }
+        rowNumber: { type: integer }
+        raw: { type: object, additionalProperties: { type: string } }
+        mapped: { type: object, additionalProperties: true }
+        status:
+          type: string
+          enum: [Valid, Error, Duplicate, Imported, Failed, RolledBack]
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/MigrationRowError"
+        sourceId: { type: string, nullable: true }
+        createdEntityId: { type: string, nullable: true }
+        createdAt: { type: string }
+    MigrationTemplate:
+      type: object
+      required: [id, tenantId, name, entity, mapping, createdByUserId, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        name: { type: string }
+        entity: { type: string }
+        mapping:
+          type: array
+          items:
+            $ref: "#/components/schemas/MigrationColumnMap"
+        createdByUserId: { type: string }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    CreateMigrationBatchInput:
+      type: object
+      required: [entity, fileName, csv]
+      properties:
+        entity:
+          type: string
+          enum: [customers, locations, equipment, inventory, work-orders]
+        fileName: { type: string, minLength: 1 }
+        csv: { type: string, minLength: 1 }
+        mapping:
+          type: array
+          items:
+            $ref: "#/components/schemas/MigrationColumnMap"
+    UpdateMigrationMappingInput:
+      type: object
+      required: [mapping]
+      properties:
+        mapping:
+          type: array
+          items:
+            $ref: "#/components/schemas/MigrationColumnMap"
+    CreateMigrationTemplateInput:
+      type: object
+      required: [name, entity, mapping]
+      properties:
+        name: { type: string, minLength: 1 }
+        entity:
+          type: string
+          enum: [customers, locations, equipment, inventory, work-orders]
+        mapping:
+          type: array
+          items:
+            $ref: "#/components/schemas/MigrationColumnMap"
+
     Quote:
       type: object
       required: [id, tenantId, customerId, number, lines, amount, status, createdAt]

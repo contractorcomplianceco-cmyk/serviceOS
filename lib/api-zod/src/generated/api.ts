@@ -5148,3 +5148,1016 @@ export const RejectIntegrationEventResponse = zod.object({
 })
 
 
+/**
+ * @summary List RoseOS recommendations for the tenant
+ */
+export const ListRecommendationsQueryParams = zod.object({
+  "status": zod.coerce.string().optional()
+})
+
+export const ListRecommendationsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "dedupeKey": zod.string(),
+  "ruleKey": zod.string(),
+  "type": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'urgent']),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reason": zod.string(),
+  "evidence": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.string()
+})),
+  "confidence": zod.number(),
+  "suggestedAction": zod.string(),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "status": zod.enum(['Open', 'Approved', 'Edited', 'Rejected', 'Snoozed', 'Resolved']),
+  "editedTitle": zod.string().nullish(),
+  "editedDescription": zod.string().nullish(),
+  "assignedToUserId": zod.string().nullish(),
+  "snoozeUntil": zod.string().nullish(),
+  "resolvedByUserId": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "lifecycle": zod.array(zod.object({
+  "at": zod.string(),
+  "actorId": zod.string(),
+  "actor": zod.string(),
+  "action": zod.string(),
+  "detail": zod.string()
+})),
+  "lastGeneratedAt": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListRecommendationsResponse = zod.array(ListRecommendationsResponseItem)
+
+
+/**
+ * @summary Regenerate recommendations from live data (admin/manager only)
+ */
+export const GenerateRecommendationsResponse = zod.object({
+  "created": zod.number(),
+  "updated": zod.number(),
+  "resolved": zod.number(),
+  "reopened": zod.number()
+})
+
+
+/**
+ * @summary Approve a recommendation (records the human decision)
+ */
+export const ApproveRecommendationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ApproveRecommendationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "dedupeKey": zod.string(),
+  "ruleKey": zod.string(),
+  "type": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'urgent']),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reason": zod.string(),
+  "evidence": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.string()
+})),
+  "confidence": zod.number(),
+  "suggestedAction": zod.string(),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "status": zod.enum(['Open', 'Approved', 'Edited', 'Rejected', 'Snoozed', 'Resolved']),
+  "editedTitle": zod.string().nullish(),
+  "editedDescription": zod.string().nullish(),
+  "assignedToUserId": zod.string().nullish(),
+  "snoozeUntil": zod.string().nullish(),
+  "resolvedByUserId": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "lifecycle": zod.array(zod.object({
+  "at": zod.string(),
+  "actorId": zod.string(),
+  "actor": zod.string(),
+  "action": zod.string(),
+  "detail": zod.string()
+})),
+  "lastGeneratedAt": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Reject/dismiss a recommendation
+ */
+export const RejectRecommendationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RejectRecommendationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "dedupeKey": zod.string(),
+  "ruleKey": zod.string(),
+  "type": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'urgent']),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reason": zod.string(),
+  "evidence": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.string()
+})),
+  "confidence": zod.number(),
+  "suggestedAction": zod.string(),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "status": zod.enum(['Open', 'Approved', 'Edited', 'Rejected', 'Snoozed', 'Resolved']),
+  "editedTitle": zod.string().nullish(),
+  "editedDescription": zod.string().nullish(),
+  "assignedToUserId": zod.string().nullish(),
+  "snoozeUntil": zod.string().nullish(),
+  "resolvedByUserId": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "lifecycle": zod.array(zod.object({
+  "at": zod.string(),
+  "actorId": zod.string(),
+  "actor": zod.string(),
+  "action": zod.string(),
+  "detail": zod.string()
+})),
+  "lastGeneratedAt": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Mark a recommendation resolved
+ */
+export const ResolveRecommendationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ResolveRecommendationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "dedupeKey": zod.string(),
+  "ruleKey": zod.string(),
+  "type": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'urgent']),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reason": zod.string(),
+  "evidence": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.string()
+})),
+  "confidence": zod.number(),
+  "suggestedAction": zod.string(),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "status": zod.enum(['Open', 'Approved', 'Edited', 'Rejected', 'Snoozed', 'Resolved']),
+  "editedTitle": zod.string().nullish(),
+  "editedDescription": zod.string().nullish(),
+  "assignedToUserId": zod.string().nullish(),
+  "snoozeUntil": zod.string().nullish(),
+  "resolvedByUserId": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "lifecycle": zod.array(zod.object({
+  "at": zod.string(),
+  "actorId": zod.string(),
+  "actor": zod.string(),
+  "action": zod.string(),
+  "detail": zod.string()
+})),
+  "lastGeneratedAt": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Edit and approve a recommendation's suggested action text
+ */
+export const EditRecommendationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+
+export const EditRecommendationBody = zod.object({
+  "title": zod.string().min(1),
+  "description": zod.string().min(1)
+})
+
+export const EditRecommendationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "dedupeKey": zod.string(),
+  "ruleKey": zod.string(),
+  "type": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'urgent']),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reason": zod.string(),
+  "evidence": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.string()
+})),
+  "confidence": zod.number(),
+  "suggestedAction": zod.string(),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "status": zod.enum(['Open', 'Approved', 'Edited', 'Rejected', 'Snoozed', 'Resolved']),
+  "editedTitle": zod.string().nullish(),
+  "editedDescription": zod.string().nullish(),
+  "assignedToUserId": zod.string().nullish(),
+  "snoozeUntil": zod.string().nullish(),
+  "resolvedByUserId": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "lifecycle": zod.array(zod.object({
+  "at": zod.string(),
+  "actorId": zod.string(),
+  "actor": zod.string(),
+  "action": zod.string(),
+  "detail": zod.string()
+})),
+  "lastGeneratedAt": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Snooze a recommendation until a future time
+ */
+export const SnoozeRecommendationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const SnoozeRecommendationBody = zod.object({
+  "snoozeUntil": zod.string()
+})
+
+export const SnoozeRecommendationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "dedupeKey": zod.string(),
+  "ruleKey": zod.string(),
+  "type": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'urgent']),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reason": zod.string(),
+  "evidence": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.string()
+})),
+  "confidence": zod.number(),
+  "suggestedAction": zod.string(),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "status": zod.enum(['Open', 'Approved', 'Edited', 'Rejected', 'Snoozed', 'Resolved']),
+  "editedTitle": zod.string().nullish(),
+  "editedDescription": zod.string().nullish(),
+  "assignedToUserId": zod.string().nullish(),
+  "snoozeUntil": zod.string().nullish(),
+  "resolvedByUserId": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "lifecycle": zod.array(zod.object({
+  "at": zod.string(),
+  "actorId": zod.string(),
+  "actor": zod.string(),
+  "action": zod.string(),
+  "detail": zod.string()
+})),
+  "lastGeneratedAt": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary List background jobs for the tenant (admin/manager only)
+ */
+export const ListJobsQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "type": zod.coerce.string().optional()
+})
+
+export const ListJobsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "type": zod.string(),
+  "status": zod.enum(['Pending', 'Running', 'Succeeded', 'Failed']),
+  "payload": zod.record(zod.string(), zod.unknown()),
+  "result": zod.record(zod.string(), zod.unknown()).nullish(),
+  "runAt": zod.string(),
+  "attempts": zod.number(),
+  "maxAttempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "recurringSeconds": zod.number().nullish(),
+  "dedupeKey": zod.string().nullish(),
+  "log": zod.array(zod.object({
+  "at": zod.string(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "startedAt": zod.string().nullish(),
+  "finishedAt": zod.string().nullish(),
+  "createdByUserId": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListJobsResponse = zod.array(ListJobsResponseItem)
+
+
+/**
+ * @summary Enqueue a background job (admin only)
+ */
+export const EnqueueJobBody = zod.object({
+  "type": zod.string(),
+  "payload": zod.record(zod.string(), zod.unknown()).optional()
+})
+
+export const EnqueueJobResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "type": zod.string(),
+  "status": zod.enum(['Pending', 'Running', 'Succeeded', 'Failed']),
+  "payload": zod.record(zod.string(), zod.unknown()),
+  "result": zod.record(zod.string(), zod.unknown()).nullish(),
+  "runAt": zod.string(),
+  "attempts": zod.number(),
+  "maxAttempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "recurringSeconds": zod.number().nullish(),
+  "dedupeKey": zod.string().nullish(),
+  "log": zod.array(zod.object({
+  "at": zod.string(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "startedAt": zod.string().nullish(),
+  "finishedAt": zod.string().nullish(),
+  "createdByUserId": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Get a single background job
+ */
+export const GetJobParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetJobResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "type": zod.string(),
+  "status": zod.enum(['Pending', 'Running', 'Succeeded', 'Failed']),
+  "payload": zod.record(zod.string(), zod.unknown()),
+  "result": zod.record(zod.string(), zod.unknown()).nullish(),
+  "runAt": zod.string(),
+  "attempts": zod.number(),
+  "maxAttempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "recurringSeconds": zod.number().nullish(),
+  "dedupeKey": zod.string().nullish(),
+  "log": zod.array(zod.object({
+  "at": zod.string(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "startedAt": zod.string().nullish(),
+  "finishedAt": zod.string().nullish(),
+  "createdByUserId": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary List saved smart lists visible to the current user
+ */
+export const ListSavedListsQueryParams = zod.object({
+  "entity": zod.coerce.string().optional()
+})
+
+export const ListSavedListsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "entity": zod.enum(['work-orders', 'customers', 'invoices', 'inventory', 'equipment']),
+  "filters": zod.array(zod.object({
+  "field": zod.string(),
+  "op": zod.enum(['eq', 'neq', 'contains', 'in', 'gt', 'lt', 'gte', 'lte', 'is_empty', 'not_empty']),
+  "value": zod.union([zod.string(),zod.number(),zod.boolean(),zod.array(zod.string())]).nullish()
+})),
+  "search": zod.string().nullish(),
+  "sortField": zod.string().nullish(),
+  "sortDir": zod.enum(['asc', 'desc']),
+  "visibility": zod.enum(['private', 'shared', 'role']),
+  "roleRestrictions": zod.array(zod.string()),
+  "ownerUserId": zod.string(),
+  "favorite": zod.boolean(),
+  "sortOrder": zod.number(),
+  "isSeeded": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListSavedListsResponse = zod.array(ListSavedListsResponseItem)
+
+
+/**
+ * @summary Create a saved smart list
+ */
+
+
+
+export const CreateSavedListBody = zod.object({
+  "name": zod.string().min(1),
+  "entity": zod.enum(['work-orders', 'customers', 'invoices', 'inventory', 'equipment']),
+  "filters": zod.array(zod.object({
+  "field": zod.string(),
+  "op": zod.enum(['eq', 'neq', 'contains', 'in', 'gt', 'lt', 'gte', 'lte', 'is_empty', 'not_empty']),
+  "value": zod.union([zod.string(),zod.number(),zod.boolean(),zod.array(zod.string())]).nullish()
+})).optional(),
+  "search": zod.string().nullish(),
+  "sortField": zod.string().nullish(),
+  "sortDir": zod.enum(['asc', 'desc']).optional(),
+  "visibility": zod.enum(['private', 'shared', 'role']).optional(),
+  "roleRestrictions": zod.array(zod.string()).optional(),
+  "favorite": zod.boolean().optional()
+})
+
+export const CreateSavedListResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "entity": zod.enum(['work-orders', 'customers', 'invoices', 'inventory', 'equipment']),
+  "filters": zod.array(zod.object({
+  "field": zod.string(),
+  "op": zod.enum(['eq', 'neq', 'contains', 'in', 'gt', 'lt', 'gte', 'lte', 'is_empty', 'not_empty']),
+  "value": zod.union([zod.string(),zod.number(),zod.boolean(),zod.array(zod.string())]).nullish()
+})),
+  "search": zod.string().nullish(),
+  "sortField": zod.string().nullish(),
+  "sortDir": zod.enum(['asc', 'desc']),
+  "visibility": zod.enum(['private', 'shared', 'role']),
+  "roleRestrictions": zod.array(zod.string()),
+  "ownerUserId": zod.string(),
+  "favorite": zod.boolean(),
+  "sortOrder": zod.number(),
+  "isSeeded": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Run a smart-list query without saving it
+ */
+
+
+
+export const PreviewSavedListBody = zod.object({
+  "name": zod.string().min(1),
+  "entity": zod.enum(['work-orders', 'customers', 'invoices', 'inventory', 'equipment']),
+  "filters": zod.array(zod.object({
+  "field": zod.string(),
+  "op": zod.enum(['eq', 'neq', 'contains', 'in', 'gt', 'lt', 'gte', 'lte', 'is_empty', 'not_empty']),
+  "value": zod.union([zod.string(),zod.number(),zod.boolean(),zod.array(zod.string())]).nullish()
+})).optional(),
+  "search": zod.string().nullish(),
+  "sortField": zod.string().nullish(),
+  "sortDir": zod.enum(['asc', 'desc']).optional(),
+  "visibility": zod.enum(['private', 'shared', 'role']).optional(),
+  "roleRestrictions": zod.array(zod.string()).optional(),
+  "favorite": zod.boolean().optional()
+})
+
+export const PreviewSavedListResponse = zod.object({
+  "entity": zod.string(),
+  "count": zod.number(),
+  "items": zod.array(zod.record(zod.string(), zod.unknown()))
+})
+
+
+/**
+ * @summary Update a saved smart list
+ */
+export const UpdateSavedListParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const UpdateSavedListBody = zod.object({
+  "name": zod.string().min(1).optional(),
+  "filters": zod.array(zod.object({
+  "field": zod.string(),
+  "op": zod.enum(['eq', 'neq', 'contains', 'in', 'gt', 'lt', 'gte', 'lte', 'is_empty', 'not_empty']),
+  "value": zod.union([zod.string(),zod.number(),zod.boolean(),zod.array(zod.string())]).nullish()
+})).optional(),
+  "search": zod.string().nullish(),
+  "sortField": zod.string().nullish(),
+  "sortDir": zod.enum(['asc', 'desc']).optional(),
+  "visibility": zod.enum(['private', 'shared', 'role']).optional(),
+  "roleRestrictions": zod.array(zod.string()).optional(),
+  "favorite": zod.boolean().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+export const UpdateSavedListResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "entity": zod.enum(['work-orders', 'customers', 'invoices', 'inventory', 'equipment']),
+  "filters": zod.array(zod.object({
+  "field": zod.string(),
+  "op": zod.enum(['eq', 'neq', 'contains', 'in', 'gt', 'lt', 'gte', 'lte', 'is_empty', 'not_empty']),
+  "value": zod.union([zod.string(),zod.number(),zod.boolean(),zod.array(zod.string())]).nullish()
+})),
+  "search": zod.string().nullish(),
+  "sortField": zod.string().nullish(),
+  "sortDir": zod.enum(['asc', 'desc']),
+  "visibility": zod.enum(['private', 'shared', 'role']),
+  "roleRestrictions": zod.array(zod.string()),
+  "ownerUserId": zod.string(),
+  "favorite": zod.boolean(),
+  "sortOrder": zod.number(),
+  "isSeeded": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a saved smart list
+ */
+export const DeleteSavedListParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteSavedListResponse = zod.void()
+
+
+/**
+ * @summary Run a saved smart list and return matching rows
+ */
+export const RunSavedListParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RunSavedListResponse = zod.object({
+  "entity": zod.string(),
+  "count": zod.number(),
+  "items": zod.array(zod.record(zod.string(), zod.unknown()))
+})
+
+
+/**
+ * @summary Backend global search across entities (role/tenant filtered)
+ */
+export const GlobalSearchQueryParams = zod.object({
+  "q": zod.coerce.string()
+})
+
+export const GlobalSearchResponse = zod.object({
+  "query": zod.string(),
+  "results": zod.array(zod.object({
+  "entity": zod.string(),
+  "id": zod.string(),
+  "title": zod.string(),
+  "subtitle": zod.string(),
+  "url": zod.string(),
+  "badge": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Backend-derived operational and financial (non-GL) reports
+ */
+export const GetReportsResponse = zod.object({
+  "generatedAt": zod.string(),
+  "disclaimer": zod.string(),
+  "operational": zod.object({
+  "metrics": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.number(),
+  "format": zod.string().nullish()
+})),
+  "workOrdersByStatus": zod.array(zod.object({
+  "name": zod.string(),
+  "value": zod.number()
+})),
+  "workOrdersByPriority": zod.array(zod.object({
+  "name": zod.string(),
+  "value": zod.number()
+})),
+  "techUtilization": zod.array(zod.object({
+  "name": zod.string(),
+  "value": zod.number()
+}))
+}),
+  "financial": zod.object({
+  "label": zod.string(),
+  "metrics": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.number(),
+  "format": zod.string().nullish()
+})),
+  "arAging": zod.array(zod.object({
+  "name": zod.string(),
+  "value": zod.number()
+})),
+  "revenueByCustomer": zod.array(zod.object({
+  "name": zod.string(),
+  "value": zod.number()
+}))
+})
+})
+
+
+/**
+ * @summary List importable entities and their target field specs
+ */
+export const ListMigrationEntitiesResponseItem = zod.object({
+  "entity": zod.string(),
+  "label": zod.string(),
+  "fields": zod.array(zod.object({
+  "target": zod.string(),
+  "required": zod.boolean(),
+  "type": zod.string(),
+  "label": zod.string()
+})),
+  "dedupeFields": zod.array(zod.string())
+})
+export const ListMigrationEntitiesResponse = zod.array(ListMigrationEntitiesResponseItem)
+
+
+/**
+ * @summary List migration batches for the tenant (admin only)
+ */
+export const ListMigrationBatchesResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "entity": zod.string(),
+  "fileName": zod.string(),
+  "status": zod.enum(['Draft', 'Validated', 'Importing', 'Imported', 'RolledBack', 'Failed']),
+  "sourceColumns": zod.array(zod.string()),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+})),
+  "dryRun": zod.boolean(),
+  "summary": zod.object({
+  "totalRows": zod.number(),
+  "validRows": zod.number(),
+  "errorRows": zod.number(),
+  "duplicateRows": zod.number(),
+  "importedRows": zod.number(),
+  "failedRows": zod.number()
+}).nullish(),
+  "createdByUserId": zod.string(),
+  "importedAt": zod.string().nullish(),
+  "rolledBackAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListMigrationBatchesResponse = zod.array(ListMigrationBatchesResponseItem)
+
+
+/**
+ * @summary Upload a CSV and create a migration batch (admin only)
+ */
+
+
+
+
+export const CreateMigrationBatchBody = zod.object({
+  "entity": zod.enum(['customers', 'locations', 'equipment', 'inventory', 'work-orders']),
+  "fileName": zod.string().min(1),
+  "csv": zod.string().min(1),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+})).optional()
+})
+
+export const CreateMigrationBatchResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "entity": zod.string(),
+  "fileName": zod.string(),
+  "status": zod.enum(['Draft', 'Validated', 'Importing', 'Imported', 'RolledBack', 'Failed']),
+  "sourceColumns": zod.array(zod.string()),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+})),
+  "dryRun": zod.boolean(),
+  "summary": zod.object({
+  "totalRows": zod.number(),
+  "validRows": zod.number(),
+  "errorRows": zod.number(),
+  "duplicateRows": zod.number(),
+  "importedRows": zod.number(),
+  "failedRows": zod.number()
+}).nullish(),
+  "createdByUserId": zod.string(),
+  "importedAt": zod.string().nullish(),
+  "rolledBackAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Get a migration batch
+ */
+export const GetMigrationBatchParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetMigrationBatchResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "entity": zod.string(),
+  "fileName": zod.string(),
+  "status": zod.enum(['Draft', 'Validated', 'Importing', 'Imported', 'RolledBack', 'Failed']),
+  "sourceColumns": zod.array(zod.string()),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+})),
+  "dryRun": zod.boolean(),
+  "summary": zod.object({
+  "totalRows": zod.number(),
+  "validRows": zod.number(),
+  "errorRows": zod.number(),
+  "duplicateRows": zod.number(),
+  "importedRows": zod.number(),
+  "failedRows": zod.number()
+}).nullish(),
+  "createdByUserId": zod.string(),
+  "importedAt": zod.string().nullish(),
+  "rolledBackAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a migration batch and its rows (admin only)
+ */
+export const DeleteMigrationBatchParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteMigrationBatchResponse = zod.void()
+
+
+/**
+ * @summary List the rows in a migration batch
+ */
+export const ListMigrationRowsParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ListMigrationRowsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "batchId": zod.string(),
+  "rowNumber": zod.number(),
+  "raw": zod.record(zod.string(), zod.string()),
+  "mapped": zod.record(zod.string(), zod.unknown()),
+  "status": zod.enum(['Valid', 'Error', 'Duplicate', 'Imported', 'Failed', 'RolledBack']),
+  "errors": zod.array(zod.object({
+  "field": zod.string(),
+  "message": zod.string()
+})),
+  "sourceId": zod.string().nullish(),
+  "createdEntityId": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+export const ListMigrationRowsResponse = zod.array(ListMigrationRowsResponseItem)
+
+
+/**
+ * @summary Update the column mapping for a migration batch
+ */
+export const UpdateMigrationMappingParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateMigrationMappingBody = zod.object({
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+}))
+})
+
+export const UpdateMigrationMappingResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "entity": zod.string(),
+  "fileName": zod.string(),
+  "status": zod.enum(['Draft', 'Validated', 'Importing', 'Imported', 'RolledBack', 'Failed']),
+  "sourceColumns": zod.array(zod.string()),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+})),
+  "dryRun": zod.boolean(),
+  "summary": zod.object({
+  "totalRows": zod.number(),
+  "validRows": zod.number(),
+  "errorRows": zod.number(),
+  "duplicateRows": zod.number(),
+  "importedRows": zod.number(),
+  "failedRows": zod.number()
+}).nullish(),
+  "createdByUserId": zod.string(),
+  "importedAt": zod.string().nullish(),
+  "rolledBackAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Dry-run validate a batch (counts valid/error/duplicate rows)
+ */
+export const ValidateMigrationBatchParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ValidateMigrationBatchResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "entity": zod.string(),
+  "fileName": zod.string(),
+  "status": zod.enum(['Draft', 'Validated', 'Importing', 'Imported', 'RolledBack', 'Failed']),
+  "sourceColumns": zod.array(zod.string()),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+})),
+  "dryRun": zod.boolean(),
+  "summary": zod.object({
+  "totalRows": zod.number(),
+  "validRows": zod.number(),
+  "errorRows": zod.number(),
+  "duplicateRows": zod.number(),
+  "importedRows": zod.number(),
+  "failedRows": zod.number()
+}).nullish(),
+  "createdByUserId": zod.string(),
+  "importedAt": zod.string().nullish(),
+  "rolledBackAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Execute the import for valid rows (admin only)
+ */
+export const ImportMigrationBatchParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ImportMigrationBatchResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "entity": zod.string(),
+  "fileName": zod.string(),
+  "status": zod.enum(['Draft', 'Validated', 'Importing', 'Imported', 'RolledBack', 'Failed']),
+  "sourceColumns": zod.array(zod.string()),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+})),
+  "dryRun": zod.boolean(),
+  "summary": zod.object({
+  "totalRows": zod.number(),
+  "validRows": zod.number(),
+  "errorRows": zod.number(),
+  "duplicateRows": zod.number(),
+  "importedRows": zod.number(),
+  "failedRows": zod.number()
+}).nullish(),
+  "createdByUserId": zod.string(),
+  "importedAt": zod.string().nullish(),
+  "rolledBackAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Roll back an imported batch (admin only)
+ */
+export const RollbackMigrationBatchParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RollbackMigrationBatchResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "entity": zod.string(),
+  "fileName": zod.string(),
+  "status": zod.enum(['Draft', 'Validated', 'Importing', 'Imported', 'RolledBack', 'Failed']),
+  "sourceColumns": zod.array(zod.string()),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+})),
+  "dryRun": zod.boolean(),
+  "summary": zod.object({
+  "totalRows": zod.number(),
+  "validRows": zod.number(),
+  "errorRows": zod.number(),
+  "duplicateRows": zod.number(),
+  "importedRows": zod.number(),
+  "failedRows": zod.number()
+}).nullish(),
+  "createdByUserId": zod.string(),
+  "importedAt": zod.string().nullish(),
+  "rolledBackAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Export error/duplicate/failed rows as CSV
+ */
+export const ExportMigrationFailedRowsParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ExportMigrationFailedRowsResponse = zod.unknown()
+
+
+/**
+ * @summary List reusable column-mapping templates
+ */
+export const ListMigrationTemplatesResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "entity": zod.string(),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+})),
+  "createdByUserId": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListMigrationTemplatesResponse = zod.array(ListMigrationTemplatesResponseItem)
+
+
+/**
+ * @summary Save a reusable column-mapping template (admin only)
+ */
+
+
+
+export const CreateMigrationTemplateBody = zod.object({
+  "name": zod.string().min(1),
+  "entity": zod.enum(['customers', 'locations', 'equipment', 'inventory', 'work-orders']),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+}))
+})
+
+export const CreateMigrationTemplateResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "entity": zod.string(),
+  "mapping": zod.array(zod.object({
+  "target": zod.string(),
+  "source": zod.string().nullish()
+})),
+  "createdByUserId": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
