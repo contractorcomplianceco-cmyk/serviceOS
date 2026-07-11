@@ -3463,6 +3463,48 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /recommendations/{id}/assign:
+    post:
+      operationId: assignRecommendation
+      tags: [recommendations]
+      summary: Assign a recommendation to a user (or clear the assignment)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignRecommendationInput"
+      responses:
+        "200":
+          description: Recommendation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recommendation"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /jobs:
     get:
@@ -3718,13 +3760,28 @@ paths:
     get:
       operationId: globalSearch
       tags: [search]
-      summary: Backend global search across entities (role/tenant filtered)
+      summary: Backend global search across entities (role/tenant filtered, grouped, paginated, highlighted)
       parameters:
         - name: q
           in: query
           required: true
           schema:
             type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 5
       responses:
         "200":
           description: Search results
@@ -4206,6 +4263,11 @@ components:
       required: [snoozeUntil]
       properties:
         snoozeUntil: { type: string }
+    AssignRecommendationInput:
+      type: object
+      required: [assignedToUserId]
+      properties:
+        assignedToUserId: { type: string, nullable: true }
 
     JobLogEntry:
       type: object
@@ -4342,23 +4404,39 @@ components:
 
     SearchResult:
       type: object
-      required: [entity, id, title, subtitle, url]
+      required: [entity, id, title, subtitle, titleHtml, subtitleHtml, url]
       properties:
         entity: { type: string }
         id: { type: string }
         title: { type: string }
         subtitle: { type: string }
+        titleHtml: { type: string }
+        subtitleHtml: { type: string }
         url: { type: string }
         badge: { type: string, nullable: true }
-    SearchResults:
+    SearchGroup:
       type: object
-      required: [query, results]
+      required: [entity, label, total, results]
       properties:
-        query: { type: string }
+        entity: { type: string }
+        label: { type: string }
+        total: { type: integer }
         results:
           type: array
           items:
             $ref: "#/components/schemas/SearchResult"
+    SearchResults:
+      type: object
+      required: [query, page, pageSize, total, groups]
+      properties:
+        query: { type: string }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchGroup"
 
     ReportMetric:
       type: object

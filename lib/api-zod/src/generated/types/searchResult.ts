@@ -11,6 +11,8 @@ export interface SearchResult {
   id: string;
   title: string;
   subtitle: string;
+  titleHtml: string;
+  subtitleHtml: string;
   url: string;
   badge?: string | null;
 }

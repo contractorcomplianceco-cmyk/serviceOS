@@ -9,6 +9,7 @@ import {
   useResolveRecommendation,
   useEditRecommendation,
   useSnoozeRecommendation,
+  useAssignRecommendation,
   getListRecommendationsQueryKey,
   type Recommendation,
 } from "@workspace/api-client-react";
@@ -18,6 +19,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -58,7 +62,7 @@ export default function Intelligence() {
   const qc = useQueryClient();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { currentUser } = useAppStore();
+  const { currentUser, users } = useAppStore();
   const canManage = canManageRecommendations(currentUser.role);
   const [tab, setTab] = useState<StatusTab>("Open");
   const [editing, setEditing] = useState<Recommendation | null>(null);
@@ -76,6 +80,7 @@ export default function Intelligence() {
   const resolve = useResolveRecommendation({ mutation: { onSuccess: invalidate } });
   const edit = useEditRecommendation({ mutation: { onSuccess: invalidate } });
   const snooze = useSnoozeRecommendation({ mutation: { onSuccess: invalidate } });
+  const assign = useAssignRecommendation({ mutation: { onSuccess: invalidate } });
 
   const handleGenerate = async () => {
     const res = await generate.mutateAsync();
@@ -103,6 +108,16 @@ export default function Intelligence() {
     const until = new Date(Date.now() + 7 * 86_400_000).toISOString();
     await snooze.mutateAsync({ id: r.id, data: { snoozeUntil: until } });
     toast({ title: "Snoozed", description: `"${r.title}" hidden for 7 days.` });
+  };
+
+  const handleAssign = async (r: Recommendation, userId: string) => {
+    const assignedToUserId = userId === "__unassigned__" ? null : userId;
+    await assign.mutateAsync({ id: r.id, data: { assignedToUserId } });
+    const name = users.find((u) => u.id === assignedToUserId)?.name;
+    toast({
+      title: assignedToUserId ? "Assigned" : "Unassigned",
+      description: assignedToUserId ? `"${r.title}" assigned to ${name ?? "user"}.` : `"${r.title}" is now unassigned.`,
+    });
   };
 
   const openEdit = (r: Recommendation) => {
@@ -187,6 +202,11 @@ export default function Intelligence() {
                     <Badge variant="outline" className="text-sc-blue border-[color:var(--sc-line-strong)] text-[10px] uppercase font-mono tracking-wider bg-transparent">{r.confidence}% Confidence</Badge>
                     <Badge variant="outline" className={`text-[10px] uppercase tracking-wide ${severityStyle[r.severity] ?? severityStyle.info}`}>{r.severity}</Badge>
                     <Badge variant="outline" className="text-[10px] uppercase tracking-wide text-sc-3 border-panel-strong bg-transparent">{r.type}</Badge>
+                    {r.assignedToUserId && (
+                      <Badge variant="outline" className="text-[10px] uppercase tracking-wide text-sc-blue border-[color:var(--sc-line-strong)] bg-transparent" data-testid={`badge-assignee-${r.id}`}>
+                        Assigned: {users.find((u) => u.id === r.assignedToUserId)?.name ?? "Unknown"}
+                      </Badge>
+                    )}
                   </div>
                   <h3 className="text-xl font-semibold text-sc mb-2">{r.editedTitle ?? r.title}</h3>
                   <p className="text-sc-2 text-sm leading-relaxed max-w-3xl">{r.editedDescription ?? r.description}</p>
@@ -228,6 +248,19 @@ export default function Intelligence() {
                     <Button variant="ghost" className="text-[color:var(--sc-green)] hover:bg-white/[0.04] justify-start" onClick={() => handleResolve(r)} data-testid={`button-resolve-${r.id}`}>
                       <CheckCircle2 className="w-4 h-4 mr-2" /> Resolve
                     </Button>
+                  )}
+                  {canManage && tab !== "Resolved" && tab !== "Rejected" && (
+                    <Select value={r.assignedToUserId ?? "__unassigned__"} onValueChange={(v) => handleAssign(r, v)}>
+                      <SelectTrigger className="bg-transparent text-sc-2 justify-start" style={{ border: "1px solid var(--sc-line)" }} data-testid={`select-assignee-${r.id}`}>
+                        <SelectValue placeholder="Assign to…" />
+                      </SelectTrigger>
+                      <SelectContent className="text-sc" style={{ background: "var(--sc-panel-2)", border: "1px solid var(--sc-line)" }}>
+                        <SelectItem value="__unassigned__">Unassigned</SelectItem>
+                        {users.map((u) => (
+                          <SelectItem key={u.id} value={u.id} data-testid={`assignee-option-${r.id}-${u.id}`}>{u.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   )}
                   {routeFor(r) && (
                     <Button variant="ghost" className="text-sc-blue hover:bg-white/[0.04] justify-start" onClick={() => navigate(routeFor(r)!)} data-testid={`button-view-${r.id}`}>

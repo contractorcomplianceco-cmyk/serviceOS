@@ -8,4 +8,13 @@
 
 export type GlobalSearchParams = {
 q: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 50
+ */
+pageSize?: number;
 };

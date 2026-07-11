@@ -22,6 +22,7 @@ import type {
 import type {
   AcceptInviteInput,
   AdjustmentInput,
+  AssignRecommendationInput,
   AuditEvent,
   AuthUser,
   BadRequestResponse,
@@ -10617,6 +10618,78 @@ export const useSnoozeRecommendation = <TError = ErrorType<ErrorResponse>,
       return useMutation(getSnoozeRecommendationMutationOptions(options));
     }
 
+export const getAssignRecommendationUrl = (id: string,) => {
+
+
+
+
+  return `/api/recommendations/${id}/assign`
+}
+
+/**
+ * @summary Assign a recommendation to a user (or clear the assignment)
+ */
+export const assignRecommendation = async (id: string,
+    assignRecommendationInput: AssignRecommendationInput, options?: RequestInit): Promise<Recommendation> => {
+
+  return customFetch<Recommendation>(getAssignRecommendationUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(assignRecommendationInput)
+  }
+);}
+
+
+
+
+
+export const getAssignRecommendationMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignRecommendation>>, TError,{id: string;data: BodyType<AssignRecommendationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof assignRecommendation>>, TError,{id: string;data: BodyType<AssignRecommendationInput>}, TContext> => {
+
+const mutationKey = ['assignRecommendation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignRecommendation>>, {id: string;data: BodyType<AssignRecommendationInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  assignRecommendation(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AssignRecommendationMutationResult = NonNullable<Awaited<ReturnType<typeof assignRecommendation>>>
+    export type AssignRecommendationMutationBody = BodyType<AssignRecommendationInput>
+    export type AssignRecommendationMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Assign a recommendation to a user (or clear the assignment)
+ */
+export const useAssignRecommendation = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignRecommendation>>, TError,{id: string;data: BodyType<AssignRecommendationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof assignRecommendation>>,
+        TError,
+        {id: string;data: BodyType<AssignRecommendationInput>},
+        TContext
+      > => {
+      return useMutation(getAssignRecommendationMutationOptions(options));
+    }
+
 export const getListJobsUrl = (params?: ListJobsParams,) => {
   const normalizedParams = new URLSearchParams();
 
@@ -11305,7 +11378,7 @@ export const getGlobalSearchUrl = (params: GlobalSearchParams,) => {
 }
 
 /**
- * @summary Backend global search across entities (role/tenant filtered)
+ * @summary Backend global search across entities (role/tenant filtered, grouped, paginated, highlighted)
  */
 export const globalSearch = async (params: GlobalSearchParams, options?: RequestInit): Promise<SearchResults> => {
 
@@ -11352,7 +11425,7 @@ export type GlobalSearchQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Backend global search across entities (role/tenant filtered)
+ * @summary Backend global search across entities (role/tenant filtered, grouped, paginated, highlighted)
  */
 
 export function useGlobalSearch<TData = Awaited<ReturnType<typeof globalSearch>>, TError = ErrorType<unknown>>(

@@ -85,6 +85,10 @@ export interface SnoozeRecommendationInput {
   snoozeUntil: string;
 }
 
+export interface AssignRecommendationInput {
+  assignedToUserId: string | null;
+}
+
 export interface JobLogEntry {
   at: string;
   status: string;
@@ -286,13 +290,25 @@ export interface SearchResult {
   id: string;
   title: string;
   subtitle: string;
+  titleHtml: string;
+  subtitleHtml: string;
   url: string;
   badge?: string | null;
 }
 
+export interface SearchGroup {
+  entity: string;
+  label: string;
+  total: number;
+  results: SearchResult[];
+}
+
 export interface SearchResults {
   query: string;
-  results: SearchResult[];
+  page: number;
+  pageSize: number;
+  total: number;
+  groups: SearchGroup[];
 }
 
 export interface ReportMetric {
@@ -2425,5 +2441,14 @@ entity?: string;
 
 export type GlobalSearchParams = {
 q: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 50
+ */
+pageSize?: number;
 };
 

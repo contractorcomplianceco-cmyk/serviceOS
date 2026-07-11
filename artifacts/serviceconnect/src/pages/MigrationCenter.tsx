@@ -110,7 +110,17 @@ export default function MigrationCenter() {
   const qc = useQueryClient();
 
   const entitiesQuery = useListMigrationEntities();
-  const batchesQuery = useListMigrationBatches();
+  const batchesQuery = useListMigrationBatches({
+    query: {
+      queryKey: getListMigrationBatchesQueryKey(),
+      // Poll while any batch is mid-import so progress + final summary appear
+      // without a manual refresh.
+      refetchInterval: (query) => {
+        const data = query.state.data as MigrationBatch[] | undefined;
+        return data?.some((b) => b.status === "Importing") ? 1500 : false;
+      },
+    },
+  });
   const templatesQuery = useListMigrationTemplates();
 
   const entities = entitiesQuery.data ?? [];
@@ -147,6 +157,8 @@ export default function MigrationCenter() {
     query: {
       enabled: !!selectedBatchId,
       queryKey: getListMigrationRowsQueryKey(selectedBatchId ?? ""),
+      // Mirror the batch poll so per-row status updates during a background import.
+      refetchInterval: selectedBatch?.status === "Importing" ? 1500 : false,
     },
   });
   const rows: MigrationRow[] = rowsQuery.data ?? [];
@@ -186,7 +198,8 @@ export default function MigrationCenter() {
       return { target: f.target, source: v && v !== NONE ? v : null };
     });
 
-  const mappingLocked = selectedBatch?.status === "Imported";
+  const mappingLocked =
+    selectedBatch?.status === "Imported" || selectedBatch?.status === "Importing";
 
   const handleSaveMapping = () => {
     if (!selectedBatch) return;
@@ -226,10 +239,10 @@ export default function MigrationCenter() {
     importBatch.mutate(
       { id: selectedBatch.id },
       {
-        onSuccess: (b) => {
+        onSuccess: () => {
           toast({
-            title: "Import complete",
-            description: `${b.summary?.importedRows ?? 0} rows imported · ${b.summary?.failedRows ?? 0} failed.`,
+            title: "Import queued",
+            description: "Import is running in the background — progress updates here as rows are processed.",
           });
           invalidateBatches();
           invalidateRows();

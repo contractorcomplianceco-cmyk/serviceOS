@@ -10,8 +10,10 @@ router.get(
   async (req, res): Promise<void> => {
     const user = req.user!;
     const q = typeof req.query.q === "string" ? req.query.q : "";
-    const results = await globalSearch(user, q);
-    res.json({ query: q, results });
+    const page = Number(req.query.page) || 1;
+    const pageSize = Number(req.query.pageSize) || 5;
+    const result = await globalSearch(user, q, page, pageSize);
+    res.json(result);
   },
 );
 

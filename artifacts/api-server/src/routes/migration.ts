@@ -24,10 +24,10 @@ import {
   parseCsv,
   ENTITY_SPECS,
   validateBatch,
-  executeBatch,
   rollbackBatch,
   failedRowsExport,
 } from "../lib/migration/engine";
+import { enqueueJob } from "../lib/jobs";
 import { writeAudit } from "../lib/audit";
 
 const router: IRouter = Router();
@@ -309,6 +309,10 @@ router.patch(
       res.status(400).json({ error: "Cannot remap an imported batch" });
       return;
     }
+    if (batch.status === "Importing") {
+      res.status(400).json({ error: "Cannot remap a batch while an import is running" });
+      return;
+    }
     const [row] = await db
       .update(migrationBatchesTable)
       .set({
@@ -337,6 +341,10 @@ router.post(
       res.status(404).json({ error: "Batch not found" });
       return;
     }
+    if (batch.status === "Importing") {
+      res.status(400).json({ error: "Cannot validate a batch while an import is running" });
+      return;
+    }
     const updated = await validateBatch(batch);
     res.json(toMigrationBatch(updated));
   },
@@ -360,7 +368,32 @@ router.post(
       res.status(400).json({ error: "Batch must be validated before import" });
       return;
     }
-    const updated = await executeBatch(batch);
+    // Import runs as a background job with progress: flip the batch to
+    // "Importing" and enqueue migration.process (mode "execute"). The handler
+    // sets the final Imported/Failed status + summary. The client polls the
+    // batch until it settles.
+    const [importing] = await db
+      .update(migrationBatchesTable)
+      .set({ status: "Importing" })
+      .where(eq(migrationBatchesTable.id, batch.id))
+      .returning();
+    let job;
+    try {
+      job = await enqueueJob({
+        tenantId: user.tenantId,
+        type: "migration.process",
+        payload: { batchId: batch.id, mode: "execute" },
+        createdByUserId: user.id,
+      });
+    } catch (err) {
+      // Revert the status flip so a failed enqueue never leaves an orphaned
+      // "Importing" batch that can no longer be validated, remapped, or retried.
+      await db
+        .update(migrationBatchesTable)
+        .set({ status: "Validated" })
+        .where(eq(migrationBatchesTable.id, batch.id));
+      throw err;
+    }
     await writeAudit(
       {
         tenantId: user.tenantId,
@@ -369,12 +402,12 @@ router.post(
         action: "Imported",
         entityType: "MigrationBatch",
         entityId: batch.id,
-        summary: `Migration batch "${batch.fileName}" imported (${updated.summary?.importedRows ?? 0} rows)`,
+        summary: `Migration batch "${batch.fileName}" import queued (job ${job.id})`,
         ip: req.ip ?? null,
       },
       req,
     );
-    res.json(toMigrationBatch(updated));
+    res.json(toMigrationBatch(importing!));
   },
 );
 

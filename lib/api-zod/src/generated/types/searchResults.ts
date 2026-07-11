@@ -5,9 +5,12 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { SearchResult } from './searchResult';
+import type { SearchGroup } from './searchGroup';
 
 export interface SearchResults {
   query: string;
-  results: SearchResult[];
+  page: number;
+  pageSize: number;
+  total: number;
+  groups: SearchGroup[];
 }

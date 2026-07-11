@@ -5444,6 +5444,55 @@ export const SnoozeRecommendationResponse = zod.object({
 
 
 /**
+ * @summary Assign a recommendation to a user (or clear the assignment)
+ */
+export const AssignRecommendationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const AssignRecommendationBody = zod.object({
+  "assignedToUserId": zod.string().nullable()
+})
+
+export const AssignRecommendationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "dedupeKey": zod.string(),
+  "ruleKey": zod.string(),
+  "type": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'urgent']),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reason": zod.string(),
+  "evidence": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.string()
+})),
+  "confidence": zod.number(),
+  "suggestedAction": zod.string(),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "status": zod.enum(['Open', 'Approved', 'Edited', 'Rejected', 'Snoozed', 'Resolved']),
+  "editedTitle": zod.string().nullish(),
+  "editedDescription": zod.string().nullish(),
+  "assignedToUserId": zod.string().nullish(),
+  "snoozeUntil": zod.string().nullish(),
+  "resolvedByUserId": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "lifecycle": zod.array(zod.object({
+  "at": zod.string(),
+  "actorId": zod.string(),
+  "actor": zod.string(),
+  "action": zod.string(),
+  "detail": zod.string()
+})),
+  "lastGeneratedAt": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
  * @summary List background jobs for the tenant (admin/manager only)
  */
 export const ListJobsQueryParams = zod.object({
@@ -5727,21 +5776,40 @@ export const RunSavedListResponse = zod.object({
 
 
 /**
- * @summary Backend global search across entities (role/tenant filtered)
+ * @summary Backend global search across entities (role/tenant filtered, grouped, paginated, highlighted)
  */
+export const globalSearchQueryPageDefault = 1;
+
+export const globalSearchQueryPageSizeDefault = 5;
+export const globalSearchQueryPageSizeMax = 50;
+
+
+
 export const GlobalSearchQueryParams = zod.object({
-  "q": zod.coerce.string()
+  "q": zod.coerce.string(),
+  "page": zod.coerce.number().min(1).default(globalSearchQueryPageDefault),
+  "pageSize": zod.coerce.number().min(1).max(globalSearchQueryPageSizeMax).default(globalSearchQueryPageSizeDefault)
 })
 
 export const GlobalSearchResponse = zod.object({
   "query": zod.string(),
+  "page": zod.number(),
+  "pageSize": zod.number(),
+  "total": zod.number(),
+  "groups": zod.array(zod.object({
+  "entity": zod.string(),
+  "label": zod.string(),
+  "total": zod.number(),
   "results": zod.array(zod.object({
   "entity": zod.string(),
   "id": zod.string(),
   "title": zod.string(),
   "subtitle": zod.string(),
+  "titleHtml": zod.string(),
+  "subtitleHtml": zod.string(),
   "url": zod.string(),
   "badge": zod.string().nullish()
+}))
 }))
 })
 

@@ -11,7 +11,7 @@ import {
   UpdateSavedListBody,
   PreviewSavedListBody,
 } from "@workspace/api-zod";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireNav } from "../middleware/auth";
 import { isValidRole } from "../lib/authz";
 import { toSavedList } from "../lib/serialize-ops";
 import {
@@ -41,6 +41,7 @@ function isEntity(v: string): v is SavedListEntity {
 router.get(
   "/saved-lists",
   requireAuth,
+  requireNav("lists"),
   async (req, res): Promise<void> => {
     const user = req.user!;
     const entity = typeof req.query.entity === "string" ? req.query.entity : undefined;
@@ -59,6 +60,7 @@ router.get(
 router.post(
   "/saved-lists/preview",
   requireAuth,
+  requireNav("lists"),
   async (req, res): Promise<void> => {
     const user = req.user!;
     const parsed = PreviewSavedListBody.safeParse(req.body);
@@ -85,6 +87,7 @@ router.post(
 router.post(
   "/saved-lists",
   requireAuth,
+  requireNav("lists"),
   async (req, res): Promise<void> => {
     const user = req.user!;
     const parsed = CreateSavedListBody.safeParse(req.body);
@@ -149,6 +152,7 @@ async function loadOwned(
 router.patch(
   "/saved-lists/:id",
   requireAuth,
+  requireNav("lists"),
   async (req, res): Promise<void> => {
     const user = req.user!;
     const parsed = UpdateSavedListBody.safeParse(req.body);
@@ -192,6 +196,7 @@ router.patch(
 router.delete(
   "/saved-lists/:id",
   requireAuth,
+  requireNav("lists"),
   async (req, res): Promise<void> => {
     const user = req.user!;
     const existing = await loadOwned(user, String(req.params.id));
@@ -224,6 +229,7 @@ router.delete(
 router.post(
   "/saved-lists/:id/run",
   requireAuth,
+  requireNav("lists"),
   async (req, res): Promise<void> => {
     const user = req.user!;
     const existing = await loadOwned(user, String(req.params.id));

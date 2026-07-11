@@ -9,6 +9,7 @@ import {
 import {
   EditRecommendationBody,
   SnoozeRecommendationBody,
+  AssignRecommendationBody,
 } from "@workspace/api-zod";
 import { requireAuth, requireNav } from "../middleware/auth";
 import { canManageRecommendations, isValidRole } from "../lib/authz";
@@ -207,6 +208,23 @@ router.post(
     await act(req, res, String(req.params.id), "Snoozed", () => ({
       status: "Snoozed",
       snoozeUntil: until,
+    }));
+  },
+);
+
+router.post(
+  "/recommendations/:id/assign",
+  requireAuth,
+  requireNav("intelligence"),
+  async (req, res): Promise<void> => {
+    const parsed = AssignRecommendationBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.message });
+      return;
+    }
+    const assignee = parsed.data.assignedToUserId ?? null;
+    await act(req, res, String(req.params.id), "Assigned", () => ({
+      assignedToUserId: assignee,
     }));
   },
 );

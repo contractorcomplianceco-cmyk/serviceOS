@@ -25,6 +25,7 @@ interface SearchGroup {
   key: string;
   label: string;
   icon: typeof Wrench;
+  total: number;
   results: SearchResult[];
 }
 
@@ -71,19 +72,13 @@ export function Header() {
   );
 
   const groups = useMemo<SearchGroup[]>(() => {
-    const results = searchQuery.data?.results ?? [];
-    if (results.length === 0) return [];
-    const byEntity = new Map<string, SearchResult[]>();
-    for (const r of results) {
-      const arr = byEntity.get(r.entity) ?? [];
-      arr.push(r);
-      byEntity.set(r.entity, arr);
-    }
-    return [...byEntity.entries()].map(([key, res]) => ({
-      key,
-      label: ENTITY_META[key]?.label ?? key,
-      icon: ENTITY_META[key]?.icon ?? FileText,
-      results: res,
+    const serverGroups = searchQuery.data?.groups ?? [];
+    return serverGroups.map((g) => ({
+      key: g.entity,
+      label: ENTITY_META[g.entity]?.label ?? g.label,
+      icon: ENTITY_META[g.entity]?.icon ?? FileText,
+      total: g.total,
+      results: g.results,
     }));
   }, [searchQuery.data]);
 
@@ -139,6 +134,9 @@ export function Header() {
                 <div key={g.key} className="mb-1 last:mb-0">
                   <div className="flex items-center gap-2 px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sc-3">
                     <g.icon className="w-3 h-3" /> {g.label}
+                    <span className="ml-auto normal-case tracking-normal text-sc-3/80">
+                      {g.total > g.results.length ? `${g.results.length} of ${g.total}` : g.total}
+                    </span>
                   </div>
                   {g.results.map((r) => (
                     <button
@@ -148,8 +146,14 @@ export function Header() {
                       className="w-full text-left px-4 py-2 hover:bg-white/[0.05] transition-colors flex items-center justify-between gap-3"
                     >
                       <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-medium text-sc truncate">{r.title}</span>
-                        <span className="text-xs text-sc-3 truncate">{r.subtitle}</span>
+                        <span
+                          className="text-sm font-medium text-sc truncate [&_mark]:bg-[var(--sc-line-active)]/40 [&_mark]:text-white [&_mark]:rounded-sm [&_mark]:px-0.5"
+                          dangerouslySetInnerHTML={{ __html: r.titleHtml }}
+                        />
+                        <span
+                          className="text-xs text-sc-3 truncate [&_mark]:bg-[var(--sc-line-active)]/30 [&_mark]:text-sc [&_mark]:rounded-sm [&_mark]:px-0.5"
+                          dangerouslySetInnerHTML={{ __html: r.subtitleHtml }}
+                        />
                       </div>
                       {r.badge && (
                         <span className="text-[10px] shrink-0 px-2 py-0.5 rounded-md text-sc-2" style={{ background: "var(--sc-inner)", border: "1px solid var(--sc-line)" }}>{r.badge}</span>

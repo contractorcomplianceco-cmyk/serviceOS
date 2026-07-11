@@ -8,6 +8,7 @@
 
 export * from './acceptInviteInput';
 export * from './adjustmentInput';
+export * from './assignRecommendationInput';
 export * from './attachment';
 export * from './auditEvent';
 export * from './authUser';
@@ -202,6 +203,7 @@ export * from './savedListUpdateInput';
 export * from './savedListUpdateInputSortDir';
 export * from './savedListUpdateInputVisibility';
 export * from './savedListVisibility';
+export * from './searchGroup';
 export * from './searchResult';
 export * from './searchResults';
 export * from './serviceContract';
