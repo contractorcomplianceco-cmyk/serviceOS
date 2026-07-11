@@ -73,7 +73,7 @@ survives via the PostgreSQL database, not localStorage.
 | R15 | Roles & Permissions | FULL → FULL | Server-enforced `requireRoles`/`requireNav` + `canX` (12 roles), mirrored on client | all | `users` | Y | N/A | Field-level ACLs |
 | R16 | Notifications | SIM → SIM | Notification records/state persisted; no live send | `/api/notifications` | `notifications`, `notification_templates` | N/A | N (not tested) | Email/SMS provider credentials |
 | R17 | Inventory | PROTO → PROTO+ | Ledger with negative-stock protection; deduction on approval, **exactly-once** on retry | `/api/inventory` | `inventory`, `inventory_transactions` | Y (via approve) | Y | Transfers/reservations UI |
-| R20 | Billing Workflow | PROTO → PROTO+ | Invoice only from billable WO; persisted | `/api/invoices` | `invoices` | N (create-gate not tested) | Y (balance invariant) | Tax engine, PDF export |
+| R20 | Billing Workflow | PROTO → PROTO+ | Invoice only from billable WO; persisted | `/api/invoices` | `invoices` | Y (non-billing role 403 + non-billable WO 400) | Y (balance invariant) | Tax engine, PDF export |
 | R21 | Accounting / AR | PROTO → PROTO+ | Partial/credit/refund payments; `balance = amount − amountPaid` invariant + payment→refund round-trip tested | `/api/payments` | `payments`, `invoices` | Y | Y | General ledger, QBO sync |
 | R27 | Audit Trail | FULL → FULL | `writeAudit()` on every mutation; role-gated read w/ filters | `/api/audit` | `audit_log` | Y | Y | Tamper-evident/WORM store |
 | R28 | BlueFolder Migration | FUTURE → PROTO | CSV engine: dry-run validate, duplicate/required detection, import, rollback | `/api/migration/*` | `migration_batches`, `migration_rows` | Y | Y | Broader entity coverage / prod cutover |

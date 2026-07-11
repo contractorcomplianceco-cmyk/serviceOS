@@ -68,6 +68,28 @@ describe("role / nav authorization", () => {
     });
     expect(res.status).toBe(403);
   });
+
+  it("blocks staff without billing access from creating invoices", async () => {
+    // A Scheduler is staff but not a billing role — invoice creation is a
+    // human billing decision gated to canManageBilling roles. The 403 fires
+    // before any work order is read, so no seed data is mutated.
+    const scheduler = await loginAs(SEED.scheduler);
+    const res = await scheduler.post("/api/invoices").send({
+      workOrderId: "wo7", // seeded "Ready for Invoice" work order
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it("rejects invoicing a work order that is not in a billable state", async () => {
+    // wo1 is seeded with billingStatus "Needs Review" — it has not been
+    // human-approved for billing, so even a Billing user must be rejected
+    // (400, before any invoice row is inserted).
+    const billing = await loginAs(SEED.billing);
+    const res = await billing.post("/api/invoices").send({
+      workOrderId: "wo1",
+    });
+    expect(res.status).toBe(400);
+  });
 });
 
 describe("customer portal scoping", () => {
