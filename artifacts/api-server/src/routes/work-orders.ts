@@ -182,9 +182,14 @@ router.patch(
     }
 
     const d = parsed.data;
+    // Any mutation that touches scheduling — the status transition, the schedule
+    // window, or the time window — is a human scheduling decision (RoseOS never
+    // auto-schedules) and requires scheduling authority.
     const isScheduling =
       (d.status === "Scheduled" && wo.status !== "Scheduled") ||
-      d.scheduledStart !== undefined;
+      d.scheduledStart !== undefined ||
+      d.scheduledEnd !== undefined ||
+      d.timeWindow !== undefined;
     if (isScheduling && !(isValidRole(user.role) && canSchedule(user.role))) {
       res.status(403).json({
         error: "Scheduling requires scheduling authority",

@@ -455,6 +455,15 @@ router.post(
       res.status(404).json({ error: "Closeout not found" });
       return;
     }
+    // Only a draft still awaiting review may be sent back. Once a closeout is
+    // Approved (or already Sent Back / billed) it is locked — reopening it would
+    // undermine the approval trail and post-approval integrity.
+    if (target.status !== "Pending Review") {
+      res.status(409).json({
+        error: "Only closeouts pending review can be sent back",
+      });
+      return;
+    }
 
     const [updated] = await db
       .update(closeoutsTable)
