@@ -103,20 +103,77 @@ describe("audit trail is written on mutations", () => {
   });
 });
 
+interface ApiInvoice {
+  id: string;
+  amount: number;
+  amountPaid: number;
+  status: string;
+}
+
+async function getInvoice(billing: TestAgent, id: string): Promise<ApiInvoice> {
+  const res = await billing.get("/api/invoices");
+  expect(res.status).toBe(200);
+  const inv = (res.body as ApiInvoice[]).find((i) => i.id === id);
+  expect(inv).toBeTruthy();
+  return inv!;
+}
+
 describe("AR / invoice calculations", () => {
-  it("keeps invoice balance consistent with total and amount paid", async () => {
+  it("keeps every invoice's paid amount within its total (balance never negative)", async () => {
     const billing = await loginAs(SEED.billing);
     const res = await billing.get("/api/invoices");
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    for (const inv of res.body) {
-      if (
-        typeof inv.total === "number" &&
-        typeof inv.amountPaid === "number" &&
-        typeof inv.balance === "number"
-      ) {
-        expect(inv.balance).toBeCloseTo(inv.total - inv.amountPaid, 2);
-      }
+    expect(res.body.length).toBeGreaterThan(0);
+    for (const inv of res.body as ApiInvoice[]) {
+      expect(typeof inv.amount).toBe("number");
+      expect(typeof inv.amountPaid).toBe("number");
+      // amountPaid is clamped to >= 0 on record; balance = amount - amountPaid.
+      expect(inv.amountPaid).toBeGreaterThanOrEqual(0);
+      expect(inv.amount - inv.amountPaid).toBeGreaterThanOrEqual(0);
     }
+  });
+
+  it("applies a payment then a matching refund and returns the invoice to its exact prior balance", async () => {
+    const billing = await loginAs(SEED.billing);
+    const list = await billing.get("/api/invoices");
+    expect(list.status).toBe(200);
+    // Pick an invoice with room to accept a $1 payment without fully paying it,
+    // so the pay→refund round-trip is deterministic and self-reversing.
+    const target = (list.body as ApiInvoice[]).find(
+      (i) => i.amount - i.amountPaid >= 2,
+    );
+    expect(target, "expected a seeded invoice with an open balance >= 2").toBeTruthy();
+    const before = target!;
+
+    // 1. Record a $1 payment.
+    const pay = await billing.post("/api/payments").send({
+      invoiceId: before.id,
+      amount: 1,
+      method: "Check",
+    });
+    expect(pay.status).toBe(201);
+    const afterPay = await getInvoice(billing, before.id);
+    expect(afterPay.amountPaid).toBeCloseTo(before.amountPaid + 1, 2);
+    // Balance drops by exactly the payment.
+    expect(afterPay.amount - afterPay.amountPaid).toBeCloseTo(
+      before.amount - before.amountPaid - 1,
+      2,
+    );
+
+    // 2. Refund the same $1 — amountPaid must return to its exact prior value.
+    const refund = await billing.post("/api/payments").send({
+      invoiceId: before.id,
+      amount: 1,
+      type: "Refund",
+    });
+    expect(refund.status).toBe(201);
+    const afterRefund = await getInvoice(billing, before.id);
+    expect(afterRefund.amountPaid).toBeCloseTo(before.amountPaid, 2);
+    expect(afterRefund.amount - afterRefund.amountPaid).toBeCloseTo(
+      before.amount - before.amountPaid,
+      2,
+    );
+    expect(afterRefund.status).toBe(before.status);
   });
 });

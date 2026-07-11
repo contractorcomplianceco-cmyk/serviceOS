@@ -19,19 +19,20 @@ pnpm --filter @workspace/api-server exec vitest run
   carrying the session cookie via `dev-login`), `anon()`, and
   `createSecondTenant()` (inserts a fresh tenant + admin for isolation tests).
 
-### Suites (26 tests, all passing)
+### Suites (27 tests, all passing)
 
 | File | Covers |
 |---|---|
 | `security.test.ts` | Authentication (401/me/logout), role + nav authorization, portal scoping, cross-tenant isolation |
-| `workflow.test.ts` | Migration dry-run validation, required-field + duplicate detection, repeatable validation, import-before-validate guard, audit-on-mutation, invoice `balance = total − amountPaid` |
+| `workflow.test.ts` | Migration dry-run validation, required-field + duplicate detection, repeatable validation, import-before-validate guard, audit-on-mutation, invoice balance invariant (`amount − amountPaid >= 0`), and a deterministic payment→refund round-trip |
 | `closeouts.test.ts` | HITL closeout approval: pending-by-default, non-approver blocked, approve transition, **idempotent repeat approval** (labor posts once; **inventory deducted exactly once with a single `Consumed` audit event**), send-back locked after approval |
 
 ### Design principles
 
 - **No exact seed-count assertions** — the dev DB is shared and seeds are additive.
   Tests assert invariants (empty list for a fresh tenant, idempotent summaries,
-  `balance` math) that hold regardless of concurrent data.
+  `amount − amountPaid` balance math) that hold regardless of concurrent data. The
+  payment→refund test is self-reversing, so it leaves invoice state unchanged.
 - **Self-contained mutations** — migration tests only dry-run validate and delete
   their throwaway batch; closeout tests build their own isolated work order +
   closeout. Most use no materials (no inventory side effects); the one materials
@@ -56,7 +57,7 @@ approval surface renders explicit Approve actions (nothing auto-approves).
 ## Full check status
 
 - **Typecheck** — `pnpm run typecheck` passes (all workspace packages).
-- **Tests** — 26/26 backend integration tests pass.
+- **Tests** — 27/27 backend integration tests pass.
 - **Console** — browser console clean (only Vite HMR messages); server logs show
   no errors.
 - **Lint** — no ESLint config or `lint` script is defined in this workspace, so

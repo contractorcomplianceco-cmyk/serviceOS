@@ -11,14 +11,18 @@
 3. **Payments** (`POST /api/payments`, `requireStaff` + `canRecordPayment`) —
    records partial, credit, or refund payments against an invoice. Tables:
    `invoices`, `payments`.
-4. **AR** — invoice balance reflects total minus amounts paid; aging/AR views read
-   from persisted invoices.
+4. **AR** — invoice balance reflects the invoice amount minus amounts paid; aging/AR
+   views read from persisted invoices.
 
 ## Calculation invariant
 
-For any invoice, **`balance == total − amountPaid`**. This is asserted in
-`src/__tests__/workflow.test.ts` across all invoices returned by `GET /api/invoices`
-(guarded on the fields being present), so payment math stays internally consistent.
+Each invoice exposes `amount` and `amountPaid`; the balance is `amount − amountPaid`.
+`src/__tests__/workflow.test.ts` asserts two things: (1) across every invoice from
+`GET /api/invoices`, `amountPaid >= 0` and `amount − amountPaid >= 0` (balance never
+goes negative), and (2) a deterministic round-trip — recording a `$1` payment against
+an open invoice increases `amountPaid` by exactly `$1`, and a matching `$1` `Refund`
+returns `amountPaid` and the status to their exact prior values — so payment math is
+internally consistent and reversible.
 
 ## Authorization
 

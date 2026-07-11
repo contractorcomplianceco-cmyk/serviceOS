@@ -74,7 +74,7 @@ survives via the PostgreSQL database, not localStorage.
 | R16 | Notifications | SIM → SIM | Notification records/state persisted; no live send | `/api/notifications` | `notifications`, `notification_templates` | N/A | N (not tested) | Email/SMS provider credentials |
 | R17 | Inventory | PROTO → PROTO+ | Ledger with negative-stock protection; deduction on approval, **exactly-once** on retry | `/api/inventory` | `inventory`, `inventory_transactions` | Y (via approve) | Y | Transfers/reservations UI |
 | R20 | Billing Workflow | PROTO → PROTO+ | Invoice only from billable WO; persisted | `/api/invoices` | `invoices` | N (create-gate not tested) | Y (balance invariant) | Tax engine, PDF export |
-| R21 | Accounting / AR | PROTO → PROTO+ | Partial/credit/refund payments; `balance = total − amountPaid` invariant tested | `/api/payments` | `payments`, `invoices` | Y | Y | General ledger, QBO sync |
+| R21 | Accounting / AR | PROTO → PROTO+ | Partial/credit/refund payments; `balance = amount − amountPaid` invariant + payment→refund round-trip tested | `/api/payments` | `payments`, `invoices` | Y | Y | General ledger, QBO sync |
 | R27 | Audit Trail | FULL → FULL | `writeAudit()` on every mutation; role-gated read w/ filters | `/api/audit` | `audit_log` | Y | Y | Tamper-evident/WORM store |
 | R28 | BlueFolder Migration | FUTURE → PROTO | CSV engine: dry-run validate, duplicate/required detection, import, rollback | `/api/migration/*` | `migration_batches`, `migration_rows` | Y | Y | Broader entity coverage / prod cutover |
 | R30 | Security & Privacy | PROTO → PROTO+ | Real cookie sessions + tenant isolation + server RBAC | `/api/auth/*`, all | `sessions`, `login_attempts` | Y | Y | **Disable dev-login**, HTTPS, encryption at rest, RLS |
@@ -91,4 +91,4 @@ survives via the PostgreSQL database, not localStorage.
   posts once and inventory is deducted exactly once with a single `Consumed` audit
   event — and send-back lock).
 
-26/26 tests pass. See `PHASE_2_TESTING.md` and `PHASE_2_PRODUCTION_READINESS.md`.
+27/27 tests pass. See `PHASE_2_TESTING.md` and `PHASE_2_PRODUCTION_READINESS.md`.
