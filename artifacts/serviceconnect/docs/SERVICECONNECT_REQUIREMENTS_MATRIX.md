@@ -49,3 +49,46 @@ PARTIAL = partial. "Persistence" = survives reload via localStorage.
 - SIM: R5, R10, R16 → **3**
 - FUTURE: R22, R28, R29, R32 → **4**
 - MISSING: R13, R19, R30(partial) → **4** (R30 counted as partial/at-risk)
+
+---
+
+# Phase 2 — Backend Evidence Update
+
+Phase 1 (above) was a frontend-only prototype persisting to `localStorage`. Phase 2
+added a real Express + PostgreSQL backend (`artifacts/api-server`), so several
+requirements advanced. This section records, per requirement changed by Phase 2:
+previous status → new status, implementation evidence, API route, database table,
+whether a permission test and a persistence test exist, and the remaining blocker.
+
+Status legend is the same as above (FULL/PROTO/SIM/FUTURE/MISSING). "Permission
+Test" / "Persistence Test" = an automated backend test in
+`artifacts/api-server/src/__tests__/` covers it (Y/N/N/A). "Persistence" now means
+survives via the PostgreSQL database, not localStorage.
+
+| ID | Requirement | Prev → New | Implementation Evidence (Phase 2) | API Route | DB Table | Permission Test | Persistence Test | Remaining Blocker |
+|---|---|---|---|---|---|---|---|---|
+| R1 | Unified field-service OS | PROTO → PROTO+ | Real backend, multi-user, tenant-scoped; frontend reads/writes via React Query | `/api/*` | (all) | Y | Y | Real auth (replace dev-login) |
+| R9 | Supervisor Review approval | FULL → FULL | Transactional approve posts labor/materials, deducts stock; **idempotent** (no double-post) | `POST /api/closeouts/:id/approve` | `closeouts`, `work_orders`, `inventory` | Y | Y | — |
+| R13 | Customer Portal | MISSING → PROTO | API portal scoped to one `customerId`; dashboard/WOs/quotes/invoices | `/api/portal/*` | `users`, `customers` | Y | Y | External branded self-service UX |
+| R15 | Roles & Permissions | FULL → FULL | Server-enforced `requireRoles`/`requireNav` + `canX` (12 roles), mirrored on client | all | `users` | Y | N/A | Field-level ACLs |
+| R16 | Notifications | SIM → SIM | Notification records/state persisted; no live send | `/api/notifications` | `notifications`, `notification_templates` | N/A | N (not tested) | Email/SMS provider credentials |
+| R17 | Inventory | PROTO → PROTO+ | Ledger with negative-stock protection; deduction on approval, **exactly-once** on retry | `/api/inventory` | `inventory`, `inventory_transactions` | Y (via approve) | Y | Transfers/reservations UI |
+| R20 | Billing Workflow | PROTO → PROTO+ | Invoice only from billable WO; persisted | `/api/invoices` | `invoices` | N (create-gate not tested) | Y (balance invariant) | Tax engine, PDF export |
+| R21 | Accounting / AR | PROTO → PROTO+ | Partial/credit/refund payments; `balance = total − amountPaid` invariant tested | `/api/payments` | `payments`, `invoices` | Y | Y | General ledger, QBO sync |
+| R27 | Audit Trail | FULL → FULL | `writeAudit()` on every mutation; role-gated read w/ filters | `/api/audit` | `audit_log` | Y | Y | Tamper-evident/WORM store |
+| R28 | BlueFolder Migration | FUTURE → PROTO | CSV engine: dry-run validate, duplicate/required detection, import, rollback | `/api/migration/*` | `migration_batches`, `migration_rows` | Y | Y | Broader entity coverage / prod cutover |
+| R30 | Security & Privacy | PROTO → PROTO+ | Real cookie sessions + tenant isolation + server RBAC | `/api/auth/*`, all | `sessions`, `login_attempts` | Y | Y | **Disable dev-login**, HTTPS, encryption at rest, RLS |
+| R33 | Guardrails (HITL) | FULL → FULL | Server enforces: no auto-schedule/send/invoice; approval required; idempotent | all | (all) | Y | Y | — |
+
+## Phase 2 test index
+
+- **Permission / isolation** — `src/__tests__/security.test.ts` (auth, role/nav
+  authorization, portal scoping, cross-tenant isolation).
+- **Workflow / calculation** — `src/__tests__/workflow.test.ts` (migration dry-run,
+  duplicate/required-field, repeatable validation, audit-on-mutation, invoice math).
+- **HITL approval** — `src/__tests__/closeouts.test.ts` (pending-by-default,
+  non-approver blocked, approve transition, idempotent repeat approval — labor
+  posts once and inventory is deducted exactly once with a single `Consumed` audit
+  event — and send-back lock).
+
+26/26 tests pass. See `PHASE_2_TESTING.md` and `PHASE_2_PRODUCTION_READINESS.md`.
