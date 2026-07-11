@@ -28,6 +28,9 @@ const ALL: NavKey[] = [
 ];
 
 // Canonical, backend-enforced role → nav access map (12 roles).
+// This is the source of truth. The client mirror lives in
+// `artifacts/serviceconnect/src/lib/permissions.ts` (ROLE_NAV) — keep the two
+// maps identical so client nav visibility never diverges from server authz.
 export const ROLE_NAV: Record<Role, NavKey[]> = {
   Administrator: ALL,
   "Service Manager": ["today", "intake", "work-orders", "dispatch", "technicians", "customers", "locations", "inventory", "equipment", "billing", "documents", "reports", "intelligence"],
@@ -37,8 +40,8 @@ export const ROLE_NAV: Record<Role, NavKey[]> = {
   Technician: ["today", "work-orders", "customers", "locations", "equipment", "inventory"],
   Billing: ["today", "work-orders", "customers", "billing", "accounting", "documents", "reports"],
   Bookkeeper: ["today", "billing", "accounting", "documents", "reports"],
-  "Inventory Manager": ["today", "work-orders", "inventory", "equipment", "reports"],
-  Sales: ["today", "customers", "locations", "reports", "intelligence"],
+  "Inventory Manager": ["today", "work-orders", "inventory", "equipment", "locations", "reports"],
+  Sales: ["today", "intake", "work-orders", "customers", "locations", "reports", "intelligence"],
   Subcontractor: ["today", "work-orders"],
   "Customer Portal User": ["portal"],
 };

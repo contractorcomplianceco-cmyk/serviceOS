@@ -27,6 +27,7 @@ import {
   clearSessionCookie,
   revokeSessionByToken,
   revokeAllUserSessions,
+  getUserForToken,
 } from "../lib/auth/session";
 import {
   recordLoginAttempt,
@@ -112,6 +113,19 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   if (!ok) {
     await registerFailure(user);
     await recordLoginAttempt(email, ip, false);
+    await writeAudit(
+      {
+        tenantId: user.tenantId,
+        actorUserId: user.id,
+        actorName: user.name,
+        action: "login_failed",
+        entityType: "Auth",
+        entityId: user.id,
+        summary: `Failed sign-in attempt for ${user.email}`,
+        ip,
+      },
+      req,
+    );
     res.status(401).json({ error: INVALID });
     return;
   }
@@ -125,7 +139,23 @@ router.post("/auth/login", async (req, res): Promise<void> => {
 router.post("/auth/logout", async (req, res): Promise<void> => {
   const token = req.cookies?.[SESSION_COOKIE_NAME];
   if (typeof token === "string" && token.length > 0) {
+    const user = await getUserForToken(token);
     await revokeSessionByToken(token);
+    if (user) {
+      await writeAudit(
+        {
+          tenantId: user.tenantId,
+          actorUserId: user.id,
+          actorName: user.name,
+          action: "logout",
+          entityType: "Auth",
+          entityId: user.id,
+          summary: `${user.name} signed out`,
+          ip: req.ip ?? null,
+        },
+        req,
+      );
+    }
   }
   clearSessionCookie(res);
   res.sendStatus(204);

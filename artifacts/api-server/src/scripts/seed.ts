@@ -12,7 +12,8 @@ const TENANT_ID = "org1";
 const TENANT_NAME = "ServiceConnect Field Services";
 
 // Shared demo password for all seeded accounts (>= 8 chars).
-const DEMO_PASSWORD = "password123";
+// Overridable via env; the default is a dev-only convenience for the local demo.
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? "password123";
 
 type SeedUser = Omit<InsertUser, "tenantId" | "passwordHash" | "passwordAlgo">;
 
@@ -56,8 +57,8 @@ async function seed(): Promise<void> {
   }
 
   logger.info(
-    { tenant: TENANT_ID, users: SEED_USERS.length, demoPassword: DEMO_PASSWORD },
-    "Seed complete",
+    { tenant: TENANT_ID, users: SEED_USERS.length },
+    "Seed complete (demo password set from DEMO_PASSWORD env or dev default; value not logged)",
   );
 }
 

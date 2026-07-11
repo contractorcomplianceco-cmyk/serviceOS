@@ -15,7 +15,8 @@ export type NavKey =
   | 'documents'
   | 'reports'
   | 'intelligence'
-  | 'settings';
+  | 'settings'
+  | 'portal';
 
 const ALL: NavKey[] = [
   'today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers',
@@ -23,6 +24,10 @@ const ALL: NavKey[] = [
   'reports', 'intelligence', 'settings',
 ];
 
+// IMPORTANT: this map is the client mirror of the backend-enforced source of
+// truth in `artifacts/api-server/src/lib/authz.ts` (ROLE_NAV). The server is
+// authoritative — keep the two maps identical so client nav visibility never
+// diverges from server-side authorization.
 const ROLE_NAV: Record<Role, NavKey[]> = {
   Administrator: ALL,
   'Service Manager': ['today', 'intake', 'work-orders', 'dispatch', 'technicians', 'customers', 'locations', 'inventory', 'equipment', 'billing', 'documents', 'reports', 'intelligence'],
@@ -35,7 +40,7 @@ const ROLE_NAV: Record<Role, NavKey[]> = {
   'Inventory Manager': ['today', 'work-orders', 'inventory', 'equipment', 'locations', 'reports'],
   Sales: ['today', 'intake', 'work-orders', 'customers', 'locations', 'reports', 'intelligence'],
   Subcontractor: ['today', 'work-orders'],
-  'Customer Portal User': ['today', 'work-orders'],
+  'Customer Portal User': ['portal'],
 };
 
 export function canAccess(role: Role, key: NavKey): boolean {

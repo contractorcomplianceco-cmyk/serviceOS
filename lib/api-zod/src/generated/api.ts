@@ -9,11 +9,21 @@ import * as zod from 'zod';
 
 
 /**
- * Returns server health status
+ * Liveness check — returns ok if the process is up
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
   "status": zod.string()
+})
+
+
+/**
+ * Returns ok only if the server can reach its database
+ * @summary Readiness check
+ */
+export const ReadinessCheckResponse = zod.object({
+  "status": zod.string(),
+  "database": zod.string()
 })
 
 
@@ -331,6 +341,34 @@ export const ListSessionsResponse = zod.array(ListSessionsResponseItem)
  * @summary Revoke all sessions except the current one
  */
 export const RevokeOtherSessionsResponse = zod.void()
+
+
+/**
+ * @summary List immutable audit events for the current tenant (admin/manager only)
+ */
+export const listAuditEventsQueryLimitMax = 200;
+
+
+
+export const ListAuditEventsQueryParams = zod.object({
+  "entityType": zod.coerce.string().optional(),
+  "action": zod.coerce.string().optional(),
+  "limit": zod.coerce.number().min(1).max(listAuditEventsQueryLimitMax).optional()
+})
+
+export const ListAuditEventsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "actorUserId": zod.string().nullish(),
+  "actorName": zod.string(),
+  "action": zod.string(),
+  "entityType": zod.string(),
+  "entityId": zod.string(),
+  "summary": zod.string(),
+  "ip": zod.string().nullish(),
+  "timestamp": zod.coerce.date()
+})
+export const ListAuditEventsResponse = zod.array(ListAuditEventsResponseItem)
 
 
 /**

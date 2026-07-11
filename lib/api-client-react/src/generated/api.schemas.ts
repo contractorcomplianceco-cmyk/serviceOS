@@ -9,6 +9,26 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface ReadinessStatus {
+  status: string;
+  database: string;
+}
+
+export interface AuditEvent {
+  id: string;
+  tenantId: string;
+  /** @nullable */
+  actorUserId?: string | null;
+  actorName: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  summary: string;
+  /** @nullable */
+  ip?: string | null;
+  timestamp: string;
+}
+
 export interface ErrorResponse {
   error: string;
 }
@@ -173,4 +193,14 @@ export interface SessionInfo {
   expiresAt: string;
   current: boolean;
 }
+
+export type ListAuditEventsParams = {
+entityType?: string;
+action?: string;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+};
 
