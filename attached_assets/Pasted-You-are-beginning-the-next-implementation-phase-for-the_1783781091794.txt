@@ -1,0 +1,1558 @@
+You are beginning the next implementation phase for the existing ServiceConnect with RoseOS Intelligence application.
+
+PHASE NAME
+
+ServiceConnect Phase 2 — Operational Platform Completion
+
+CURRENT STATE
+
+The application is currently a React + TypeScript + Vite frontend prototype using localStorage persistence.
+
+The completed audit found:
+
+- Overall weighted prototype completion: approximately 72%
+- Core operational workflow demonstrated
+- Intake-to-work-order flow works
+- Technician check-in/check-out works
+- VoiceConnect drafting persists
+- Supervisor review works
+- Inventory deduction works
+- Audit trail works
+- Role-gated frontend routes exist
+- RoseOS recommendations are partially data-derived
+- Portal sync, GPS, notifications, VoiceConnect transcription, and integrations are simulated
+- Customer portal is missing
+- Recurring jobs/contracts are missing
+- BlueFolder migration tools are missing
+- Accounting is AR-only and is not a QuickBooks replacement
+- Authentication and security are client-side only
+- Data is stored in localStorage
+
+Do not rebuild the interface from scratch.
+
+Preserve:
+
+- approved ServiceConnect dark enterprise design
+- existing routes
+- existing frontend workflows
+- existing seeded data where useful
+- existing test IDs
+- existing human-approval guardrails
+- existing role model
+- existing audit documentation
+- existing application behavior unless it is being replaced by a stronger backend implementation
+
+PRIMARY OBJECTIVE
+
+Convert ServiceConnect from a frontend-only operational prototype into a backend-powered, multi-user field-service platform that can realistically begin replacing BlueFolder.
+
+This phase must prioritize:
+
+1. Real backend and database
+2. Real authentication and backend-enforced permissions
+3. Persistent operational records
+4. Real file storage
+5. Real notification architecture
+6. Working customer portal
+7. Recurring jobs and service contracts
+8. BlueFolder migration tools
+9. Integration adapter framework
+10. ServiceChannel first integration path
+11. Real GPS data architecture
+12. Real VoiceConnect recording and transcription path
+13. Production-ready audit logging
+14. Reliable automated tests
+
+This phase is not the full QuickBooks replacement phase.
+
+Do not build a fake general ledger and do not claim accounting replacement readiness.
+
+Keep the existing invoicing and AR prototype working, but focus Phase 2 on operational completion.
+
+==================================================
+PHASE 2 SUCCESS DEFINITION
+==================================================
+
+Phase 2 is complete only when:
+
+- localStorage is no longer the primary system of record
+- users can securely authenticate
+- role permissions are enforced by the backend
+- multiple users can work with the same records
+- data persists through a real database
+- attachments are stored in real file storage
+- intake, work orders, scheduling, technician closeout, review, inventory, billing handoff, and audit history work end to end
+- customer portal users can log in and use their assigned account
+- recurring work orders can be generated
+- BlueFolder data can be imported through a controlled migration workflow
+- simulated integration layers are separated behind real adapter interfaces
+- ServiceChannel integration has a sandbox-ready implementation path
+- GPS events can be stored and used by routing logic
+- VoiceConnect can record or upload audio and send it through a transcription service abstraction
+- notifications have real records, templates, delivery states, retries, and audit logs
+- all unfinished integrations are honestly labeled
+
+==================================================
+1. BACKEND ARCHITECTURE
+==================================================
+
+Implement or complete a production-style backend.
+
+Preferred architecture:
+
+- Node.js
+- TypeScript
+- Express, Fastify, or the project’s existing API framework
+- PostgreSQL
+- Drizzle ORM or Prisma
+- REST API unless the repository already uses another stable pattern
+- Zod or equivalent validation
+- secure session or token authentication
+- structured logging
+- centralized error handling
+
+If an existing api-server already exists in the repository, inspect it first and use it instead of creating a competing backend.
+
+Do not create duplicate server architectures.
+
+Create clear layers:
+
+- routes/controllers
+- services
+- repositories/data access
+- schemas/validation
+- authorization
+- integrations
+- background jobs
+- audit logging
+- notification delivery
+- file storage abstraction
+
+Add:
+
+- health endpoint
+- readiness endpoint
+- database connection check
+- migration command
+- seed command
+- development start command
+- production build command
+- API error format
+- request IDs
+- environment validation
+
+==================================================
+2. DATABASE SCHEMA
+==================================================
+
+Create a normalized PostgreSQL schema for at least:
+
+AUTHENTICATION
+- users
+- credentials or identity records
+- sessions
+- password reset tokens
+- MFA-ready fields
+- login attempts
+
+ROLES AND PERMISSIONS
+- roles
+- permissions
+- role permissions
+- user roles
+- permission overrides where necessary
+
+EMPLOYEES
+- employee profiles
+- technician profiles
+- employee skills
+- certifications
+- allowed tasks
+- restricted tasks
+- service zones
+- availability
+- work hours
+- emergency contacts
+- GPS consent
+- assigned vehicles
+- private employee details
+
+CUSTOMERS
+- customers
+- customer contacts
+- customer billing rules
+- customer rate rules
+- customer portal accounts
+- customer communication preferences
+- customer portal requirements
+
+LOCATIONS
+- service locations
+- location contacts
+- access instructions
+- coordinates
+- regions
+- zones
+- customer-specific site rules
+
+INTAKE
+- intake records
+- intake attachments
+- intake source
+- parsing result
+- duplicate matches
+- missing-data flags
+- intake activity history
+
+WORK ORDERS
+- work orders
+- work-order contacts
+- work-order notes
+- assignments
+- assignees
+- schedule windows
+- work-order status history
+- labor entries
+- material entries
+- expense entries
+- return trips
+- quote information
+- work-order attachments
+- portal sync records
+- check-in/check-out events
+
+INVENTORY
+- inventory items
+- inventory locations
+- warehouses
+- shops
+- trucks
+- technician inventory
+- inventory balances
+- inventory transactions
+- reservations
+- transfers
+- adjustments
+- reorder rules
+- purchase requests
+
+EQUIPMENT
+- equipment/assets
+- equipment locations
+- equipment service history
+- warranties
+- equipment attachments
+- parts history
+
+SUPERVISOR REVIEW
+- technician submissions
+- VoiceConnect transcripts
+- extracted structured data
+- supervisor decisions
+- approval history
+- billing handoff state
+
+BILLING FOUNDATION
+- invoices
+- invoice lines
+- payments
+- credits
+- refunds
+- customer balances
+- billing review states
+- invoice documents
+
+DOCUMENTS
+- document metadata
+- document versions
+- document links
+- document permissions
+- expiration records
+- reminder records
+
+RECURRING WORK
+- service contracts
+- recurring schedules
+- recurrence rules
+- contract locations
+- contract equipment
+- generated work orders
+- renewal reminders
+
+NOTIFICATIONS
+- notification templates
+- notification preferences
+- notification events
+- notification deliveries
+- retry attempts
+- delivery status
+
+INTEGRATIONS
+- integration connections
+- integration credentials metadata
+- integration events
+- inbound payloads
+- outbound payloads
+- sync attempts
+- sync failures
+- external ID mappings
+
+GPS
+- device records
+- technician GPS events
+- last-known position
+- consent history
+- route recommendation snapshots
+
+AUDIT
+- audit events
+- actor
+- entity
+- action
+- before state
+- after state
+- approval record
+- request ID
+- timestamp
+- source
+
+MIGRATION
+- migration jobs
+- migration source files
+- field mappings
+- import rows
+- import errors
+- duplicate decisions
+- source ID mappings
+- rollback metadata
+
+Use database migrations.
+
+Do not rely on JSON blobs for all business data.
+
+==================================================
+3. REAL AUTHENTICATION
+==================================================
+
+Replace demo-only role switching as the primary access method.
+
+Implement:
+
+- login
+- logout
+- secure password hashing
+- session expiration
+- password reset flow
+- current-user endpoint
+- backend authorization middleware
+- protected routes
+- protected API endpoints
+- unauthorized response handling
+- disabled-user handling
+- session invalidation
+- rate limiting for authentication
+- audit logging for login events
+
+Keep the demo-role selector only in development mode if it is still useful.
+
+It must not bypass production permissions.
+
+Required roles:
+
+- Administrator
+- Service Manager
+- Scheduler
+- Supervisor
+- Lead Technician
+- Technician
+- Billing
+- Bookkeeper
+- Inventory Manager
+- Sales
+- Subcontractor
+- Customer Portal User
+
+Implement backend permission checks for:
+
+- employee private data
+- GPS data
+- financial data
+- job cost
+- billing
+- inventory adjustments
+- user management
+- integration settings
+- document visibility
+- work-order deletion
+- approval actions
+- customer portal access
+
+Frontend hiding alone is not sufficient.
+
+==================================================
+4. FRONTEND DATA MIGRATION
+==================================================
+
+Replace localStorage-backed business records with API-backed data.
+
+Create a data-access layer in the frontend.
+
+Do not scatter direct fetch calls across components.
+
+Use a consistent pattern for:
+
+- loading
+- mutation
+- optimistic updates where safe
+- error handling
+- retry
+- empty states
+- permission errors
+- stale data
+- pagination
+- filters
+- search
+
+Migrate these modules first:
+
+1. Authentication
+2. Users and roles
+3. Customers
+4. Locations
+5. Intake
+6. Work orders
+7. Assignments
+8. Technician actions
+9. Supervisor review
+10. Inventory
+11. Documents
+12. Billing
+13. Audit trail
+14. Notifications
+15. Integrations
+
+Provide a one-time development migration that can move existing localStorage seed data into PostgreSQL.
+
+Do not leave two conflicting sources of truth active.
+
+==================================================
+5. FILE STORAGE
+==================================================
+
+Implement a file-storage abstraction.
+
+Support:
+
+- local development storage
+- production object storage through an adapter
+- secure upload URLs
+- file metadata
+- file type validation
+- file size limits
+- permission checks
+- download authorization
+- document versioning
+- attachment links
+- upload progress
+- failed-upload handling
+
+Use for:
+
+- work-order attachments
+- intake attachments
+- customer documents
+- equipment photos
+- invoices
+- technician photos
+- signatures
+- VoiceConnect audio
+- migration files
+
+Do not store file binary data directly in localStorage.
+
+==================================================
+6. CUSTOMER PORTAL
+==================================================
+
+Build the missing customer portal as a real role-separated experience.
+
+Create portal routes such as:
+
+- /portal/login
+- /portal/dashboard
+- /portal/requests
+- /portal/requests/new
+- /portal/work-orders
+- /portal/work-orders/:id
+- /portal/schedule
+- /portal/quotes
+- /portal/invoices
+- /portal/payments
+- /portal/documents
+- /portal/equipment
+- /portal/profile
+
+Customer portal capabilities:
+
+- secure customer-specific login
+- strict tenant isolation
+- view only authorized customer records
+- request service
+- upload attachments
+- view work-order status
+- view scheduled appointments
+- view approved technician closeout
+- view approved photos
+- view quotes
+- approve or reject quotes
+- view invoices
+- download invoice PDFs
+- access payment link
+- view payment history
+- access COIs and W-9s where permitted
+- view equipment
+- view service history
+- send messages
+- update permitted contact details
+
+Customer users must never see:
+
+- internal notes
+- technician private notes
+- job cost
+- internal labor cost
+- other customers
+- employee private information
+- internal AI recommendations
+- unapproved closeout drafts
+
+Add audit events for portal actions.
+
+==================================================
+7. RECURRING JOBS AND SERVICE CONTRACTS
+==================================================
+
+Build the missing recurring work and contract system.
+
+Required contract fields:
+
+- customer
+- location
+- contract name
+- contract number
+- start date
+- end date
+- renewal date
+- status
+- services included
+- billing terms
+- agreed labor rates
+- agreed material markup
+- included equipment
+- visit frequency
+- assigned service manager
+- notes
+- attachments
+
+Required recurrence support:
+
+- daily
+- weekly
+- monthly
+- quarterly
+- semiannual
+- annual
+- custom interval
+- selected weekdays
+- selected month days
+- start date
+- end date
+- occurrence count
+- blackout dates
+
+Required workflows:
+
+- create recurring schedule
+- preview upcoming generated jobs
+- generate work orders
+- avoid duplicates
+- pause
+- resume
+- skip occurrence
+- reschedule occurrence
+- end schedule
+- renew contract
+- contract expiration reminders
+- automatic generation through a background worker
+
+Generated work orders must retain a link to the contract and recurrence instance.
+
+==================================================
+8. NOTIFICATION ENGINE
+==================================================
+
+Replace static notification simulation with a real notification architecture.
+
+Create:
+
+- notification event records
+- notification templates
+- user preferences
+- customer preferences
+- delivery queue
+- delivery attempts
+- status history
+- retry logic
+- failure reporting
+- in-app notification center
+
+Delivery adapters:
+
+- email adapter
+- SMS adapter
+- push adapter placeholder
+- in-app adapter
+
+If real provider credentials are unavailable:
+
+- implement a development mail capture adapter
+- implement an SMS simulator
+- clearly label them
+- retain the same interface for future providers
+
+Required notification events:
+
+- intake created
+- emergency job
+- job assigned
+- job rescheduled
+- assignment removed
+- technician en route
+- technician checked in
+- technician checked out
+- job completed
+- supervisor review required
+- closeout rejected
+- materials required
+- low inventory
+- portal sync failed
+- invoice ready
+- invoice sent
+- payment received
+- invoice past due
+- document expiring
+- contract expiring
+- recurring job generated
+
+Add template preview and test-send controls.
+
+No customer-facing notification should bypass required approval rules.
+
+==================================================
+9. SERVICECHANNEL INTEGRATION FRAMEWORK
+==================================================
+
+Build a real integration adapter architecture.
+
+Create a common interface for:
+
+- connect
+- authenticate
+- refresh token
+- receive inbound event
+- fetch work order
+- create local work order
+- map status
+- map customer
+- map location
+- map attachments
+- submit ETA
+- submit schedule
+- submit notes
+- submit completion
+- submit attachments
+- submit invoice data where supported
+- retry failed sync
+- record payload
+- record response
+- disconnect
+
+Implement a ServiceChannel adapter using official API assumptions, but do not hardcode credentials.
+
+Support:
+
+- sandbox configuration
+- OAuth token metadata
+- encrypted credential storage or secure secret references
+- inbound work-order mapping
+- external ID mapping
+- outbound approval queue
+- sync history
+- error logging
+- manual retry
+- manual-copy fallback
+
+If live credentials are not available:
+
+- use a sandbox simulator that follows the same adapter contract
+- create realistic inbound and outbound payload fixtures
+- clearly label the connection as simulated
+- do not claim live connectivity
+
+Create the integration settings page with:
+
+- connection status
+- environment
+- last sync
+- token status
+- inbound status
+- outbound status
+- failed jobs
+- retry controls
+- mapping configuration
+
+==================================================
+10. MULTI-PORTAL ADAPTERS
+==================================================
+
+Create generic adapters for:
+
+- email intake
+- customer portal intake
+- ServiceChannel
+- EcoTrack
+- other configurable portals
+- manual copy workflow
+
+Each adapter should support:
+
+- inbound parsing
+- field mapping
+- external ID mapping
+- status mapping
+- attachment mapping
+- outbound payload generation
+- approval requirement
+- delivery state
+- error state
+- retry
+- audit log
+
+Do not implement fake live integrations.
+
+Use clear states:
+
+- Not Connected
+- Configuration Required
+- Simulated
+- Sandbox
+- Connected
+- Error
+- Disabled
+
+==================================================
+11. VOICECONNECT REAL FOUNDATION
+==================================================
+
+Upgrade VoiceConnect from a static simulation into a real audio workflow.
+
+Required capabilities:
+
+- record audio in browser where supported
+- upload recorded audio
+- upload existing audio file
+- store audio securely
+- create transcription job
+- store original transcript
+- store language
+- translate Spanish to English through an abstraction
+- extract structured fields
+- show confidence per extracted field
+- allow technician edits
+- submit to supervisor
+- retain original and edited versions
+- audit every edit and approval
+
+Create provider interfaces for:
+
+- speech-to-text
+- language detection
+- translation
+- structured extraction
+
+If no external AI credentials are available:
+
+- implement a development transcription simulator
+- allow manual transcript entry
+- keep the provider contract ready
+- clearly label simulated output
+
+Extract:
+
+- work performed
+- materials
+- quantities
+- labor time
+- equipment serviced
+- return-trip reason
+- required parts
+- quote notes
+- customer update draft
+- portal update draft
+- billing draft
+- missing information
+
+Do not allow automatic external sending.
+
+==================================================
+12. GPS AND ROUTING FOUNDATION
+==================================================
+
+Replace hardcoded map values with a real GPS and routing data model.
+
+Implement:
+
+- technician device registration
+- GPS consent status
+- GPS event endpoint
+- last-known position
+- timestamp
+- accuracy
+- source device
+- location permission state
+- supervisor visibility permission
+- GPS retention settings
+
+Build routing calculations using:
+
+- technician last-known coordinates
+- work-order coordinates
+- current assignments
+- technician skills
+- restricted tasks
+- capacity
+- service zone
+- time window
+- truck inventory
+- priority
+- estimated duration
+
+Use a routing provider abstraction.
+
+If no map provider API key exists:
+
+- implement straight-line distance plus configurable travel factor
+- clearly label ETA as estimated
+- keep adapter ready for Google Maps or Mapbox
+
+Routing recommendation must provide:
+
+- ranked technician list
+- distance
+- ETA
+- skills match
+- workload score
+- inventory match
+- zone match
+- risks
+- confidence
+- explanation
+- approval status
+
+Human approval remains mandatory.
+
+==================================================
+13. INVENTORY COMPLETION
+==================================================
+
+Finish the partial inventory workflows.
+
+Implement:
+
+- location-to-location transfer
+- shop-to-truck transfer
+- truck-to-truck transfer
+- technician assignment
+- job reservation
+- reservation release
+- partial consumption
+- unused material return
+- stock adjustment
+- cycle count
+- inventory audit
+- reorder suggestion
+- purchase request
+- approval state
+- receiving
+- transaction history
+
+Every inventory change must create an immutable inventory transaction.
+
+Prevent negative inventory unless a privileged user explicitly overrides it.
+
+Approval of a technician closeout must be idempotent.
+
+Do not double-deduct inventory if the approval action is repeated.
+
+==================================================
+14. EQUIPMENT COMPLETION
+==================================================
+
+Expand the equipment module.
+
+Implement:
+
+- asset create/edit
+- customer and location link
+- manufacturer
+- model
+- serial number
+- installation date
+- warranty dates
+- equipment photos
+- service history
+- work-order history
+- parts history
+- recommended replacement date
+- condition
+- maintenance schedule
+- attachments
+
+Add document-extraction review workflow:
+
+- upload PO or equipment document
+- create extraction job
+- propose customer
+- propose location
+- propose manufacturer
+- propose model
+- propose serial
+- show confidence
+- human approves
+- create or update equipment
+
+Simulation is acceptable if extraction credentials are unavailable, but the workflow and persistence must be real.
+
+==================================================
+15. SMART LIST COMPLETION
+==================================================
+
+Convert smart lists into real saved database queries.
+
+Users should be able to:
+
+- create
+- edit
+- rename
+- duplicate
+- share
+- mark private
+- restrict by role
+- delete
+- favorite
+- reorder
+
+Support filters for:
+
+- status
+- priority
+- region
+- zone
+- customer
+- source
+- technician
+- scheduled state
+- date range
+- missing update
+- missing materials
+- quote status
+- portal status
+- billing status
+- creation date
+- last activity
+
+Seed the client’s required regional lists.
+
+==================================================
+16. BLUEFOLDER MIGRATION TOOLS
+==================================================
+
+Build the missing BlueFolder migration center.
+
+Create routes:
+
+- /settings/migration
+- /settings/migration/new
+- /settings/migration/:id
+- /settings/migration/:id/mapping
+- /settings/migration/:id/validation
+- /settings/migration/:id/results
+
+Support:
+
+- CSV upload
+- ZIP upload metadata
+- entity selection
+- column mapping
+- saved mapping templates
+- validation preview
+- required-field errors
+- duplicate detection
+- source ID preservation
+- dry run
+- row-level error report
+- import execution
+- progress
+- import summary
+- failed row export
+- correction and retry
+- rollback where safe
+
+Import targets:
+
+- users
+- roles
+- customers
+- contacts
+- locations
+- work orders
+- statuses
+- priorities
+- types
+- custom fields
+- notes
+- comments
+- labor
+- materials
+- expenses
+- equipment
+- recurring jobs
+- inventory items
+- invoice metadata
+- attachments metadata
+
+Do not claim direct BlueFolder API import unless it is actually implemented.
+
+CSV-based controlled migration is acceptable for Phase 2.
+
+==================================================
+17. ROSEOS INTELLIGENCE UPGRADE
+==================================================
+
+Move RoseOS recommendations into a backend recommendation service.
+
+Recommendations must be generated from current database data.
+
+Implement rules for:
+
+- emergency work order unassigned
+- job needs scheduling
+- technician overload
+- schedule gap
+- job outside technician zone
+- missing technician update
+- overdue work order
+- service-window risk
+- missing PO
+- missing authorization
+- missing material
+- low inventory
+- job ready for billing
+- billing delay
+- overdue invoice
+- portal sync failure
+- expiring customer document
+- expiring contract
+- recurring job generation issue
+- return-trip pattern
+- technician repeated return rate
+- underused technician capacity
+
+Each recommendation record must include:
+
+- recommendation type
+- related entity
+- evidence
+- reason
+- confidence
+- severity
+- suggested action
+- approval requirement
+- status
+- assigned reviewer
+- created date
+- snooze date
+- resolution
+- audit history
+
+Actions:
+
+- approve
+- edit
+- reject
+- snooze
+- assign
+- resolve
+
+Do not generate recommendations solely from hardcoded seed text.
+
+==================================================
+18. AUDIT LOGGING
+==================================================
+
+Upgrade the audit trail to server-side immutable records.
+
+Log:
+
+- authentication events
+- record creation
+- edits
+- deletion
+- status changes
+- assignment changes
+- schedule changes
+- check-in/check-out
+- VoiceConnect changes
+- supervisor decisions
+- inventory transactions
+- portal sync attempts
+- invoice actions
+- payments
+- refunds
+- document access where appropriate
+- permission changes
+- integration settings changes
+- migration actions
+- customer portal actions
+- recommendation decisions
+
+Do not allow ordinary users to modify audit records.
+
+Add filtering by:
+
+- user
+- entity
+- action
+- date
+- module
+- request ID
+
+==================================================
+19. SEARCH
+==================================================
+
+Move global search to the backend.
+
+Support searching:
+
+- work orders
+- customers
+- contacts
+- locations
+- equipment
+- PO numbers
+- external IDs
+- invoices
+- payments
+- inventory items
+- vendors
+- technicians
+- notes
+- documents
+- portal sources
+
+Support:
+
+- grouped results
+- role filtering
+- tenant filtering
+- pagination
+- highlighting
+- keyboard navigation
+- quick preview
+- direct navigation
+
+Do not return records a user is not authorized to view.
+
+==================================================
+20. BACKGROUND JOBS
+==================================================
+
+Implement a background-job mechanism for:
+
+- recurring work-order generation
+- notification delivery
+- notification retry
+- portal sync retry
+- document expiration reminders
+- contract expiration reminders
+- recommendation generation
+- migration processing
+- transcription processing
+- invoice PDF creation
+
+Use an existing queue system if present.
+
+Otherwise create a lightweight database-backed job queue suitable for the prototype.
+
+Do not rely on browser tabs remaining open.
+
+==================================================
+21. REPORTING
+==================================================
+
+Move existing reports to backend-derived data.
+
+At minimum, implement accurate operational reports for:
+
+- open work orders
+- need scheduled
+- jobs by status
+- jobs by region
+- jobs by technician
+- emergency jobs
+- return trips
+- awaiting materials
+- portal sync failures
+- technician utilization
+- drive estimates
+- response time
+- completion time
+- inventory reorder
+- equipment service history
+- invoice status
+- AR aging
+- payments
+- revenue by customer
+- revenue by source
+
+Clearly label financial reports that are not based on a full general ledger.
+
+Do not display Profit and Loss or Balance Sheet as complete unless the accounting engine exists.
+
+==================================================
+22. SECURITY
+==================================================
+
+Implement:
+
+- secure password hashing
+- backend permission checks
+- input validation
+- parameterized database access
+- upload validation
+- file authorization
+- rate limiting
+- secure cookie or token handling
+- CORS configuration
+- CSRF protection where applicable
+- environment secret validation
+- no secrets in frontend code
+- protected integration credentials
+- session expiration
+- failed login throttling
+- safe error responses
+- security headers
+- audit events
+
+Add a security readiness document.
+
+Do not claim production security until reviewed.
+
+==================================================
+23. TENANT AND CUSTOMER ISOLATION
+==================================================
+
+Prepare the architecture for tenant separation.
+
+At minimum:
+
+- add organization or tenant ID to business records
+- scope backend queries by tenant
+- scope portal users by customer
+- prevent cross-customer access
+- prevent cross-tenant search results
+- add authorization tests
+
+Even if this deployment begins with one company, do not hardcode a single global customer namespace.
+
+==================================================
+24. HUMAN-APPROVAL GUARDRAILS
+==================================================
+
+Preserve and backend-enforce:
+
+- no scheduling without approval
+- no customer message without approval
+- no external portal update without approval
+- no final invoice send without billing approval
+- no VoiceConnect output treated as final without review
+- no sensitive GPS access without permission
+- no inventory adjustment without authorization
+- no recommendation auto-execution unless explicitly configured later
+
+Approval state must persist in the database.
+
+Approval actions must be idempotent.
+
+==================================================
+25. TESTING
+==================================================
+
+Expand automated tests.
+
+Required backend tests:
+
+- authentication
+- authorization
+- tenant isolation
+- CRUD
+- validation
+- workflow state transitions
+- intake conversion
+- scheduling approval
+- technician check-in/out
+- VoiceConnect submission
+- supervisor approval
+- inventory transfer
+- inventory consumption
+- recurring job generation
+- customer portal access
+- portal sync state machine
+- notification delivery state
+- migration dry run
+- audit creation
+- payment calculations
+
+Required frontend tests:
+
+- route protection
+- role-specific navigation
+- forms
+- loading states
+- error states
+- responsive technician flow
+- customer portal flow
+- approval modals
+- migration workflow
+
+Required end-to-end tests:
+
+A. Intake to invoice-ready
+B. Emergency routing approval
+C. Technician mobile closeout
+D. Spanish VoiceConnect workflow
+E. Inventory transfer and consumption
+F. Customer portal service request
+G. Recurring work-order generation
+H. ServiceChannel simulated sync
+I. BlueFolder CSV dry run
+J. Permission enforcement
+
+Run:
+
+- typecheck
+- lint
+- unit tests
+- integration tests
+- end-to-end tests
+- production build
+- console error check
+
+==================================================
+26. DOCUMENTATION
+==================================================
+
+Update existing audit documentation and create:
+
+- PHASE_2_IMPLEMENTATION_PLAN.md
+- PHASE_2_DATABASE_SCHEMA.md
+- PHASE_2_API_REFERENCE.md
+- PHASE_2_SECURITY_MODEL.md
+- PHASE_2_AUTHORIZATION_MATRIX.md
+- PHASE_2_INTEGRATION_ARCHITECTURE.md
+- PHASE_2_CUSTOMER_PORTAL.md
+- PHASE_2_MIGRATION_GUIDE.md
+- PHASE_2_DEPLOYMENT_GUIDE.md
+- PHASE_2_TEST_RESULTS.md
+- PHASE_2_REMAINING_GAPS.md
+- PHASE_2_PRODUCTION_READINESS.md
+
+Update the existing requirements matrix with:
+
+- previous status
+- new status
+- implementation evidence
+- API route
+- database table
+- permission test
+- persistence test
+- remaining blocker
+
+==================================================
+IMPLEMENTATION ORDER
+==================================================
+
+Use this order unless repository dependencies require a small adjustment:
+
+SPRINT 1 — FOUNDATION
+1. Inspect existing api-server
+2. PostgreSQL connection
+3. schema and migrations
+4. backend validation
+5. authentication
+6. authorization
+7. tenant scoping
+8. audit middleware
+9. frontend API client
+
+SPRINT 2 — OPERATIONAL DATA
+1. customers
+2. locations
+3. employees
+4. intake
+5. work orders
+6. assignments
+7. schedule
+8. technician check-in/out
+9. supervisor review
+
+SPRINT 3 — INVENTORY AND DOCUMENTS
+1. inventory transactions
+2. reservations
+3. transfers
+4. equipment
+5. file storage
+6. document vault
+7. invoice documents
+
+SPRINT 4 — CUSTOMER AND RECURRING WORK
+1. customer portal
+2. portal authentication
+3. service requests
+4. quotes
+5. invoices
+6. recurring jobs
+7. service contracts
+
+SPRINT 5 — INTEGRATIONS
+1. notification engine
+2. ServiceChannel adapter
+3. email intake adapter
+4. portal adapter framework
+5. VoiceConnect provider abstraction
+6. GPS provider abstraction
+
+SPRINT 6 — MIGRATION AND INTELLIGENCE
+1. BlueFolder migration center
+2. smart lists
+3. RoseOS backend rules
+4. backend search
+5. reports
+6. background jobs
+
+SPRINT 7 — HARDENING
+1. permission testing
+2. tenant isolation testing
+3. workflow tests
+4. performance fixes
+5. responsive tests
+6. documentation
+7. production-readiness report
+
+==================================================
+DO NOT DO
+==================================================
+
+- Do not rebuild the approved interface.
+- Do not replace working pages with generic scaffolding.
+- Do not remove current features to simplify the backend.
+- Do not create a second competing API server.
+- Do not leave localStorage as the main data store.
+- Do not use frontend role hiding as authorization.
+- Do not claim a simulated integration is live.
+- Do not claim QuickBooks replacement readiness.
+- Do not create fake financial statements.
+- Do not allow automatic external actions without approval.
+- Do not place secrets in frontend environment variables.
+- Do not mark a module complete because a page exists.
+- Do not break the existing intake-to-closeout workflow.
+- Do not double-deduct inventory.
+- Do not double-create work orders from repeated intake conversion.
+- Do not double-send notifications or portal updates.
+- Do not lose audit history.
+
+==================================================
+FINAL ACCEPTANCE TEST
+==================================================
+
+At completion, demonstrate this complete backend-powered flow:
+
+1. Administrator creates a real user.
+2. Scheduler logs in.
+3. Scheduler receives or creates an intake record.
+4. Scheduler converts it into a persisted work order.
+5. Customer and location are linked.
+6. RoseOS generates a data-derived technician recommendation.
+7. Scheduler approves the assignment.
+8. Schedule persists.
+9. Technician logs in from mobile layout.
+10. Technician checks in.
+11. GPS event is stored.
+12. Technician records or uploads VoiceConnect audio.
+13. Transcript or simulated provider result is stored.
+14. Technician edits extracted work.
+15. Technician adds materials.
+16. Technician checks out.
+17. Technician submits for review.
+18. Supervisor logs in.
+19. Supervisor approves labor and materials.
+20. Inventory is deducted exactly once.
+21. Closeout is approved.
+22. Portal update enters approval queue.
+23. Billing draft is created.
+24. Billing user approves invoice.
+25. Customer portal user logs in.
+26. Customer sees the approved work and invoice.
+27. Payment state can be recorded.
+28. Reports update.
+29. Audit trail shows the complete chain.
+30. A repeated approval does not create duplicate effects.
+
+==================================================
+FINAL REPORT
+==================================================
+
+When complete, report:
+
+1. Phase 2 overall completion percentage
+2. Database status
+3. Authentication status
+4. Authorization status
+5. Tenant-isolation status
+6. Customer portal readiness
+7. Recurring jobs readiness
+8. Inventory readiness
+9. Equipment readiness
+10. VoiceConnect readiness
+11. GPS readiness
+12. Notification readiness
+13. ServiceChannel readiness
+14. BlueFolder migration readiness
+15. Audit logging readiness
+16. File-storage readiness
+17. Security readiness
+18. Production readiness
+19. Automated test results
+20. Remaining blockers
+21. Exact next recommended phase
+
+Also state clearly:
+
+- what is real
+- what is simulated
+- what is sandbox-ready
+- what still needs credentials
+- what is not yet production-ready
+
+Do not report “all work complete” unless every acceptance item has been verified.
