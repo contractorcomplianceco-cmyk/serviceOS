@@ -8767,6 +8767,83 @@ export function useListNotifications<TData = Awaited<ReturnType<typeof listNotif
 
 
 
+export const getListPendingApprovalNotificationsUrl = () => {
+
+
+
+
+  return `/api/notifications/pending-approval`
+}
+
+/**
+ * @summary List customer-facing notifications awaiting staff approval (staff only)
+ */
+export const listPendingApprovalNotifications = async ( options?: RequestInit): Promise<Notification[]> => {
+
+  return customFetch<Notification[]>(getListPendingApprovalNotificationsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPendingApprovalNotificationsQueryKey = () => {
+    return [
+    `/api/notifications/pending-approval`
+    ] as const;
+    }
+
+
+export const getListPendingApprovalNotificationsQueryOptions = <TData = Awaited<ReturnType<typeof listPendingApprovalNotifications>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPendingApprovalNotifications>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPendingApprovalNotificationsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPendingApprovalNotifications>>> = ({ signal }) => listPendingApprovalNotifications({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPendingApprovalNotifications>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPendingApprovalNotificationsQueryResult = NonNullable<Awaited<ReturnType<typeof listPendingApprovalNotifications>>>
+export type ListPendingApprovalNotificationsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List customer-facing notifications awaiting staff approval (staff only)
+ */
+
+export function useListPendingApprovalNotifications<TData = Awaited<ReturnType<typeof listPendingApprovalNotifications>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPendingApprovalNotifications>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPendingApprovalNotificationsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getMarkAllNotificationsReadUrl = () => {
 
 

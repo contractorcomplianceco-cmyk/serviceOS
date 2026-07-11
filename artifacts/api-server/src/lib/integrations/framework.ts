@@ -116,29 +116,62 @@ export async function simulateInbound(
     })
     .returning();
 
-  // Idempotency: skip apply if we've already mapped this externalId.
-  const existing = await db
-    .select()
-    .from(integrationIdMapTable)
-    .where(
-      and(
-        eq(integrationIdMapTable.connectionId, connectionId),
-        eq(integrationIdMapTable.externalId, inbound.externalId),
-      ),
-    )
-    .limit(1);
-  if (existing[0]) {
-    return finishEvent(
-      event.id,
-      "Ignored",
-      `Duplicate of already-imported ${inbound.externalId}`,
-    );
+  // Apply the mapped payload → Draft intake (idempotent, human-triaged).
+  return applyInboundEvent(event.id);
+}
+
+/**
+ * Apply (or re-apply) an inbound event: re-run the adapter mapping from the
+ * event's stored raw payload, then create a Draft Intake locally, keyed by an
+ * external-ID map for idempotency. Called both on the initial simulate and on
+ * manual retry of a failed inbound event, so a retry genuinely re-runs
+ * map + apply (picking up any corrected mapping config). Never auto-schedules.
+ */
+async function applyInboundEvent(eventId: string): Promise<IntegrationEvent> {
+  const event = await loadEvent(eventId);
+  if (!event) throw new Error("Event not found");
+  const conn = await loadConnection(event.connectionId);
+  if (!conn) throw new Error("Connection not found");
+  const adapter = adapterForProvider(conn.provider);
+  if (!adapter) throw new Error(`No adapter for provider ${conn.provider}`);
+
+  // Re-run the mapping from the stored raw payload so corrected config (e.g. a
+  // newly-set default customer) is applied on retry.
+  const mapping = await adapter.mapInbound(
+    conn,
+    (event.payload ?? {}) as Record<string, unknown>,
+  );
+  const mapped = mapping.mapped;
+  await db
+    .update(integrationEventsTable)
+    .set({ entityType: mapping.entityType, mappedPayload: mapped })
+    .where(eq(integrationEventsTable.id, event.id));
+
+  // Idempotency: skip apply if we've already imported this externalId.
+  if (event.externalId) {
+    const existing = await db
+      .select()
+      .from(integrationIdMapTable)
+      .where(
+        and(
+          eq(integrationIdMapTable.connectionId, event.connectionId),
+          eq(integrationIdMapTable.externalId, event.externalId),
+        ),
+      )
+      .limit(1);
+    if (existing[0]) {
+      return finishEvent(
+        event.id,
+        "Ignored",
+        `Duplicate of already-imported ${event.externalId}`,
+      );
+    }
   }
 
   // Apply: create a Draft Intake (human triages/converts — never auto-scheduled).
-  const customerId = String(mapping.mapped.customerId ?? "");
+  const customerId = String(mapped.customerId ?? "");
   if (!customerId) {
-    await bumpConnection(connectionId, { lastInboundAt: new Date() });
+    await bumpConnection(event.connectionId, { lastInboundAt: new Date() });
     return finishEvent(
       event.id,
       "Failed",
@@ -149,35 +182,38 @@ export async function simulateInbound(
   const [intake] = await db
     .insert(intakeTable)
     .values({
-      tenantId,
-      source: String(mapping.mapped.source ?? conn.provider),
+      tenantId: event.tenantId,
+      source: String(mapped.source ?? conn?.provider ?? "Integration"),
       customerId,
-      locationId: (mapping.mapped.locationId as string | null) ?? null,
-      priority: String(mapping.mapped.priority ?? "Medium"),
+      locationId: (mapped.locationId as string | null) ?? null,
+      priority: String(mapped.priority ?? "Medium"),
       requestedDate: new Date().toISOString().slice(0, 10),
-      description: String(mapping.mapped.description ?? ""),
-      suggestedAction: String(mapping.mapped.suggestedAction ?? ""),
+      description: String(mapped.description ?? ""),
+      suggestedAction: String(mapped.suggestedAction ?? ""),
       status: "New",
     })
     .returning();
 
-  await db.insert(integrationIdMapTable).values({
-    tenantId,
-    connectionId,
-    externalId: inbound.externalId,
-    entityType: "Intake",
-    entityId: intake.id,
-  });
+  if (event.externalId) {
+    await db.insert(integrationIdMapTable).values({
+      tenantId: event.tenantId,
+      connectionId: event.connectionId,
+      externalId: event.externalId,
+      entityType: "Intake",
+      entityId: intake.id,
+    });
+  }
 
-  await bumpConnection(connectionId, { lastInboundAt: new Date() });
+  await bumpConnection(event.connectionId, { lastInboundAt: new Date() });
 
   const [updated] = await db
     .update(integrationEventsTable)
     .set({
       status: "Ignored",
       entityId: intake.id,
+      lastError: null,
       statusHistory: history(
-        hist,
+        event.statusHistory,
         "Ignored",
         `Applied as Draft intake ${intake.id} (awaiting human triage)`,
       ),
@@ -330,20 +366,21 @@ export async function retryEvent(
       .returning();
     return row;
   }
-  // Inbound retry re-attempts the apply by re-simulating from stored payload.
-  const [row] = await db
+  // Inbound retry actually re-runs mapping/apply from the stored payload
+  // (idempotent via the external-ID map), not just a status flag.
+  await db
     .update(integrationEventsTable)
     .set({
       status: "Retrying",
+      lastError: null,
       statusHistory: history(
         event.statusHistory,
         "Retrying",
-        "Inbound re-attempt queued",
+        "Re-applying inbound from stored payload",
       ),
     })
-    .where(eq(integrationEventsTable.id, eventId))
-    .returning();
-  return row;
+    .where(eq(integrationEventsTable.id, eventId));
+  return applyInboundEvent(eventId);
 }
 
 async function finishEvent(

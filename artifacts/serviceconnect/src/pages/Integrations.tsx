@@ -86,8 +86,16 @@ function timeLabel(iso?: string | null): string {
   return `${shortDate(iso)} ${new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
 }
 
+function configStr(
+  config: Record<string, unknown> | undefined,
+  key: string,
+): string {
+  const v = config?.[key];
+  return typeof v === "string" ? v : "";
+}
+
 export default function Integrations() {
-  const { currentUser } = useAppStore();
+  const { currentUser, customers, locations } = useAppStore();
   const { toast } = useToast();
   const qc = useQueryClient();
   const canManage = canManageIntegrations(currentUser.role);
@@ -293,6 +301,101 @@ export default function Integrations() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                )}
+
+                {/* Inbound mapping config */}
+                {canManage && (
+                  <div
+                    className="rounded-lg p-4 space-y-3"
+                    style={{ background: "var(--sc-elevated)", border: "1px solid var(--sc-line)" }}
+                    data-testid="mapping-config"
+                  >
+                    <div>
+                      <h3 className="text-sm font-semibold text-sc">Inbound mapping</h3>
+                      <p className="text-[12px] text-sc-3 mt-0.5">
+                        Where inbound messages land. Applied events become Draft intakes for this
+                        customer/location — a person still triages every one.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] text-sc-3">Default customer</label>
+                        <Select
+                          value={configStr(selected.config, "defaultCustomerId") || "none"}
+                          onValueChange={(v) =>
+                            updateConnection.mutate({
+                              id: selected.id,
+                              data: {
+                                config: {
+                                  ...selected.config,
+                                  defaultCustomerId: v === "none" ? "" : v,
+                                },
+                              },
+                            })
+                          }
+                        >
+                          <SelectTrigger
+                            data-testid="select-default-customer"
+                            className="h-9 text-sm text-sc"
+                            style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}
+                          >
+                            <SelectValue placeholder="Not mapped" />
+                          </SelectTrigger>
+                          <SelectContent style={{ background: "var(--sc-panel-2)", border: "1px solid var(--sc-line)" }} className="text-sc">
+                            <SelectItem value="none" data-testid="customer-option-none">Not mapped</SelectItem>
+                            {customers.map((c) => (
+                              <SelectItem key={c.id} value={c.id} data-testid={`customer-option-${c.id}`}>
+                                {c.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] text-sc-3">Default location</label>
+                        <Select
+                          value={configStr(selected.config, "defaultLocationId") || "none"}
+                          onValueChange={(v) =>
+                            updateConnection.mutate({
+                              id: selected.id,
+                              data: {
+                                config: {
+                                  ...selected.config,
+                                  defaultLocationId: v === "none" ? "" : v,
+                                },
+                              },
+                            })
+                          }
+                        >
+                          <SelectTrigger
+                            data-testid="select-default-location"
+                            className="h-9 text-sm text-sc"
+                            style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}
+                          >
+                            <SelectValue placeholder="Not mapped" />
+                          </SelectTrigger>
+                          <SelectContent style={{ background: "var(--sc-panel-2)", border: "1px solid var(--sc-line)" }} className="text-sc">
+                            <SelectItem value="none" data-testid="location-option-none">Not mapped</SelectItem>
+                            {locations
+                              .filter((l) => {
+                                const cust = configStr(selected.config, "defaultCustomerId");
+                                return !cust || l.customerId === cust;
+                              })
+                              .map((l) => (
+                                <SelectItem key={l.id} value={l.id} data-testid={`location-option-${l.id}`}>
+                                  {l.name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    {!configStr(selected.config, "defaultCustomerId") && (
+                      <div className="text-[11px] text-amber-400">
+                        No customer mapping — inbound events will fail until a default customer is set.
+                      </div>
+                    )}
                   </div>
                 )}
 

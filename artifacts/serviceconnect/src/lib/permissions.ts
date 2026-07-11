@@ -78,6 +78,13 @@ export function canManageIntegrations(role: Role): boolean {
   return role === 'Administrator';
 }
 
+// Customer-facing notifications are held at PendingApproval and released only by
+// a human (HITL). Any staff (non-portal) role may approve, mirroring the backend
+// `isStaff` check in `authz.ts` used by the approve/retry routes.
+export function canApproveNotifications(role: Role): boolean {
+  return role !== 'Customer Portal User';
+}
+
 const ROLE_DESCRIPTIONS: Record<Role, string> = {
   Administrator: 'Full access to all operations, billing, and settings.',
   'Service Manager': 'Oversees jobs, approvals, technicians, and reporting.',

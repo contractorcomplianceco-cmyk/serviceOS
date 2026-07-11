@@ -27,6 +27,7 @@ import {
   retryNotification,
   approveAndDeliverNotification,
   listNotificationsForUser,
+  listPendingApprovalNotifications,
 } from "../lib/notifications/engine";
 import { writeAudit } from "../lib/audit";
 
@@ -51,6 +52,20 @@ const SAMPLE_CONTEXT: Record<string, string> = {
 router.get("/notifications", requireAuth, async (req, res) => {
   const user = req.user!;
   const rows = await listNotificationsForUser(user.tenantId, user.id);
+  res.json(rows.map(toNotification));
+});
+
+/**
+ * GET /notifications/pending-approval — staff approval queue of customer-facing
+ * notifications held at PendingApproval (HITL). Staff only.
+ */
+router.get("/notifications/pending-approval", requireAuth, async (req, res) => {
+  const user = req.user!;
+  if (!isStaff(user.role)) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+  const rows = await listPendingApprovalNotifications(user.tenantId);
   res.json(rows.map(toNotification));
 });
 

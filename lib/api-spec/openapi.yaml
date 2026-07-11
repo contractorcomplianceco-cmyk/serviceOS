@@ -2783,6 +2783,27 @@ paths:
                 items:
                   $ref: "#/components/schemas/Notification"
 
+  /notifications/pending-approval:
+    get:
+      operationId: listPendingApprovalNotifications
+      tags: [notifications]
+      summary: List customer-facing notifications awaiting staff approval (staff only)
+      responses:
+        "200":
+          description: Notifications pending approval
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /notifications/read-all:
     post:
       operationId: markAllNotificationsRead

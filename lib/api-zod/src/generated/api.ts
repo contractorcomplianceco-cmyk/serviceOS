@@ -4607,6 +4607,44 @@ export const ListNotificationsResponse = zod.array(ListNotificationsResponseItem
 
 
 /**
+ * @summary List customer-facing notifications awaiting staff approval (staff only)
+ */
+export const ListPendingApprovalNotificationsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "eventType": zod.string(),
+  "channel": zod.string(),
+  "templateId": zod.string().nullish(),
+  "recipientType": zod.string(),
+  "recipientUserId": zod.string().nullish(),
+  "recipientCustomerId": zod.string().nullish(),
+  "recipientAddress": zod.string().nullish(),
+  "subject": zod.string().nullish(),
+  "body": zod.string(),
+  "status": zod.string(),
+  "requiresApproval": zod.boolean(),
+  "approvedByUserId": zod.string().nullish(),
+  "approvedAt": zod.coerce.date().nullish(),
+  "attempts": zod.number(),
+  "maxAttempts": zod.number(),
+  "lastError": zod.string().nullish(),
+  "nextAttemptAt": zod.coerce.date().nullish(),
+  "statusHistory": zod.array(zod.object({
+  "at": zod.coerce.date(),
+  "status": zod.string(),
+  "detail": zod.string()
+})),
+  "relatedEntityType": zod.string().nullish(),
+  "relatedEntityId": zod.string().nullish(),
+  "readAt": zod.coerce.date().nullish(),
+  "sentAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListPendingApprovalNotificationsResponse = zod.array(ListPendingApprovalNotificationsResponseItem)
+
+
+/**
  * @summary Mark all of the current user's in-app notifications read
  */
 export const MarkAllNotificationsReadResponse = zod.object({

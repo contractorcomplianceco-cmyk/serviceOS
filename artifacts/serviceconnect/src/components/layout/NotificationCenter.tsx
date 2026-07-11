@@ -2,13 +2,17 @@ import { useState, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListNotifications,
+  useListPendingApprovalNotifications,
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
   useRetryNotification,
   useApproveNotification,
   getListNotificationsQueryKey,
+  getListPendingApprovalNotificationsQueryKey,
   type Notification,
 } from "@workspace/api-client-react";
+import { useAppStore } from "@/lib/store";
+import { canApproveNotifications } from "@/lib/permissions";
 import {
   Bell,
   Mail,
@@ -62,7 +66,10 @@ export function NotificationCenter() {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const qc = useQueryClient();
+  const { currentUser } = useAppStore();
+  const canApprove = canApproveNotifications(currentUser.role);
   const notificationsKey = getListNotificationsQueryKey();
+  const pendingKey = getListPendingApprovalNotificationsQueryKey();
 
   const { data } = useListNotifications({
     query: { queryKey: notificationsKey, refetchInterval: 30000 },
@@ -70,7 +77,17 @@ export function NotificationCenter() {
   const notifications = (data ?? []) as Notification[];
   const unread = notifications.filter((n) => !n.readAt).length;
 
-  const invalidate = () => void qc.invalidateQueries({ queryKey: notificationsKey });
+  // Staff approval queue: customer-facing notifications held for a human to
+  // release (HITL). Recipients never see these — approvers do.
+  const { data: pendingData } = useListPendingApprovalNotifications({
+    query: { queryKey: pendingKey, enabled: canApprove, refetchInterval: 30000 },
+  });
+  const pending = (canApprove ? (pendingData ?? []) : []) as Notification[];
+
+  const invalidate = () => {
+    void qc.invalidateQueries({ queryKey: notificationsKey });
+    void qc.invalidateQueries({ queryKey: pendingKey });
+  };
   const markRead = useMarkNotificationRead({ mutation: { onSuccess: invalidate } });
   const markAll = useMarkAllNotificationsRead({ mutation: { onSuccess: invalidate } });
   const retry = useRetryNotification({ mutation: { onSuccess: invalidate } });
@@ -95,13 +112,13 @@ export function NotificationCenter() {
         onClick={() => setOpen((o) => !o)}
       >
         <Bell className="h-[18px] w-[18px]" />
-        {unread > 0 && (
+        {unread + pending.length > 0 && (
           <span
             className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full text-[10px] font-bold text-white"
             style={{ background: "var(--sc-red)", boxShadow: "0 0 0 2px var(--sc-bg-deep)" }}
             data-testid="badge-notification-count"
           >
-            {unread}
+            {unread + pending.length}
           </span>
         )}
       </button>
@@ -128,6 +145,62 @@ export function NotificationCenter() {
           </div>
 
           <div className="overflow-y-auto scrollbar-thin flex-1">
+            {canApprove && pending.length > 0 && (
+              <div data-testid="pending-approval-queue">
+                <div
+                  className="px-4 py-2 flex items-center gap-2 border-b"
+                  style={{ borderColor: "var(--sc-line)", background: "rgba(245,158,11,0.06)" }}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">
+                    Awaiting your approval
+                  </span>
+                  <span className="text-[11px] text-sc-3 ml-auto">{pending.length} customer-facing</span>
+                </div>
+                {pending.map((n) => {
+                  const meta = CHANNEL_META[n.channel] ?? { label: n.channel, icon: Bell };
+                  const Icon = meta.icon;
+                  return (
+                    <div
+                      key={n.id}
+                      data-testid={`pending-approval-${n.id}`}
+                      className="px-4 py-3 border-b last:border-b-0"
+                      style={{ borderColor: "var(--sc-line)", background: "rgba(245,158,11,0.03)" }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 text-sc-2"
+                          style={{ background: "var(--sc-elevated)", border: "1px solid var(--sc-line)" }}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-sc-3">{meta.label}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${statusClass(n.status)}`}>
+                              Held for approval
+                            </span>
+                          </div>
+                          {n.subject && <div className="text-sm font-medium text-sc mt-1 truncate">{n.subject}</div>}
+                          <div className="text-[13px] text-sc-2 mt-0.5 line-clamp-2">{n.body}</div>
+                          <div className="flex items-center gap-3 mt-2">
+                            <span className="text-[11px] text-sc-3">{timeAgo(n.createdAt)}</span>
+                            <button
+                              className="flex items-center gap-1 text-[11px] font-medium text-emerald-400 hover:text-emerald-300 disabled:opacity-40"
+                              data-testid={`button-approve-pending-${n.id}`}
+                              disabled={approve.isPending}
+                              onClick={() => approve.mutate({ id: n.id })}
+                            >
+                              <ShieldCheck className="w-3 h-3" /> Approve &amp; send
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
             {notifications.length === 0 ? (
               <div className="px-4 py-10 text-center text-sm text-sc-3" data-testid="notifications-empty">
                 You're all caught up.

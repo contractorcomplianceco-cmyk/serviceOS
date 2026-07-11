@@ -313,6 +313,26 @@ export async function listNotificationsForUser(
     .orderBy(desc(notificationsTable.createdAt));
 }
 
+/**
+ * Staff approval queue: every customer-facing notification held at
+ * PendingApproval across the tenant. These are held until a human approves them
+ * (HITL) and are surfaced to approvers, not to the individual recipient center.
+ */
+export async function listPendingApprovalNotifications(
+  tenantId: string,
+): Promise<Notification[]> {
+  return db
+    .select()
+    .from(notificationsTable)
+    .where(
+      and(
+        eq(notificationsTable.tenantId, tenantId),
+        eq(notificationsTable.status, "PendingApproval"),
+      ),
+    )
+    .orderBy(desc(notificationsTable.createdAt));
+}
+
 function logNonFatal(err: unknown): void {
   // Engine failures must never break the calling request path.
   // eslint-disable-next-line no-console
