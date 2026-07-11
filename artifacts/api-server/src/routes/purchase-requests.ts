@@ -180,8 +180,13 @@ router.post(
           )
           .for("update");
         if (!existing) return { notFound: true as const };
-        if (existing.status === "Received" || existing.status === "Cancelled") {
-          return { bad: `Cannot receive a ${existing.status} request` };
+        if (existing.status !== "Approved") {
+          return {
+            bad:
+              existing.status === "Requested"
+                ? "Cannot receive an unapproved request — it must be approved first"
+                : `Cannot receive a ${existing.status} request`,
+          };
         }
         const [item] = await tx
           .select()

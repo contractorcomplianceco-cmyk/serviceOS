@@ -9,6 +9,7 @@ import {
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 import { requireAuth } from "../middleware/auth";
 import { isValidRole, canViewDocumentVisibility } from "../lib/authz";
+import { checkFilePolicy } from "../lib/file-policy";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -20,10 +21,22 @@ const objectStorageService = new ObjectStorageService();
  * The client sends JSON metadata (name, size, contentType) — NOT the file.
  * Then uploads the file directly to the returned presigned URL.
  */
-router.post("/storage/uploads/request-url", async (req: Request, res: Response) => {
+router.post(
+  "/storage/uploads/request-url",
+  requireAuth,
+  async (req: Request, res: Response) => {
   const parsed = RequestUploadUrlBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Missing or invalid required fields" });
+    return;
+  }
+
+  const policyError = checkFilePolicy({
+    size: parsed.data.size,
+    contentType: parsed.data.contentType,
+  });
+  if (policyError) {
+    res.status(400).json({ error: policyError });
     return;
   }
 

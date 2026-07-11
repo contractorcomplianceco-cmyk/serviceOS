@@ -1,11 +1,12 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { db, filesTable } from "@workspace/db";
 import { CreateFileBody } from "@workspace/api-zod";
 import { requireAuth } from "../middleware/auth";
 import { isValidRole, canViewDocumentVisibility } from "../lib/authz";
 import { toFileRecord } from "../lib/serialize-ops";
 import { ObjectStorageService } from "../lib/objectStorage";
+import { checkFilePolicy } from "../lib/file-policy";
 import { writeAudit } from "../lib/audit";
 
 const router: IRouter = Router();
@@ -43,9 +44,22 @@ router.post("/files", requireAuth, async (req, res): Promise<void> => {
     return;
   }
   const d = parsed.data;
+  const policyError = checkFilePolicy({ size: d.size, contentType: d.contentType });
+  if (policyError) {
+    res.status(400).json({ error: policyError });
+    return;
+  }
   const objectPath = objectStorage.normalizeObjectEntityPath(d.objectPath);
   if (!objectPath.startsWith("/objects/")) {
     res.status(400).json({ error: "Object path is not a stored entity" });
+    return;
+  }
+  // Verify the object actually exists in storage before persisting metadata, so
+  // a client cannot record a row for an upload that never completed.
+  try {
+    await objectStorage.getObjectEntityFile(objectPath);
+  } catch {
+    res.status(400).json({ error: "Uploaded object could not be verified" });
     return;
   }
   try {
@@ -56,6 +70,27 @@ router.post("/files", requireAuth, async (req, res): Promise<void> => {
   } catch (err) {
     req.log.warn({ err }, "Could not set ACL policy on uploaded object");
   }
+  const entityType = d.entityType ?? "Misc";
+  const entityId = d.entityId ?? null;
+  // Deterministic version increment: a new upload for the same logical target
+  // (tenant + entityType + entityId + name) supersedes prior ones as version N+1.
+  const targetConds = [
+    eq(filesTable.tenantId, user.tenantId),
+    eq(filesTable.entityType, entityType),
+    eq(filesTable.name, d.name),
+  ];
+  if (entityId === null) {
+    targetConds.push(isNull(filesTable.entityId));
+  } else {
+    targetConds.push(eq(filesTable.entityId, entityId));
+  }
+  const [latest] = await db
+    .select({ version: filesTable.version })
+    .from(filesTable)
+    .where(and(...targetConds))
+    .orderBy(desc(filesTable.version))
+    .limit(1);
+  const nextVersion = (latest?.version ?? 0) + 1;
   const [row] = await db
     .insert(filesTable)
     .values({
@@ -64,8 +99,9 @@ router.post("/files", requireAuth, async (req, res): Promise<void> => {
       name: d.name,
       contentType: d.contentType,
       size: d.size,
-      entityType: d.entityType ?? "Misc",
-      entityId: d.entityId ?? null,
+      entityType,
+      entityId,
+      version: nextVersion,
       visibility: d.visibility ?? "All Staff",
       uploadedByUserId: user.id,
       uploadedByName: user.name,
