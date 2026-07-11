@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useGetPortalMe } from "@workspace/api-client-react";
-import logoIcon from "@/assets/logo-icon.png";
+import logoFull from "@/assets/logo-full.png";
 
 const navItems: { name: string; path: string; key: string; icon: typeof LayoutDashboard }[] = [
   { name: "Dashboard", path: "/portal", key: "dashboard", icon: LayoutDashboard },
@@ -50,18 +50,16 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
         className="w-[264px] flex-shrink-0 flex flex-col z-20 border-r border-panel"
         style={{ background: "var(--sidebar)" }}
       >
-        <div className="h-[78px] flex items-center gap-3 px-5 border-b border-panel-subtle shrink-0">
+        <div className="flex flex-col items-center gap-1.5 px-6 py-5 border-b border-panel-subtle shrink-0">
           <img
-            src={logoIcon}
-            alt="ServiceConnect"
-            className="w-14 h-14 rounded-lg object-cover shrink-0 ring-1 ring-white/10"
+            src={logoFull}
+            alt="ServiceConnect with RoseOS Intelligence"
+            className="w-full max-w-[200px] h-auto object-contain select-none"
+            draggable={false}
           />
-          <div className="flex flex-col leading-none">
-            <span className="text-[17px] font-semibold tracking-tight text-sc">ServiceConnect</span>
-            <span className="text-[9px] mt-1 text-sc-3 font-medium tracking-[0.18em] uppercase">
-              Customer Portal
-            </span>
-          </div>
+          <span className="text-[9px] text-sc-3 font-semibold tracking-[0.18em] uppercase">
+            Customer Portal
+          </span>
         </div>
 
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-0.5" data-testid="nav-portal-sidebar">

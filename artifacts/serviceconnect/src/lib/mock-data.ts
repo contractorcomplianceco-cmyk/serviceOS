@@ -17,6 +17,9 @@ const now = Date.now();
 const day = 86400000;
 const iso = (offsetDays: number) => new Date(now + offsetDays * day).toISOString();
 
+// Frontend demo fallback only (used for `mockUsers[0]` before auth resolves).
+// Authoritative users/roles come from the backend seed. This list mirrors the
+// canonical role model: 11 internal roles + 1 Customer Portal User = 12 roles total.
 export const mockUsers: User[] = [
   { id: 'u1', name: 'Sarah Jenkins', role: 'Administrator', email: 'sarah@serviceconnect.app', phone: '813-555-0101', active: true, gpsConsent: true },
   { id: 'u2', name: 'Mike Ross', role: 'Scheduler', email: 'mike@serviceconnect.app', phone: '813-555-0102', active: true, gpsConsent: true },
@@ -28,6 +31,10 @@ export const mockUsers: User[] = [
   { id: 'u8', name: 'Elena Rodriguez', role: 'Billing', email: 'elena@serviceconnect.app', phone: '813-555-0120', active: true },
   { id: 'u9', name: 'Grace Miller', role: 'Bookkeeper', email: 'grace@serviceconnect.app', phone: '813-555-0121', active: true },
   { id: 'u10', name: 'Rapid Rooter Subs', role: 'Subcontractor', email: 'dispatch@rapidrooter.com', phone: '813-555-0130', active: true, zone: 'Tampa', skills: ['Drain Cleaning', 'Excavation'] },
+  { id: 'u11', name: 'Derek Powell', role: 'Supervisor', email: 'derek@serviceconnect.app', phone: '813-555-0104', active: true, gpsConsent: true },
+  { id: 'u12', name: 'Nina Patel', role: 'Inventory Manager', email: 'nina@serviceconnect.app', phone: '813-555-0122', active: true },
+  { id: 'u13', name: 'Carlos Mendez', role: 'Sales', email: 'carlos@serviceconnect.app', phone: '813-555-0140', active: true },
+  { id: 'u14', name: 'RaceTrac Facilities', role: 'Customer Portal User', email: 'facilities@racetrac.com', phone: '800-555-0101', active: true },
 ];
 
 export const mockCustomers: Customer[] = [

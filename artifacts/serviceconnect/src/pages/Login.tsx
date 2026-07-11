@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth, roleHome, IS_DEV } from "@/lib/auth";
 import type { Role } from "@/lib/types";
 import { Wrench, ShieldCheck, Loader2, Lock } from "lucide-react";
-import logoIcon from "@/assets/logo-icon.png";
+import logoFull from "@/assets/logo-full.png";
 
 const FIELD_ROLE_LABELS = ["Technician", "Lead Technician", "Subcontractor"];
 
@@ -46,7 +46,7 @@ export default function Login() {
 
       <div className="w-full max-w-[1000px] z-10">
         <div className="text-center mb-10">
-          <img src={logoIcon} alt="ServiceConnect" className="w-24 h-24 mx-auto mb-6 object-contain" />
+          <img src={logoFull} alt="ServiceConnect with RoseOS Intelligence" className="w-full max-w-[420px] h-auto mx-auto mb-6 object-contain" />
           <p className="text-sc-2 text-lg font-medium max-w-xl mx-auto">
             Secure Command Center Authentication. Sign in with your credentials to enter the environment.
           </p>

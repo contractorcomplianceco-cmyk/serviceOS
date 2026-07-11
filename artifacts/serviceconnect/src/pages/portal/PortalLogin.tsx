@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { Loader2, Lock, Building2 } from "lucide-react";
-import logoIcon from "@/assets/logo-icon.png";
+import logoFull from "@/assets/logo-full.png";
 
 export default function PortalLogin() {
   const { login, loginPending, loginError } = useAuth();
@@ -31,15 +31,8 @@ export default function PortalLogin() {
 
       <div className="w-full max-w-md z-10">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-3 mb-4 px-4 py-2 rounded-2xl shadow-xl border-panel-subtle" style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}>
-            <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg overflow-hidden ring-1 ring-white/10" style={{ boxShadow: "0 4px 14px rgba(18,104,243,0.3)" }}>
-              <img src={logoIcon} alt="ServiceConnect" className="w-full h-full object-cover" />
-            </div>
-            <div className="text-left">
-              <h1 className="text-2xl font-bold text-sc tracking-tight leading-none">ServiceConnect</h1>
-              <p className="text-xs font-semibold uppercase tracking-widest mt-1" style={{ color: "var(--sc-blue)" }}>Customer Portal</p>
-            </div>
-          </div>
+          <img src={logoFull} alt="ServiceConnect with RoseOS Intelligence" className="w-full max-w-[340px] h-auto mx-auto mb-3 object-contain" />
+          <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "var(--sc-blue)" }}>Customer Portal</p>
           <p className="text-sc-2 text-base font-medium max-w-sm mx-auto">
             Welcome back. Sign in to view your work orders, quotes, invoices, and more.
           </p>

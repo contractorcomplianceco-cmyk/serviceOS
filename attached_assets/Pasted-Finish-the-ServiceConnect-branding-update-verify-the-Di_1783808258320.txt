@@ -1,0 +1,377 @@
+Finish the ServiceConnect branding update, verify the Dispatch Calendar work, create the final commit, and push the repository to GitHub.
+
+The remote repository is:
+
+https://github.com/contractorcomplianceco-cmyk/serviceOS.git
+
+Do not rebuild the application and do not change the approved dashboard or calendar design except where required below.
+
+==================================================
+1. REPLACE THE SIDEBAR BRANDING WITH THE ACTUAL LOGO
+==================================================
+
+The current sidebar incorrectly combines:
+
+- a cropped shield image
+- separately typed “ServiceConnect”
+- separately typed “WITH ROSEOS INTELLIGENCE”
+- visible remnants of the original logo inside the shield container
+
+This creates duplicate and clipped branding.
+
+Use the uploaded full logo asset as the complete sidebar brand lockup.
+
+Uploaded logo reference:
+- Firefly.png
+
+The logo already contains:
+
+- the shield
+- ServiceConnect
+- WITH ROSEOS INTELLIGENCE
+
+Required result:
+
+- Remove the separately rendered shield component.
+- Remove the separately typed “ServiceConnect” text.
+- Remove the separately typed “WITH ROSEOS INTELLIGENCE” text.
+- Render the complete uploaded logo as one image.
+- Do not crop the logo.
+- Do not distort the aspect ratio.
+- Do not place it inside a square avatar container.
+- Do not show duplicate letters or partial logo content.
+- Do not use a generated approximation when the actual uploaded asset exists.
+- Preserve the transparent or black-background treatment that best matches the dark sidebar.
+- Keep the logo crisp on Retina and high-resolution screens.
+
+Recommended sidebar treatment:
+
+- Place the full logo near the top of the sidebar.
+- Use width: approximately 215–245px on large desktop.
+- Use height: auto.
+- Use object-fit: contain.
+- Center it within the available sidebar width.
+- Give it at least 18–24px horizontal padding.
+- Give it enough vertical space so the subtitle is fully legible.
+- Do not squeeze it into the previous compact logo row.
+
+If the uploaded logo has a solid black background that visibly conflicts with the sidebar, either:
+
+1. use the clean transparent version already in the project, or
+2. create a transparent-background derivative from the actual uploaded logo without redesigning it.
+
+Do not recreate the logo with CSS text.
+
+Use the same official logo consistently on:
+
+- sidebar
+- login page
+- portal login where appropriate
+- favicon/app icon using the shield-only version
+- Open Graph image only if intentionally updated
+
+==================================================
+2. VERIFY THE LOGIN LOGO
+==================================================
+
+The login page should use the clean shield-only icon.
+
+Confirm:
+
+- no black or white square box around the shield
+- no clipped “ServiceConnect” text inside the shield container
+- no duplicate typed wordmark beside the shield unless the full official logo is intentionally used
+- correct aspect ratio
+- clear spacing
+- high-quality rendering
+
+Use:
+
+- full horizontal logo for product branding where there is room
+- shield-only asset for compact icon placements
+
+Do not accidentally use the wide horizontal logo as a square icon.
+
+==================================================
+3. VERIFY THE NEW DISPATCH CALENDAR
+==================================================
+
+Confirm the rebuilt Dispatch Calendar remains intact and passes the client-specific requirements already implemented:
+
+- technicians vertically down the left
+- technician names alphabetically sorted by default
+- multiple dates horizontally across the top
+- sticky technician column
+- sticky date header
+- multiple jobs stacked in a technician/date cell
+- compact rich job cards
+- day, 3-day, work-week, and full-week views as implemented
+- region filters
+- quick preview without navigating away
+- drag-to-reassign
+- drag-to-reschedule
+- mandatory confirmation
+- persistence
+- audit history
+- availability blocks
+- responsive behavior
+- no timezone date shifts
+- no work-order status clobbering during calendar moves
+- accessible labels on icon-only controls
+
+Do not remove or simplify the calendar during the branding pass.
+
+Confirm the following file exists and is current:
+
+CALENDAR_REQUIREMENTS_AUDIT.md
+
+==================================================
+4. CLEAN REPOSITORY REVIEW
+==================================================
+
+Before committing:
+
+Run:
+
+- git status
+- git diff --stat
+- git diff
+- pnpm run typecheck
+- all relevant tests
+- production builds for serviceconnect and api-server
+- browser console check
+- server log check
+
+Inspect the incidental file:
+
+public/opengraph.jpg
+
+If it changed unintentionally:
+
+- restore it before committing
+
+If it was intentionally updated to the official ServiceConnect branding:
+
+- verify it is correct
+- include it in the commit
+- document why
+
+Do not commit:
+
+- temporary screenshots
+- local secrets
+- .env files
+- build output unless the repository intentionally tracks it
+- cache files
+- irrelevant memory scratch files
+- accidental binary changes
+- temporary development artifacts
+
+==================================================
+5. CANONICAL ROLE MODEL CHECK
+==================================================
+
+Before committing, confirm:
+
+- 11 internal roles
+- 1 Customer Portal User
+- 12 total roles
+
+The backend role definition remains authoritative.
+
+Search for stale references such as:
+
+- 8 roles
+- 10 users / 8 roles
+- old role arrays
+- legacy demo role lists
+
+The report previously stated that frontend mock-data.ts remained an 8-role fallback.
+
+Resolve this now:
+
+- update it to the canonical 12-role model, or
+- remove it if it is obsolete
+
+Do not leave two conflicting role definitions in active application code.
+
+==================================================
+6. CREATE THE FINAL COMMIT
+==================================================
+
+The previous billing and role correction pass had not yet produced a final commit.
+
+Include all verified work that belongs together:
+
+- AR balance invariant
+- overpayment protection
+- over-refund protection
+- refund status correction
+- canonical 12-role documentation
+- calendar rebuild and review fixes
+- official logo asset integration
+- sidebar branding correction
+- login-logo correction
+- calendar audit documentation
+- test updates
+
+Use a clear commit message such as:
+
+feat(platform): finalize ServiceConnect branding and dispatch calendar
+
+- use official ServiceConnect logo throughout the application
+- remove duplicated sidebar wordmark and cropped logo treatment
+- complete technician-by-date dispatch calendar
+- add quick preview, filters, availability blocks, and persisted reassignment
+- preserve human-approved scheduling controls
+- enforce AR overpayment and over-refund safeguards
+- align active role references to the canonical 12-role model
+- update audit documentation and regression coverage
+
+If the billing fixes are already committed separately, do not duplicate them in this commit message. Use the actual changes being committed.
+
+After committing, return:
+
+- commit hash
+- exact commit message
+- files included
+- files excluded or restored
+- test results
+- build results
+
+==================================================
+7. CONNECT AND PUSH TO GITHUB
+==================================================
+
+Inspect the current repository state first:
+
+git remote -v
+git branch --show-current
+git status
+
+If no origin exists:
+
+git remote add origin https://github.com/contractorcomplianceco-cmyk/serviceOS.git
+
+If origin exists but points somewhere else:
+
+git remote set-url origin https://github.com/contractorcomplianceco-cmyk/serviceOS.git
+
+Set the branch:
+
+git branch -M main
+
+Fetch the remote before pushing:
+
+git fetch origin
+
+Check whether the remote main branch already contains commits.
+
+If the remote is empty, push normally:
+
+git push -u origin main
+
+If the remote contains commits not in the local repository:
+
+- do not force-push immediately
+- inspect the remote history
+- merge or rebase safely
+- resolve conflicts carefully
+- rerun typecheck, tests, and builds
+- then push
+
+Do not use --force unless explicitly authorized and fully justified.
+
+If authentication prevents the push:
+
+- report the exact error
+- do not claim the push succeeded
+- confirm whether the GitHub connection in Replit needs authorization
+
+==================================================
+8. LOVABLE HANDOFF READINESS
+==================================================
+
+Because the repository will be continued in Lovable, confirm that the pushed repository contains:
+
+- complete source code
+- frontend app
+- API server
+- package manifests
+- lockfile
+- database schema and migrations
+- environment-variable example file
+- startup instructions
+- build instructions
+- test instructions
+- README
+- architecture documentation
+- Phase 2 documentation
+- calendar audit
+- no Replit-only runtime assumptions that prevent local or Lovable use
+
+Create or update README.md with:
+
+- project overview
+- repository structure
+- required Node version
+- package manager
+- installation command
+- frontend development command
+- backend development command
+- database setup
+- environment variables
+- migration command
+- seed command
+- test command
+- production build command
+- known simulated integrations
+- known remaining limitations
+
+Add `.env.example` containing only variable names and safe placeholders.
+
+Do not include real credentials.
+
+Clearly identify:
+
+- real features
+- simulated features
+- sandbox-ready integrations
+- features still requiring external credentials
+- features still planned
+
+==================================================
+9. FINAL VERIFICATION
+==================================================
+
+After the push, report:
+
+1. GitHub repository
+2. Branch
+3. Commit hash
+4. Commit message
+5. Push result
+6. Official logo integration status
+7. Sidebar branding status
+8. Login logo status
+9. Dispatch Calendar status
+10. Calendar audit status
+11. Role-model consistency
+12. Typecheck result
+13. Test result
+14. Frontend build result
+15. API build result
+16. Browser console result
+17. Server log result
+18. README handoff status
+19. `.env.example` status
+20. Remaining blockers for Lovable
+
+Do not mark this complete until:
+
+- the actual logo replaces the duplicated sidebar branding
+- the commit exists
+- the commit hash is confirmed
+- the push to GitHub succeeds
+- the GitHub branch contains the final code
+- tests and builds pass after the final changes

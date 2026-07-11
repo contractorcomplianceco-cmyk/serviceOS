@@ -24,7 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { canAccess, canApproveCloseouts, NavKey } from "@/lib/permissions";
-import logoIcon from "@/assets/logo-icon.png";
+import logoFull from "@/assets/logo-full.png";
 
 const navItems: { name: string; path: string; key: NavKey; icon: typeof LayoutDashboard; testId?: string }[] = [
   { name: "Today", path: "/today", key: "today", icon: LayoutDashboard },
@@ -64,19 +64,14 @@ export function Sidebar() {
       className="w-[264px] flex-shrink-0 flex flex-col z-20 border-r border-panel"
       style={{ background: "var(--sidebar)" }}
     >
-      {/* Logo lockup */}
-      <div className="h-[78px] flex items-center gap-3 px-5 border-b border-panel-subtle shrink-0">
+      {/* Logo lockup — official full ServiceConnect with RoseOS Intelligence logo */}
+      <div className="flex items-center justify-center px-6 py-5 border-b border-panel-subtle shrink-0">
         <img
-          src={logoIcon}
-          alt="ServiceConnect"
-          className="w-14 h-14 rounded-lg object-cover shrink-0 ring-1 ring-white/10"
+          src={logoFull}
+          alt="ServiceConnect with RoseOS Intelligence"
+          className="w-full max-w-[216px] h-auto object-contain select-none"
+          draggable={false}
         />
-        <div className="flex flex-col leading-none">
-          <span className="text-[17px] font-semibold tracking-tight text-sc">ServiceConnect</span>
-          <span className="text-[9px] mt-1 text-sc-3 font-medium tracking-[0.18em] uppercase">
-            With RoseOS Intelligence
-          </span>
-        </div>
       </div>
 
       {/* Navigation */}
