@@ -1,0 +1,1 @@
+- [ServiceConnect store invariants](serviceconnect-store-invariants.md) — updater-snapshot reads, idempotency guards tied to UI filters, localStorage key bumps.

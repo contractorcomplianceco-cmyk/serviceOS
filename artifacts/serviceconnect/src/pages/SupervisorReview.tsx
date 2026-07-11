@@ -9,7 +9,7 @@ import { relativeDay } from "@/lib/ui";
 import { Sparkles, ShieldCheck, Check, RotateCcw, Languages, Mic, ArrowRight, ClipboardCheck, MessageSquare } from "lucide-react";
 
 export default function SupervisorReview() {
-  const { closeouts, workOrders, customers, users, updateCloseout, updateWorkOrder } = useAppStore();
+  const { closeouts, workOrders, customers, users, approveCloseout, sendBackCloseout } = useAppStore();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -17,14 +17,13 @@ export default function SupervisorReview() {
   const pending = closeouts.filter((co) => co.status === "Pending Review");
   const handled = closeouts.filter((co) => co.status !== "Pending Review");
 
-  const approve = (id: string, woId: string) => {
-    updateCloseout(id, { status: "Approved" });
-    updateWorkOrder(woId, { status: "Ready for Billing", billingStatus: "Ready for Invoice" });
-    toast({ title: "Closeout approved", description: "Job moved to the billing queue. Review there before invoicing." });
+  const approve = (id: string) => {
+    approveCloseout(id);
+    toast({ title: "Closeout approved", description: "Labor & materials posted, inventory deducted. Job moved to the billing queue — review there before invoicing." });
   };
   
   const sendBack = (id: string) => {
-    updateCloseout(id, { status: "Sent Back" });
+    sendBackCloseout(id);
     toast({ title: "Sent back to technician", description: "The technician will be asked to revise this closeout draft." });
   };
 
@@ -159,7 +158,7 @@ export default function SupervisorReview() {
                   )}
 
                   <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-panel">
-                    <Button className="w-full sm:w-auto text-white blue-glow-soft" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}} onClick={() => approve(co.id, co.workOrderId)} data-testid={`button-approve-${co.id}`}>
+                    <Button className="w-full sm:w-auto text-white blue-glow-soft" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}} onClick={() => approve(co.id)} data-testid={`button-approve-${co.id}`}>
                       <Check className="w-4 h-4 mr-2" /> Approve to Billing
                     </Button>
                     <Button className="w-full sm:w-auto border-destructive text-destructive hover:bg-[rgba(255,51,72,0.1)] bg-transparent" variant="outline" onClick={() => sendBack(co.id)} data-testid={`button-sendback-${co.id}`}>

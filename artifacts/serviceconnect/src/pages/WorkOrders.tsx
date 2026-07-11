@@ -6,16 +6,75 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { priorityClass, statusClass, portalClass, shortDate } from "@/lib/ui";
 import { Plus, Search, Building2, MapPin, Calendar as CalendarIcon, User as UserIcon, Tag } from "lucide-react";
-import { WorkOrderStatus } from "@/lib/types";
+import { WorkOrderStatus, Priority, WorkOrder } from "@/lib/types";
 
 export default function WorkOrders() {
-  const { workOrders, customers, locations, users, currentUser } = useAppStore();
+  const { workOrders, customers, locations, users, currentUser, addWorkOrder } = useAppStore();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("all");
   const [region, setRegion] = useState<string>("all");
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newCustomerId, setNewCustomerId] = useState<string>("");
+  const [newLocationId, setNewLocationId] = useState<string>("");
+  const [newPriority, setNewPriority] = useState<Priority>("Medium");
+  const [newType, setNewType] = useState<string>("Service");
+  const [newDescription, setNewDescription] = useState<string>("");
+
+  const priorities: Priority[] = ["Low", "Medium", "High", "Emergency"];
+  const customerLocations = locations.filter((l) => l.customerId === newCustomerId);
+
+  const resetCreate = () => {
+    setNewCustomerId("");
+    setNewLocationId("");
+    setNewPriority("Medium");
+    setNewType("Service");
+    setNewDescription("");
+  };
+
+  const handleCreate = () => {
+    if (!newCustomerId || !newLocationId || !newDescription.trim()) {
+      toast({ title: "Missing information", description: "Customer, location, and description are required." });
+      return;
+    }
+    const loc = locations.find((l) => l.id === newLocationId);
+    const seq = workOrders.length + 1042;
+    const id = `wo-${Date.now()}`;
+    const wo: WorkOrder = {
+      id,
+      number: `WO-2026-${seq}`,
+      source: "Manual",
+      customerId: newCustomerId,
+      locationId: newLocationId,
+      priority: newPriority,
+      status: "Need Scheduled",
+      type: newType,
+      region: loc?.region ?? "Tampa",
+      dueDate: new Date(Date.now() + 7 * 86400000).toISOString(),
+      billingStatus: "Needs Review",
+      description: newDescription.trim(),
+      portalSyncStatus: "Manual Copy Needed",
+      trips: [],
+      labor: [],
+      materials: [],
+      attachments: [],
+      internalLog: [],
+      createdAt: new Date().toISOString(),
+    };
+    addWorkOrder(wo);
+    toast({ title: "Work order created", description: `${wo.number} created for ${customers.find((c) => c.id === newCustomerId)?.name}.` });
+    setCreateOpen(false);
+    resetCreate();
+    navigate(`/work-orders/${id}`);
+  };
 
   const isTech = currentUser.role === "Technician" || currentUser.role === "Subcontractor";
   const scoped = isTech ? workOrders.filter((w) => w.assignedTechnicianId === currentUser.id) : workOrders;
@@ -42,12 +101,80 @@ export default function WorkOrders() {
           <Button 
             className="text-white blue-glow-soft hover:opacity-90" 
             style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}}
+            onClick={() => setCreateOpen(true)}
             data-testid="button-create-work-order"
           >
             <Plus className="w-4 h-4 mr-2" /> New Work Order
           </Button>
         )}
       </div>
+
+      <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) resetCreate(); }}>
+        <DialogContent className="max-w-lg bg-card border-panel text-sc">
+          <DialogHeader className="border-b border-panel pb-4">
+            <DialogTitle className="text-lg text-sc flex items-center gap-2">
+              <Plus className="w-4 h-4 text-sc-blue" /> New Work Order
+            </DialogTitle>
+            <DialogDescription className="text-sc-3">Manually create a work order. It will start as a draft requiring scheduling.</DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-sc-2">Customer</Label>
+              <Select value={newCustomerId} onValueChange={(v) => { setNewCustomerId(v); setNewLocationId(""); }}>
+                <SelectTrigger className="text-sc" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="select-new-wo-customer">
+                  <SelectValue placeholder="Select customer" />
+                </SelectTrigger>
+                <SelectContent style={{background:'var(--sc-panel)',border:'1px solid var(--sc-line)'}}>
+                  {customers.map((c) => <SelectItem key={c.id} value={c.id} className="text-sc">{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-sc-2">Location</Label>
+              <Select value={newLocationId} onValueChange={setNewLocationId} disabled={!newCustomerId}>
+                <SelectTrigger className="text-sc" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="select-new-wo-location">
+                  <SelectValue placeholder={newCustomerId ? "Select location" : "Select a customer first"} />
+                </SelectTrigger>
+                <SelectContent style={{background:'var(--sc-panel)',border:'1px solid var(--sc-line)'}}>
+                  {customerLocations.map((l) => <SelectItem key={l.id} value={l.id} className="text-sc">{l.name} ({l.city})</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-sc-2">Priority</Label>
+                <Select value={newPriority} onValueChange={(v) => setNewPriority(v as Priority)}>
+                  <SelectTrigger className="text-sc" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="select-new-wo-priority">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent style={{background:'var(--sc-panel)',border:'1px solid var(--sc-line)'}}>
+                    {priorities.map((p) => <SelectItem key={p} value={p} className="text-sc">{p}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-sc-2">Type</Label>
+                <Input value={newType} onChange={(e) => setNewType(e.target.value)} placeholder="Service" className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-wo-type" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-sc-2">Description</Label>
+              <Textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} placeholder="Describe the work required..." rows={3} className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-wo-description" />
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-panel pt-4 sm:justify-between">
+            <Button variant="outline" className="text-sc-2 hover:text-white border-panel hover:bg-white/[0.05]" onClick={() => { setCreateOpen(false); resetCreate(); }} data-testid="button-cancel-work-order">Cancel</Button>
+            <Button className="text-white blue-glow-soft" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}} onClick={handleCreate} data-testid="button-save-work-order">
+              <Plus className="w-4 h-4 mr-2" /> Create Work Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card className="sc-panel overflow-hidden border-none rounded-xl">
         <div className="p-4 border-b border-panel-subtle flex flex-col sm:flex-row gap-3" style={{ background: "var(--sc-inner)" }}>

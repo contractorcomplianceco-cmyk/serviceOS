@@ -4,13 +4,64 @@ import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { shortDate } from "@/lib/ui";
-import { Search, HardHat, ShieldCheck, MapPin, Wrench, AlertCircle, Building2 } from "lucide-react";
+import { Search, HardHat, ShieldCheck, MapPin, Wrench, AlertCircle, Building2, Plus } from "lucide-react";
+import { Equipment as EquipmentType } from "@/lib/types";
 
 export default function Equipment() {
-  const { equipment, customers, locations, workOrders } = useAppStore();
+  const { equipment, customers, locations, workOrders, addEquipment } = useAppStore();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newCustomerId, setNewCustomerId] = useState("");
+  const [newLocationId, setNewLocationId] = useState("");
+  const [newAssetName, setNewAssetName] = useState("");
+  const [newModel, setNewModel] = useState("");
+  const [newSerial, setNewSerial] = useState("");
+  const [newWarranty, setNewWarranty] = useState("");
+  const [newNotes, setNewNotes] = useState("");
+
+  const customerLocations = locations.filter((l) => l.customerId === newCustomerId);
+
+  const resetCreate = () => {
+    setNewCustomerId("");
+    setNewLocationId("");
+    setNewAssetName("");
+    setNewModel("");
+    setNewSerial("");
+    setNewWarranty("");
+    setNewNotes("");
+  };
+
+  const handleCreate = () => {
+    if (!newCustomerId || !newLocationId || !newAssetName.trim()) {
+      toast({ title: "Missing information", description: "Customer, location, and asset name are required." });
+      return;
+    }
+    const asset: EquipmentType = {
+      id: `equip-${Date.now()}`,
+      customerId: newCustomerId,
+      locationId: newLocationId,
+      assetName: newAssetName.trim(),
+      model: newModel.trim(),
+      serialNumber: newSerial.trim(),
+      warrantyInfo: newWarranty.trim() || "N/A",
+      relatedWorkOrderIds: [],
+      notes: newNotes.trim() || undefined,
+    };
+    addEquipment(asset);
+    toast({ title: "Equipment created", description: `${asset.assetName} added.` });
+    setCreateOpen(false);
+    resetCreate();
+  };
 
   const filtered = equipment.filter((e) => {
     const c = customers.find((cc) => cc.id === e.customerId);
@@ -25,7 +76,75 @@ export default function Equipment() {
           <h1 className="text-3xl font-bold tracking-tight text-sc" data-testid="text-page-title">Equipment & Assets</h1>
           <p className="text-sc-2 mt-1 text-sm">Customer assets with service history and warranty tracking.</p>
         </div>
+        <Button className="text-white blue-glow-soft shrink-0" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}} onClick={() => setCreateOpen(true)} data-testid="button-create-equipment">
+          <Plus className="w-4 h-4 mr-2" /> New Equipment
+        </Button>
       </div>
+
+      <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) resetCreate(); }}>
+        <DialogContent className="max-w-lg bg-card border-panel text-sc">
+          <DialogHeader className="border-b border-panel pb-4">
+            <DialogTitle className="text-lg text-sc flex items-center gap-2">
+              <HardHat className="w-4 h-4 text-sc-blue" /> New Equipment
+            </DialogTitle>
+            <DialogDescription className="text-sc-3">Register a customer asset for service history and warranty tracking.</DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-sc-2">Customer</Label>
+              <Select value={newCustomerId} onValueChange={(v) => { setNewCustomerId(v); setNewLocationId(""); }}>
+                <SelectTrigger className="text-sc" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="select-new-equipment-customer">
+                  <SelectValue placeholder="Select customer" />
+                </SelectTrigger>
+                <SelectContent style={{background:'var(--sc-panel)',border:'1px solid var(--sc-line)'}}>
+                  {customers.map((c) => <SelectItem key={c.id} value={c.id} className="text-sc">{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-sc-2">Location</Label>
+              <Select value={newLocationId} onValueChange={setNewLocationId} disabled={!newCustomerId}>
+                <SelectTrigger className="text-sc" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="select-new-equipment-location">
+                  <SelectValue placeholder={newCustomerId ? "Select location" : "Select a customer first"} />
+                </SelectTrigger>
+                <SelectContent style={{background:'var(--sc-panel)',border:'1px solid var(--sc-line)'}}>
+                  {customerLocations.map((l) => <SelectItem key={l.id} value={l.id} className="text-sc">{l.name} ({l.city})</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-sc-2">Asset Name</Label>
+              <Input value={newAssetName} onChange={(e) => setNewAssetName(e.target.value)} placeholder="Rooftop HVAC Unit #1" className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-equipment-name" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-sc-2">Model</Label>
+                <Input value={newModel} onChange={(e) => setNewModel(e.target.value)} placeholder="Carrier 48TC" className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-equipment-model" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-sc-2">Serial Number</Label>
+                <Input value={newSerial} onChange={(e) => setNewSerial(e.target.value)} placeholder="SN-000000" className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-equipment-serial" />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-sc-2">Warranty Info</Label>
+              <Input value={newWarranty} onChange={(e) => setNewWarranty(e.target.value)} placeholder="In warranty until Dec 2027" className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-equipment-warranty" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-sc-2">Notes</Label>
+              <Textarea value={newNotes} onChange={(e) => setNewNotes(e.target.value)} placeholder="Access requirements, known issues..." rows={2} className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-equipment-notes" />
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-panel pt-4 sm:justify-between">
+            <Button variant="outline" className="text-sc-2 hover:text-white border-panel hover:bg-white/[0.05]" onClick={() => { setCreateOpen(false); resetCreate(); }} data-testid="button-cancel-equipment">Cancel</Button>
+            <Button className="text-white blue-glow-soft" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}} onClick={handleCreate} data-testid="button-save-equipment">
+              <Plus className="w-4 h-4 mr-2" /> Create Equipment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-sc-3" />

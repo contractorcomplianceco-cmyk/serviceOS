@@ -34,11 +34,15 @@ export type WorkOrderSource =
   | 'Other Portal';
 
 export type PortalSyncStatus =
+  | 'Draft'
   | 'Ready to Send'
   | 'Needs Approval'
+  | 'Sending'
   | 'Sent'
   | 'Failed'
-  | 'Manual Copy Needed';
+  | 'Retry'
+  | 'Manual Copy Needed'
+  | 'Cancelled';
 
 export type BillingStatus =
   | 'Needs Review'
@@ -223,6 +227,18 @@ export interface InvoiceLine {
   rate: number;
 }
 
+export type PaymentType = 'Payment' | 'Partial Payment' | 'Credit' | 'Refund';
+
+export interface Payment {
+  id: string;
+  invoiceId: string;
+  date: string;
+  amount: number;
+  method: string;
+  type: PaymentType;
+  recordedBy: string;
+}
+
 export interface Invoice {
   id: string;
   number: string;
@@ -236,6 +252,8 @@ export interface Invoice {
   paidDate?: string;
   notes?: string;
   createdAt: string;
+  payments?: Payment[];
+  amountPaid?: number;
 }
 
 export interface InventoryItem {
@@ -307,6 +325,30 @@ export interface AIRecommendation {
   primaryAction: string;
   relatedEntityId?: string;
   needsApproval: boolean;
+}
+
+export type AuditEntityType =
+  | 'WorkOrder'
+  | 'Invoice'
+  | 'Intake'
+  | 'Closeout'
+  | 'Inventory'
+  | 'Customer'
+  | 'Location'
+  | 'Equipment'
+  | 'Portal'
+  | 'Payment'
+  | 'Schedule';
+
+export interface AuditEvent {
+  id: string;
+  timestamp: string;
+  actorId: string;
+  actor: string;
+  action: string;
+  entityType: AuditEntityType;
+  entityId: string;
+  summary: string;
 }
 
 export interface Closeout {

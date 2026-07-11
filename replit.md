@@ -11,7 +11,7 @@ A field-service operating system for a plumbing/HVAC service company — replaci
 ## Stack
 
 - React 18 + TypeScript + Vite + Tailwind + shadcn/ui, routing via `wouter`.
-- State: React context store in `src/lib/store.tsx`, persisted to `localStorage` (key `serviceconnect_data_v2`).
+- State: React context store in `src/lib/store.tsx`, persisted to `localStorage` (key `serviceconnect_data_v3`).
 - Charts: Recharts. Icons: lucide-react.
 
 ## Where things live

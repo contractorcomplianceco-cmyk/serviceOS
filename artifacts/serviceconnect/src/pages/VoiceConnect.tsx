@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Mic, Sparkles, ShieldAlert, Languages, Wrench, Clock, FileText, CheckCircle2 } from "lucide-react";
 
@@ -18,9 +19,14 @@ export default function VoiceConnect() {
   const closeout = closeouts.find((co) => co.workOrderId === params?.id);
   const customer = customers.find((c) => c.id === wo?.customerId);
 
+  const [workPerformed, setWorkPerformed] = useState(closeout?.workPerformed ?? "");
+  const [materials, setMaterials] = useState(closeout?.materialsDetected.join("\n") ?? "");
+  const [laborSuggested, setLaborSuggested] = useState(closeout?.laborSuggested ?? "");
   const [billing, setBilling] = useState(closeout?.billingLines.join("\n") ?? "");
   const [portal, setPortal] = useState(closeout?.portalUpdateText ?? "");
   const [customerText, setCustomerText] = useState(closeout?.customerUpdateText ?? "");
+  const [quoteNotes, setQuoteNotes] = useState(closeout?.quoteNotes ?? "");
+  const [returnTripReason, setReturnTripReason] = useState(closeout?.returnTripReason ?? "");
   const [submitted, setSubmitted] = useState(false);
 
   if (!wo) return (
@@ -36,7 +42,17 @@ export default function VoiceConnect() {
 
   const submitForReview = () => {
     if (closeout) {
-      updateCloseout(closeout.id, { billingLines: billing.split("\n").filter(Boolean), portalUpdateText: portal, customerUpdateText: customerText, status: "Pending Review" });
+      updateCloseout(closeout.id, {
+        workPerformed,
+        materialsDetected: materials.split(/[\n,]/).map((m) => m.trim()).filter(Boolean),
+        laborSuggested,
+        billingLines: billing.split("\n").filter(Boolean),
+        customerUpdateText: customerText,
+        portalUpdateText: portal,
+        quoteNotes,
+        returnTripReason,
+        status: "Pending Review",
+      });
     }
     setSubmitted(true);
     toast({ title: "Draft submitted for review", description: "Your closeout draft was sent to a supervisor. Nothing is billed or sent until approved." });
@@ -187,6 +203,50 @@ export default function VoiceConnect() {
               <CardContent className="p-5 space-y-5">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-sc uppercase tracking-wider flex items-center justify-between">
+                    Work Performed
+                    <Badge variant="outline" className="text-[9px] font-bold text-sc-3 border-panel uppercase">Editable</Badge>
+                  </label>
+                  <Textarea 
+                    value={workPerformed} 
+                    onChange={(e) => setWorkPerformed(e.target.value)} 
+                    rows={3} 
+                    className="text-sm font-medium leading-relaxed focus-visible:ring-1 focus-visible:ring-[var(--sc-line-active)] shadow-none resize-none text-sc" 
+                    style={{ background: "var(--sc-inner)", borderColor: "var(--sc-line)" }}
+                    disabled={alreadySubmitted && !submitted} 
+                    data-testid="textarea-work-performed" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-sc uppercase tracking-wider flex items-center justify-between">
+                    Materials (comma or line separated)
+                    <Badge variant="outline" className="text-[9px] font-bold text-sc-3 border-panel uppercase">Editable</Badge>
+                  </label>
+                  <Textarea 
+                    value={materials} 
+                    onChange={(e) => setMaterials(e.target.value)} 
+                    rows={3} 
+                    className="text-sm font-medium leading-relaxed focus-visible:ring-1 focus-visible:ring-[var(--sc-line-active)] shadow-none resize-none text-sc" 
+                    style={{ background: "var(--sc-inner)", borderColor: "var(--sc-line)" }}
+                    disabled={alreadySubmitted && !submitted} 
+                    data-testid="textarea-materials" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-sc uppercase tracking-wider flex items-center justify-between">
+                    Suggested Labor
+                    <Badge variant="outline" className="text-[9px] font-bold text-sc-3 border-panel uppercase">Editable</Badge>
+                  </label>
+                  <Input 
+                    value={laborSuggested} 
+                    onChange={(e) => setLaborSuggested(e.target.value)} 
+                    className="text-sm font-medium focus-visible:ring-1 focus-visible:ring-[var(--sc-line-active)] shadow-none text-sc" 
+                    style={{ background: "var(--sc-inner)", borderColor: "var(--sc-line)" }}
+                    disabled={alreadySubmitted && !submitted} 
+                    data-testid="input-labor" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-sc uppercase tracking-wider flex items-center justify-between">
                     Billing Lines
                     <Badge variant="outline" className="text-[9px] font-bold text-sc-3 border-panel uppercase">Editable</Badge>
                   </label>
@@ -228,6 +288,36 @@ export default function VoiceConnect() {
                     style={{ background: "var(--sc-inner)", borderColor: "var(--sc-line)" }}
                     disabled={alreadySubmitted && !submitted} 
                     data-testid="textarea-portal" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-sc uppercase tracking-wider flex items-center justify-between">
+                    Quote Notes
+                    <Badge variant="outline" className="text-[9px] font-bold text-sc-3 border-panel uppercase">Editable</Badge>
+                  </label>
+                  <Textarea 
+                    value={quoteNotes} 
+                    onChange={(e) => setQuoteNotes(e.target.value)} 
+                    rows={2} 
+                    className="text-sm font-medium leading-relaxed focus-visible:ring-1 focus-visible:ring-[var(--sc-line-active)] shadow-none resize-none text-sc" 
+                    style={{ background: "var(--sc-inner)", borderColor: "var(--sc-line)" }}
+                    disabled={alreadySubmitted && !submitted} 
+                    data-testid="textarea-quote-notes" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-sc uppercase tracking-wider flex items-center justify-between">
+                    Return-Trip Reason
+                    <Badge variant="outline" className="text-[9px] font-bold text-sc-3 border-panel uppercase">Editable</Badge>
+                  </label>
+                  <Textarea 
+                    value={returnTripReason} 
+                    onChange={(e) => setReturnTripReason(e.target.value)} 
+                    rows={2} 
+                    className="text-sm font-medium leading-relaxed focus-visible:ring-1 focus-visible:ring-[var(--sc-line-active)] shadow-none resize-none text-sc" 
+                    style={{ background: "var(--sc-inner)", borderColor: "var(--sc-line)" }}
+                    disabled={alreadySubmitted && !submitted} 
+                    data-testid="textarea-return-trip" 
                   />
                 </div>
               </CardContent>

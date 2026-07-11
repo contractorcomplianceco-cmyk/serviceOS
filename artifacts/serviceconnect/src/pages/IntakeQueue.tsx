@@ -1,10 +1,11 @@
+import { useLocation } from "wouter";
 import { useAppStore } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { priorityClass, shortDate } from "@/lib/ui";
-import { Mail, Globe, Server, PencilLine, Inbox, Paperclip, AlertTriangle, Copy, Sparkles, Check, Edit2 } from "lucide-react";
+import { Mail, Globe, Server, PencilLine, Inbox, Paperclip, AlertTriangle, Copy, Sparkles, Check, Edit2, ArrowRight } from "lucide-react";
 import { WorkOrderSource } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -17,8 +18,19 @@ const sourceIcon: Record<WorkOrderSource, typeof Mail> = {
 };
 
 export default function IntakeQueue() {
-  const { intake, customers, locations, dismissIntake } = useAppStore();
+  const { intake, customers, locations, dismissIntake, convertIntakeToWorkOrder } = useAppStore();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
+
+  const handleConvert = (intakeId: string, customerName?: string) => {
+    const newId = convertIntakeToWorkOrder(intakeId);
+    if (newId) {
+      toast({ title: "Work Order created", description: `${customerName ?? "Customer"} intake converted to a real work order. Opening it now.` });
+      navigate(`/work-orders/${newId}`);
+    } else {
+      toast({ title: "Could not convert", description: "This intake item is no longer available.", variant: "destructive" });
+    }
+  };
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -99,14 +111,14 @@ export default function IntakeQueue() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-2 relative z-10">
-                      <Button size="sm" className="text-white text-xs h-8 flex-1 blue-glow-soft" style={{ background: 'var(--sc-btn)', border: '1px solid var(--sc-btn-highlight)' }} onClick={() => { dismissIntake(item.id); toast({ title: "Draft Approved", description: `Action executed for ${customer?.name}.` }); }} data-testid={`button-create-wo-${item.id}`}>
-                        <Check className="w-3.5 h-3.5 mr-1.5" /> Approve
+                      <Button size="sm" className="text-white text-xs h-8 flex-1 blue-glow-soft" style={{ background: 'var(--sc-btn)', border: '1px solid var(--sc-btn-highlight)' }} onClick={() => handleConvert(item.id, customer?.name)} data-testid={`button-create-wo-${item.id}`}>
+                        <Check className="w-3.5 h-3.5 mr-1.5" /> Approve & Create WO <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                       </Button>
                       <div className="flex gap-2 flex-1">
-                        <Button size="sm" variant="outline" className="text-sc-2 hover:text-white text-xs h-8 flex-1" style={{ background: 'var(--sc-elevated)', border: '1px solid var(--sc-line)' }} onClick={() => dismissIntake(item.id)}>
+                        <Button size="sm" variant="outline" className="text-sc-2 hover:text-white text-xs h-8 flex-1" style={{ background: 'var(--sc-elevated)', border: '1px solid var(--sc-line)' }} onClick={() => handleConvert(item.id, customer?.name)} data-testid={`button-edit-intake-${item.id}`}>
                           <Edit2 className="w-3.5 h-3.5 mr-1" /> Edit
                         </Button>
-                        <Button size="sm" variant="ghost" className="text-sc-3 hover:text-sc hover:bg-white/[0.04] text-xs h-8 px-2" onClick={() => dismissIntake(item.id)} data-testid={`button-dismiss-intake-${item.id}`}>
+                        <Button size="sm" variant="ghost" className="text-sc-3 hover:text-sc hover:bg-white/[0.04] text-xs h-8 px-2" onClick={() => { dismissIntake(item.id); toast({ title: "Intake skipped", description: `${customer?.name ?? "Request"} removed from the queue.` }); }} data-testid={`button-dismiss-intake-${item.id}`}>
                           Skip
                         </Button>
                       </div>

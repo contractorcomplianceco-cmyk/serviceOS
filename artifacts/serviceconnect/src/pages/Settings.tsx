@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { useAppStore } from "@/lib/store";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -5,14 +6,34 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { roleDescription } from "@/lib/permissions";
-import { RotateCcw, ShieldCheck, Users, Settings2, UserCircle2, HardHat, FileText, Database } from "lucide-react";
+import { RotateCcw, ShieldCheck, Users, Settings2, UserCircle2, HardHat, FileText, Database, ScrollText } from "lucide-react";
+import type { AuditEntityType } from "@/lib/types";
 
 export default function Settings() {
-  const { users, currentUser, setCurrentUserId, resetData } = useAppStore();
+  const { users, currentUser, setCurrentUserId, resetData, auditLog } = useAppStore();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const [auditFilter, setAuditFilter] = useState<"all" | AuditEntityType>("all");
+
+  const isAdmin = currentUser.role === "Administrator";
+
+  const auditEntityTypes = useMemo(
+    () => Array.from(new Set(auditLog.map((e) => e.entityType))).sort() as AuditEntityType[],
+    [auditLog]
+  );
+
+  const filteredAudit = useMemo(() => {
+    const sorted = [...auditLog].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return auditFilter === "all" ? sorted : sorted.filter((e) => e.entityType === auditFilter);
+  }, [auditLog, auditFilter]);
+
+  const formatTimestamp = (iso: string) =>
+    new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
   const guardrails = [
     { label: "AI may auto-schedule jobs", enabled: false, locked: true, desc: "Never automatically assign technicians to jobs." },
@@ -119,6 +140,65 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+
+          {isAdmin && (
+            <Card className="sc-panel overflow-hidden border-0" data-testid="card-audit-trail">
+              <CardHeader className="py-5 px-6 border-b border-panel" style={{ background: "var(--sc-inner)" }}>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <CardTitle className="text-lg font-semibold text-sc flex items-center gap-2">
+                      <ScrollText className="w-5 h-5 text-sc-blue" /> Audit Trail
+                    </CardTitle>
+                    <CardDescription className="text-sc-3 mt-1 text-sm">
+                      Every action taken across ServiceConnect, newest first.
+                    </CardDescription>
+                  </div>
+                  <Select value={auditFilter} onValueChange={(v) => setAuditFilter(v as "all" | AuditEntityType)}>
+                    <SelectTrigger
+                      data-testid="select-audit-filter"
+                      className="w-[180px] h-9 text-sm text-sc rounded-lg shrink-0"
+                      style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}
+                    >
+                      <SelectValue placeholder="All types" />
+                    </SelectTrigger>
+                    <SelectContent className="text-sc" style={{ background: "var(--sc-panel-2)", border: "1px solid var(--sc-line)" }}>
+                      <SelectItem value="all" data-testid="audit-filter-all">All types</SelectItem>
+                      {auditEntityTypes.map((t) => (
+                        <SelectItem key={t} value={t} data-testid={`audit-filter-${t}`}>{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {filteredAudit.length === 0 ? (
+                  <div className="py-12 text-center text-sm text-sc-3" data-testid="text-audit-empty">
+                    No audit events recorded yet.
+                  </div>
+                ) : (
+                  <div className="max-h-[520px] overflow-y-auto scrollbar-thin divide-y divide-[color:var(--sc-line-subtle)]">
+                    {filteredAudit.map((e) => (
+                      <div key={e.id} className="flex items-start gap-3 px-6 py-4 hover:bg-white/[0.04] transition-colors" data-testid={`audit-row-${e.id}`}>
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: "var(--sc-elevated)", border: "1px solid var(--sc-line)" }}>
+                          <ScrollText className="w-4 h-4 text-sc-blue" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-semibold text-sc">{e.action}</span>
+                            <Badge variant="outline" className="text-[10px] bg-transparent border-panel-strong text-sc-3 uppercase tracking-wide">
+                              {e.entityType}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-sc-2 mt-0.5 break-words">{e.summary}</p>
+                          <p className="text-xs text-sc-3 mt-1">{e.actor} · {formatTimestamp(e.timestamp)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
       </div>

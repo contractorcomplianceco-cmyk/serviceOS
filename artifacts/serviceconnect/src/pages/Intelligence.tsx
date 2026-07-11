@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useAppStore } from "@/lib/store";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -6,13 +7,49 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles, ShieldCheck, Check, X, ArrowRight, Edit2 } from "lucide-react";
 import type { AIRecommendation } from "@/lib/types";
+import { computeRecommendations } from "@/lib/recommendations";
 
 export default function Intelligence() {
-  const { recommendations, dismissRecommendation } = useAppStore();
+  const store = useAppStore();
+  const { dismissRecommendation, logAudit } = store;
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
+  const recommendations = useMemo(
+    () => computeRecommendations(store),
+    [store.workOrders, store.users, store.inventory, store.documents, store.invoices, store.customers, store.dismissedRecIds]
+  );
+
+  // Route an approved recommendation to the entity it concerns (where trivial),
+  // otherwise record an audit event. Nothing is ever auto-sent or auto-invoiced.
+  const routeFor = (r: AIRecommendation): string | null => {
+    switch (r.type) {
+      case "Scheduling":
+        return r.relatedEntityId ? `/work-orders/${r.relatedEntityId}` : "/dispatch";
+      case "Overload":
+        return "/dispatch";
+      case "Billing":
+        return r.relatedEntityId ? `/work-orders/${r.relatedEntityId}` : "/billing";
+      case "Missing Info":
+        return r.relatedEntityId ? `/work-orders/${r.relatedEntityId}` : null;
+      case "AR":
+        return "/accounting";
+      case "Inventory":
+        return "/inventory";
+      case "Document":
+        return "/documents";
+      default:
+        return r.relatedEntityId?.startsWith("wo") ? `/work-orders/${r.relatedEntityId}` : null;
+    }
+  };
+
   const accept = (r: AIRecommendation) => {
+    const dest = routeFor(r);
+    logAudit({ action: `${r.primaryAction} (Draft)`, entityType: "WorkOrder", entityId: r.relatedEntityId ?? r.id, summary: `Reviewed recommendation: ${r.title}` });
+    if (dest) {
+      navigate(dest);
+      return;
+    }
     toast({ title: `${r.primaryAction} drafted`, description: `Drafted "${r.title}". Nothing was scheduled, sent, or invoiced automatically — review to finalize.` });
     dismissRecommendation(r.id);
   };

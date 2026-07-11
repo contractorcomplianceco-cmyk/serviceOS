@@ -1,0 +1,1750 @@
+You are performing a complete product audit and implementation-completion pass for the existing ServiceConnect with RoseOS Intelligence application.
+
+This is not a light QA review.
+
+Your job is to inspect the entire application, compare it against the full requirements below, identify everything missing, incomplete, fake, static, disconnected, broken, or only visually represented, and then implement or fix as much as possible directly in the codebase.
+
+Do not rebuild the app from scratch unless absolutely necessary.
+
+Preserve:
+- existing working routes
+- existing design system
+- existing data models
+- existing seeded data
+- existing branding
+- existing functional components
+- existing ServiceConnect dark premium visual style
+
+PRIMARY OBJECTIVE
+
+Verify that ServiceConnect truly functions as:
+
+1. A full BlueFolder replacement
+2. A future QuickBooks replacement
+3. A ServiceChannel and multi-portal operational hub
+4. A GPS-assisted dispatch platform
+5. A VoiceConnect-enabled field-service system
+6. An inventory, equipment, billing, accounting, document, reporting, and intelligence platform
+7. A human-reviewed AI operating system
+
+Do not treat the presence of a menu item, card, modal, or mock data as proof that a feature exists.
+
+A feature only counts as built when:
+- the route exists
+- the interface exists
+- the controls work
+- data can be created
+- data can be edited
+- data persists
+- data can be retrieved
+- role permissions are enforced where applicable
+- workflow states move correctly
+- related modules connect to each other
+- the feature is not just hardcoded display content
+- the feature is clearly labeled as simulated if no real integration exists
+
+AUDIT METHOD
+
+Complete the audit in this order:
+
+PHASE 1 — APPLICATION INVENTORY
+
+Inspect:
+- file structure
+- routes
+- components
+- data layer
+- database schema
+- API endpoints
+- state management
+- authentication
+- role handling
+- integrations
+- seeded data
+- tests
+- build scripts
+- environment variables
+- console output
+- network requests
+- error boundaries
+- responsive layouts
+
+Create a complete route inventory.
+
+For every route, record:
+- route path
+- page name
+- whether it loads
+- whether data is real, seeded, static, or missing
+- whether create/edit/delete works
+- whether navigation works
+- whether permissions are enforced
+- whether the route is desktop-only or responsive
+- known errors
+- missing actions
+
+PHASE 2 — REQUIREMENTS GAP AUDIT
+
+Compare the app against every requirement listed below.
+
+For each requirement, classify it as:
+
+- COMPLETE
+- PARTIAL
+- PLACEHOLDER
+- STATIC MOCK ONLY
+- BROKEN
+- MISSING
+- BLOCKED BY EXTERNAL INTEGRATION
+
+Do not mark anything COMPLETE unless you verify it in the running app and codebase.
+
+PHASE 3 — FIX AND COMPLETE
+
+After documenting the gaps:
+
+- fix broken routes
+- wire inactive buttons
+- add missing forms
+- connect related modules
+- ensure persistence
+- add validation
+- add role permissions
+- complete state transitions
+- add realistic workflow states
+- implement mock integration adapters where real credentials are unavailable
+- clearly label simulated integrations
+- replace hardcoded intelligence cards with rule-based or data-derived outputs
+- remove fake functionality
+- preserve the design
+
+PHASE 4 — END-TO-END VALIDATION
+
+Test the complete workflow:
+
+1. Create intake item
+2. Convert intake to work order
+3. Assign customer and location
+4. Schedule technician
+5. Approve AI scheduling suggestion
+6. Technician opens job on mobile view
+7. Technician checks in
+8. Technician records voice notes
+9. VoiceConnect extracts structured data
+10. Technician submits for review
+11. Supervisor reviews and approves
+12. Materials update inventory
+13. Portal update enters approval queue
+14. Billing draft is created
+15. Invoice is reviewed and issued
+16. AR updates
+17. Payment status updates
+18. Reports reflect the transaction
+19. Audit history records every material action
+
+All of this must be demonstrated with persisted data.
+
+MASTER REQUIREMENTS
+
+==================================================
+1. OVERALL PRODUCT OBJECTIVE
+==================================================
+
+ServiceConnect must function as the central field-service operating system.
+
+It must:
+- replace BlueFolder
+- provide a path to replace QuickBooks
+- connect ServiceChannel and other external portals
+- centralize dispatch
+- centralize work orders
+- centralize technicians
+- centralize customers
+- centralize locations
+- centralize inventory
+- centralize equipment
+- centralize billing
+- centralize accounting
+- centralize documents
+- centralize reporting
+- centralize AI recommendations
+- reduce duplicate entry
+- support commercial service operations
+- support statewide or multi-region dispatch
+- support desktop dispatchers
+- support mobile technicians
+- support supervisors
+- support billing
+- support accounting
+- support administrators
+- support subcontractors
+
+==================================================
+2. WORK-ORDER INTAKE
+==================================================
+
+Required intake sources:
+- ServiceChannel
+- other customer portals
+- email
+- web request
+- customer portal
+- phone/manual entry
+- uploaded work-order documents
+- uploaded photos
+- uploaded attachments
+
+Required intake capabilities:
+- create intake record
+- edit intake record
+- save draft
+- parse email or uploaded document
+- identify customer
+- identify service location
+- identify portal source
+- capture external ID
+- capture PO number
+- capture priority
+- capture requested date
+- capture description
+- capture attachments
+- detect duplicates
+- flag missing data
+- convert intake into work order
+- merge duplicate
+- dismiss
+- assign intake owner
+- preserve original source information
+- show integration or manual status
+
+==================================================
+3. FULL WORK-ORDER MANAGEMENT
+==================================================
+
+Required actions:
+- create
+- edit
+- clone
+- assign
+- schedule
+- reschedule
+- add multiple assignments
+- add multiple assignees
+- change status
+- complete assignment
+- complete work order
+- reopen
+- cancel
+- close
+- delete or archive
+- add private comments
+- add public comments
+- add attachments
+- add labor
+- add materials
+- add expenses
+- create return trip
+- prepare quote
+- submit for supervisor review
+- send to billing
+- sync to portal
+- view full history
+
+Required fields:
+- work-order number
+- customer
+- customer contact
+- multiple contacts
+- service location
+- billing address
+- source
+- external ID
+- PO number
+- reference number
+- priority
+- status
+- type
+- region
+- due date
+- scheduled date
+- time window
+- assigned technician
+- multiple technicians
+- service manager
+- account manager
+- billing status
+- detailed description
+- important technician notes
+- location information
+- location notes
+- customer instructions
+- return-trip reason
+- materials needed
+- quote materials
+- manager name
+- check-in time
+- check-out time
+- work performed
+- quote notes
+- technician comments
+- supervisor comments
+- billing comments
+- attachments
+- portal sync status
+- labor entries
+- materials entries
+- expense entries
+- tax data
+- job-cost data
+- full audit history
+
+Required statuses:
+- New
+- Triage Needed
+- Need Scheduled
+- Scheduled
+- First Trip
+- Dispatched
+- En Route
+- On Site
+- Work in Progress
+- Awaiting Materials
+- Awaiting Quote
+- Awaiting Customer Approval
+- Return Trip Needed
+- Completed by Technician
+- Pending Supervisor Review
+- Ready for Billing
+- Invoiced
+- Paid
+- Closed
+- Cancelled
+
+Statuses must be configurable and color-coded.
+
+==================================================
+4. DISPATCH CALENDAR
+==================================================
+
+Required views:
+- daily
+- multi-day
+- weekly
+- technician rows or columns
+- alphabetical technician order
+- unscheduled work drawer
+- service windows
+- on-call visibility
+- weekend visibility
+- region filtering
+- zone filtering
+- technician filtering
+- status filtering
+- source filtering
+
+Required interactions:
+- drag job to technician
+- drag job to time
+- reschedule
+- reassign
+- multi-tech assignment
+- multiple visits
+- hover preview
+- quick open
+- quick status update
+- view customer
+- view city
+- view PO
+- view priority
+- view source
+- view material flags
+- view quote flags
+- view return-trip flags
+- view travel
+- view notes
+- view location
+- view route
+
+==================================================
+5. GPS SMART ROUTING
+==================================================
+
+Routing recommendations must consider:
+- technician GPS
+- last-known location
+- distance
+- ETA
+- current jobs
+- current workload
+- remaining capacity
+- home zone
+- service zone
+- skills
+- restricted tasks
+- customer requirements
+- priority
+- emergency status
+- equipment needs
+- certifications
+- truck inventory
+- material availability
+- time window
+- overtime risk
+- route direction
+- geographic clustering
+- traffic where available
+
+Required outputs:
+- recommended technician
+- reason for recommendation
+- distance
+- ETA
+- skills match
+- inventory match
+- workload
+- confidence
+- risks
+- alternative technicians
+- suggested route order
+- job bundling
+- schedule-gap suggestions
+- overload warnings
+
+Required guardrail:
+- no automatic scheduling without human approval
+- recommendation must enter approval state
+- dispatcher approves or rejects
+- all approvals logged
+- future auto-approval only as configurable option
+- anomalies always require review
+
+==================================================
+6. SMART LISTS AND OPERATIONAL QUEUES
+==================================================
+
+Required saved views:
+- All Open
+- Need Scheduled
+- On Schedule
+- Open Jobs
+- Quoting Statuses
+- Return Trips Needed
+- Awaiting Materials
+- Awaiting Approval
+- Jobs Created Today
+- Jobs Created This Month
+- New via Portal
+- New via Email
+- New via Web
+- Emergency Jobs
+- Ready for Billing
+- Missing Technician Update
+- No Recent Activity
+- Portal Sync Failed
+- Customer Communication Needed
+
+Required geographic views:
+- Tampa
+- Orlando
+- Jacksonville
+- Ocala
+- Daytona
+- Miami
+- Gainesville
+- Melbourne
+- Fort Myers
+- Bradenton/Sarasota
+- St. Pete/Clearwater
+- Brooksville
+- Polk
+- Vero Beach
+- Okeechobee
+- Keys
+- Georgia
+- configurable additional regions
+
+Users must be able to create, edit, save, duplicate, share, restrict, and delete smart lists.
+
+==================================================
+7. TECHNICIAN MOBILE EXPERIENCE
+==================================================
+
+Technician must be able to:
+- log in
+- view today’s jobs
+- view upcoming jobs
+- open job
+- see customer
+- see address
+- see job description
+- see technician notes
+- see site instructions
+- see attachments
+- see equipment
+- navigate
+- check in
+- check out
+- record labor
+- add materials
+- add expenses if allowed
+- add private comments
+- add public comments if allowed
+- upload photos
+- capture customer signature
+- mark assignment complete
+- request return trip
+- identify materials needed
+- submit for supervisor review
+
+Mobile requirements:
+- large tap targets
+- responsive layout
+- fast load
+- photo upload
+- GPS permission handling
+- voice input
+- offline or error messaging
+- role-based visibility
+
+==================================================
+8. VOICECONNECT
+==================================================
+
+Required screens:
+- Start VoiceConnect
+- recording state
+- live transcript
+- original transcript
+- structured extraction
+- review
+- edit
+- submit
+
+Required extracted fields:
+- work performed
+- labor time
+- materials used
+- quantities
+- equipment serviced
+- return-trip reason
+- materials needed
+- quote notes
+- missing information
+- customer-update draft
+- portal-update draft
+- billing lines
+- closeout summary
+
+Required language support:
+- Spanish speech input
+- Spanish transcript
+- English translation
+- translated structured summary
+- human review required
+
+Required guardrails:
+- transcript remains available
+- technician can edit
+- supervisor approves
+- no automatic invoice
+- no automatic customer message
+- no automatic portal update
+
+==================================================
+9. SUPERVISOR REVIEW
+==================================================
+
+Supervisor review queue must show:
+- technician submission
+- transcript
+- translated transcript where applicable
+- AI summary
+- labor
+- materials
+- photos
+- return-trip request
+- quote notes
+- closeout draft
+- customer message draft
+- portal draft
+- billing draft
+- missing fields
+- exceptions
+
+Required actions:
+- approve
+- edit
+- reject
+- return to technician
+- approve labor
+- approve materials
+- approve closeout
+- approve customer message
+- approve portal update
+- approve billing draft
+- send to billing
+
+==================================================
+10. SERVICECHANNEL AND MULTI-PORTAL INTEGRATIONS
+==================================================
+
+Incoming data:
+- new work order
+- customer
+- location
+- PO
+- NTE
+- priority
+- attachments
+- notes
+- closeout requirements
+- external IDs
+
+Outgoing data:
+- status
+- ETA
+- schedule
+- technician
+- work performed
+- materials
+- photos
+- attachments
+- quote notes
+- return trip
+- completion
+- invoice or billing data where supported
+
+Required targets:
+- ServiceChannel
+- email
+- Corgo or similarly named portal
+- EcoTrack
+- other configurable portals
+- customer email
+- internal billing queue
+
+Required integration states:
+- Draft
+- Needs Approval
+- Ready to Send
+- Sending
+- Sent
+- Failed
+- Retry
+- Manual Copy Needed
+- Cancelled
+
+Required controls:
+- preview
+- approve
+- send
+- retry
+- manual copy
+- audit log
+- exact sent payload
+- sync timestamp
+- error message
+
+If live credentials are unavailable:
+- implement a clearly labeled integration simulator
+- do not pretend it is live
+- create adapter interfaces for future real APIs
+
+==================================================
+11. CUSTOMER AND LOCATION MANAGEMENT
+==================================================
+
+Customer must include:
+- customer name
+- account number
+- contacts
+- multiple contacts
+- billing details
+- locations
+- customer rates
+- labor rates
+- markup rules
+- tax rules
+- portal rules
+- closeout rules
+- site instructions
+- account manager
+- service manager
+- work history
+- invoice history
+- payment history
+- documents
+- equipment
+- warranty history
+- notes
+- communication history
+
+Location must include:
+- address
+- contacts
+- access instructions
+- manager
+- hours
+- region
+- zone
+- GPS coordinates
+- equipment
+- work history
+- photos
+- documents
+- customer notes
+- billing rules
+- portal identifiers
+
+==================================================
+12. CUSTOMER DOCUMENT VAULT
+==================================================
+
+Document types:
+- COI
+- W-9
+- contract
+- service agreement
+- site instruction
+- customer form
+- tax document
+- vendor form
+- portal instruction
+- warranty
+- equipment document
+- invoice
+- quote
+- photo
+
+Required fields:
+- linked customer
+- linked location
+- linked work order
+- document type
+- issue date
+- expiration date
+- status
+- owner
+- visibility
+- reminder date
+- notes
+
+Statuses:
+- Current
+- Missing
+- Expiring Soon
+- Expired
+- Needs Review
+
+Required actions:
+- upload
+- preview
+- download
+- replace
+- archive
+- link
+- unlink
+- change visibility
+- set expiration
+- set reminder
+
+==================================================
+13. CUSTOMER PORTAL
+==================================================
+
+Customer portal should support:
+- secure login
+- request service
+- view requests
+- view schedule
+- view job status
+- view approved closeout
+- view invoices
+- pay invoices
+- download invoices
+- view payment history
+- view warranties
+- view equipment
+- view service history
+- access COI
+- access W-9
+- upload documents
+- communicate
+- review quotes
+- approve quotes
+- view ServiceChannel-linked information where supported
+
+==================================================
+14. EMPLOYEE AND TECHNICIAN PROFILES
+==================================================
+
+Required fields:
+- photo
+- legal name
+- display name
+- username
+- status
+- email
+- phone
+- mobile
+- text address
+- notification email
+- job title
+- role
+- permission roles
+- work hours
+- time zone
+- work address
+- home address
+- birthday
+- start date
+- emergency contacts
+- home region
+- service zones
+- skills
+- certifications
+- allowed tasks
+- restricted tasks
+- preferred job types
+- labor-rate permissions
+- availability
+- on-call
+- assigned truck
+- truck inventory
+- GPS status
+- workload
+- capacity
+
+Sensitive fields must have separate permissions:
+- home address
+- birthday
+- emergency contacts
+- labor costs
+- GPS history
+- personnel data
+
+==================================================
+15. ROLES AND PERMISSIONS
+==================================================
+
+Required roles:
+- Administrator
+- Service Manager
+- Scheduler
+- Bookkeeper
+- Billing
+- Sales
+- Lead Technician
+- Technician
+- Subcontractor
+- Inventory Manager
+- Supervisor
+
+Permissions must control:
+- calendar
+- team calendar
+- customers
+- locations
+- work orders
+- create/edit/delete
+- assignments
+- assignment completion
+- status changes
+- closing
+- reopening
+- closed-job editing
+- billing
+- job cost
+- labor
+- labor price
+- labor cost
+- materials
+- material price
+- material cost
+- expenses
+- public comments
+- private comments
+- equipment
+- inventory
+- invoices
+- payments
+- contracts
+- recurring jobs
+- reports
+- accounting
+- employee private fields
+- GPS
+- settings
+- integrations
+
+Test every role.
+
+==================================================
+16. NOTIFICATIONS AND COMMUNICATION
+==================================================
+
+Channels:
+- in-app
+- email
+- SMS
+- push where available
+
+Events:
+- appointment created
+- appointment changed
+- appointment deleted
+- schedule changed within 24 hours
+- schedule changed more than 24 hours away
+- assignment created
+- assignment changed
+- assignment removed
+- customer comment added
+- internal comment added
+- attachment added
+- work order changed
+- work order deleted
+- status changed
+- work order reopened
+- work order closed
+- emergency job created
+- job needs scheduling
+- overload risk
+- materials required
+- quote required
+- portal failure
+- invoice ready
+- invoice overdue
+- document expiring
+- low inventory
+
+Approved communication automation:
+- appointment confirmation
+- ETA update
+- reschedule notice
+- completed-work summary
+- invoice
+- payment link
+- portal confirmation
+
+No customer-facing message without approval unless explicitly configured.
+
+==================================================
+17. INVENTORY MANAGEMENT
+==================================================
+
+Required inventory locations:
+- Tampa Shop
+- Orlando Shop
+- Office
+- Trucks
+- Technicians
+
+Required item fields:
+- name
+- SKU
+- description
+- category
+- unit
+- vendor
+- preferred vendor
+- cost
+- billable price
+- markup
+- quantity on hand
+- reorder point
+- location
+- truck
+- technician
+- reserved quantity
+- available quantity
+- compatible job types
+- last purchase
+- last used
+- history
+- notes
+- photo
+- barcode or QR code
+
+Required workflows:
+- receive
+- transfer
+- assign to truck
+- transfer between trucks
+- assign to technician
+- reserve for job
+- consume on job
+- return unused
+- adjust count
+- reorder recommendation
+- purchase request
+- approval
+- inventory audit
+- cycle count
+
+AI features:
+- truck photo upload
+- proposed item recognition
+- proposed quantity
+- human confirmation
+- VoiceConnect deduction
+- job reservation
+- route recommendation using part availability
+
+==================================================
+18. EQUIPMENT AND ASSET MANAGEMENT
+==================================================
+
+Required fields:
+- customer
+- location
+- equipment type
+- manufacturer
+- model
+- serial
+- installation date
+- warranty
+- photo
+- PO
+- invoice
+- service history
+- work orders
+- parts used
+- notes
+- attachments
+- condition
+- replacement date
+
+Required automation:
+- read uploaded PO
+- extract model
+- extract serial
+- identify customer
+- identify location
+- create equipment
+- update equipment
+- flag uncertainty for review
+
+==================================================
+19. RECURRING JOBS AND CONTRACTS
+==================================================
+
+Required capabilities:
+- recurring service schedule
+- preventive maintenance
+- recurring inspections
+- contract start
+- contract end
+- contracted rate
+- included services
+- frequency
+- renewal reminder
+- balance
+- history
+- billing terms
+- automatic work-order generation
+
+==================================================
+20. BILLING WORKFLOW
+==================================================
+
+Billing queues:
+- Technician Submitted
+- Supervisor Review Required
+- Missing Labor
+- Missing Materials
+- Missing PO
+- Missing Authorization
+- Missing Customer Requirement
+- Ready for Invoice
+- Invoice Draft
+- Awaiting Portal Submission
+- Sent
+- Paid
+- Past Due
+- Disputed
+- Failed Payment
+
+Invoice inputs:
+- approved labor
+- approved materials
+- approved expenses
+- customer labor rate
+- customer markup
+- taxes
+- service-call fee
+- portal requirements
+- work performed
+- PO
+- attachments
+- photos
+
+Required invoice actions:
+- create draft
+- edit
+- preview
+- approve
+- send
+- save PDF
+- send payment link
+- mark paid
+- partial payment
+- credit
+- refund
+- dispute
+- archive
+
+Invoice design:
+- premium
+- customizable
+- branded
+- professional
+- Fortune 500 quality
+
+==================================================
+21. ACCOUNTING AND QUICKBOOKS REPLACEMENT
+==================================================
+
+Do not count a dashboard as an accounting system.
+
+Required accounting foundation:
+- chart of accounts
+- general ledger
+- accounts receivable
+- accounts payable
+- customer balances
+- vendor balances
+- payments
+- deposits
+- credits
+- refunds
+- expenses
+- tax handling
+- reconciliation
+- journal entries
+- revenue recognition
+- job costing
+- payment allocation
+- aging
+- audit trail
+- period close
+- financial reporting
+
+Required job accounting:
+- revenue by work order
+- labor cost
+- material cost
+- expense cost
+- gross profit
+- margin
+- customer profitability
+- technician profitability
+- region profitability
+- portal profitability
+- return-trip cost
+- unbilled work
+- invoice status
+- payment date
+
+Required reports:
+- profit and loss
+- balance sheet
+- cash flow
+- AR aging
+- AP aging
+- trial balance
+- general ledger
+- customer balance
+- vendor balance
+- revenue by customer
+- revenue by portal
+- salesperson by paid date
+- commission reporting
+- customizable report builder
+
+If full accounting is not implemented:
+- label it accurately
+- state what exists
+- state what is missing
+- do not claim QuickBooks replacement readiness
+
+==================================================
+22. VENDOR AND MATERIAL PRICING INTELLIGENCE
+==================================================
+
+Required vendor data:
+- vendor
+- location
+- account number
+- negotiated pricing
+- multiplier
+- purchase history
+- receipts
+- invoices
+- last paid price
+- average paid price
+- preferred supplier
+- market comparison
+- markup
+- margin
+
+Required intelligence:
+- detect price change
+- analyze historical receipt cost
+- compare negotiated cost
+- detect margin erosion
+- recommend markup
+- detect underpriced customer
+- show profitability impact
+- forecast likely increases
+- require human review
+
+==================================================
+23. REPORTING AND ANALYTICS
+==================================================
+
+Operational reports:
+- open work orders
+- need scheduled
+- on schedule
+- jobs by status
+- jobs by region
+- jobs by technician
+- created today
+- created this month
+- emergency jobs
+- return trips
+- awaiting materials
+- quote statuses
+- portal intake
+- portal failures
+- workload
+- utilization
+- drive time
+- response time
+- completion time
+- first-time fix rate
+- material usage
+- inventory reorder
+- equipment history
+- customer activity
+- invoice status
+- AR aging
+- payments
+- revenue
+- profitability
+- cash flow
+
+Intelligence reports:
+- revenue by source
+- profit by source
+- customer ROI
+- customer profitability
+- job-type profitability
+- technician profitability
+- region profitability
+- underpriced work
+- high-cost customers
+- return-trip cost
+- revenue leakage
+- missed billing
+- cash-flow forecast
+- vendor-cost impact
+
+==================================================
+24. ROSEOS INTELLIGENCE
+==================================================
+
+Recommendations should detect:
+- emergency job needs assignment
+- best technician
+- overload
+- schedule gap
+- route inefficiency
+- no update
+- missed service window risk
+- missing work-order data
+- missing PO
+- missing authorization
+- material blocker
+- return-trip pattern
+- missing technician documentation
+- ready for billing
+- billing delay
+- portal failure
+- overdue invoice
+- expiring customer document
+- low inventory
+- vendor price increase
+- margin erosion
+- undercharging
+- cash-flow risk
+- service trend
+- likely repeated equipment failure
+
+Every recommendation must show:
+- what happened
+- why it matters
+- supporting data
+- confidence
+- suggested action
+- risk
+- approval state
+- approve
+- edit
+- reject
+- snooze
+- assign
+- history
+
+Do not use only hardcoded sample cards.
+
+Create rules or calculations based on current application data.
+
+==================================================
+25. DASHBOARD AND UX
+==================================================
+
+Required UX:
+- Operations Cockpit
+- role-based dashboard
+- clear action queues
+- status colors
+- compact cards
+- hover previews
+- global search
+- saved filters
+- responsive layout
+- mobile technician workflow
+- dispatcher desktop workflow
+- billing workspace
+- accounting workspace
+- accessible contrast
+- minimal unnecessary clicks
+- preserve premium dark ServiceConnect design
+
+==================================================
+26. GLOBAL SEARCH
+==================================================
+
+Search must find:
+- work orders
+- customers
+- contacts
+- locations
+- equipment
+- PO numbers
+- external IDs
+- invoices
+- payments
+- materials
+- vendors
+- technicians
+- notes
+- attachments
+- portal source
+
+Required behavior:
+- grouped results
+- quick preview
+- direct navigation
+- keyboard support
+- no fake result rows
+
+==================================================
+27. AUDIT TRAIL
+==================================================
+
+Track:
+- creator
+- editor
+- old value
+- new value
+- timestamp
+- approver
+- external payload
+- portal result
+- invoice approval
+- payment changes
+- inventory changes
+- routing recommendation
+- AI draft
+- human edit
+- customer communication
+- role change
+- permission change
+
+==================================================
+28. BLUEFOLDER MIGRATION
+==================================================
+
+Required migration support:
+- users
+- roles
+- permissions
+- customers
+- contacts
+- locations
+- work orders
+- history
+- statuses
+- priorities
+- types
+- custom fields
+- smart lists
+- notes
+- comments
+- attachments
+- labor
+- materials
+- expenses
+- equipment
+- recurring jobs
+- item lists
+- invoices where available
+- notifications
+
+Required migration tools:
+- CSV import
+- field mapping
+- validation
+- error report
+- duplicate report
+- dry run
+- import log
+- rollback or correction path
+- preserve source IDs
+
+==================================================
+29. QUICKBOOKS TRANSITION
+==================================================
+
+Required transition support:
+- customer balances
+- open invoices
+- payment history
+- vendors
+- chart of accounts
+- transaction history
+- taxes
+- credits
+- deposits
+- AR
+- AP
+- reconciliation state
+- cutover date
+- parallel-run status
+- export
+- rollback plan
+
+==================================================
+30. SECURITY AND PRIVACY
+==================================================
+
+Required controls:
+- authentication
+- role-based access
+- sensitive-field permissions
+- accounting permissions
+- job-cost permissions
+- employee privacy
+- document permissions
+- GPS consent
+- GPS access restrictions
+- audit logs
+- session controls
+- file access
+- data export controls
+- integration credential security
+- error handling
+- no secrets exposed in client code
+
+==================================================
+31. CLIENT OPERATING CONTEXT
+==================================================
+
+Design and workflows should account for:
+- commercial service work
+- large service territory
+- multiple dispatchers in different offices
+- one dispatcher per shift in some cases
+- many third-party portals
+- customer-specific rates
+- customer-specific billing rules
+- two-hour service windows
+- Tampa shop
+- Orlando shop
+- mobile technicians
+- personal and company phones
+- English and Spanish speakers
+- supervisor approval
+- separate billing staff
+- separate accounting staff
+
+==================================================
+32. FUTURE FEATURES
+==================================================
+
+These may remain future-ready but must be honestly labeled:
+- AI truck-photo inventory
+- advanced supplier scraping
+- commodity forecasting
+- weather trend analysis
+- automatic routing after trust
+- ContractorConnect integration
+- universal customer portal
+- predictive equipment failure
+- autonomous routine scheduling
+- advanced cash-flow forecasting
+- dynamic pricing
+
+Do not represent future features as complete.
+
+==================================================
+33. NON-NEGOTIABLE GUARDRAILS
+==================================================
+
+- human approval before scheduling
+- human approval before customer communications
+- human approval before external portal updates
+- human approval before final invoice send
+- VoiceConnect remains draft until reviewed
+- GPS must be consent-based
+- sensitive employee data restricted
+- job-cost and accounting data restricted
+- AI recommendations explain themselves
+- integrations have failure states
+- all important actions logged
+- no fake integrations
+- no static card presented as functioning intelligence
+- no menu item counted as completed functionality
+
+AUDIT TEST MATRIX
+
+Create and execute tests for these roles:
+- Administrator
+- Scheduler
+- Service Manager
+- Supervisor
+- Lead Technician
+- Technician
+- Billing
+- Bookkeeper
+- Subcontractor
+- Inventory Manager
+
+For each role, test:
+- login
+- navigation visibility
+- route access
+- forbidden route behavior
+- field visibility
+- create permissions
+- edit permissions
+- delete permissions
+- financial visibility
+- employee-private-data visibility
+- GPS visibility
+- settings access
+
+END-TO-END ACCEPTANCE TESTS
+
+Test at least these scenarios:
+
+SCENARIO A — EMAIL INTAKE TO PAID INVOICE
+1. Create intake from email simulation.
+2. Parse customer, location, PO, and description.
+3. Approve intake.
+4. Create work order.
+5. Schedule technician.
+6. Check in.
+7. Record VoiceConnect note.
+8. Extract materials and labor.
+9. Submit to supervisor.
+10. Approve closeout.
+11. Deduct inventory.
+12. Create billing draft.
+13. Approve invoice.
+14. Send simulated invoice.
+15. Record payment.
+16. Confirm AR updates.
+17. Confirm reports update.
+18. Confirm audit log.
+
+SCENARIO B — EMERGENCY GPS ROUTING
+1. Create emergency work order.
+2. Run routing recommendation.
+3. Confirm recommendation uses distance, skill, capacity, and inventory.
+4. Approve assignment.
+5. Confirm calendar updates.
+6. Confirm technician receives assignment.
+7. Confirm approval history.
+
+SCENARIO C — RETURN TRIP
+1. Technician reports unresolved issue.
+2. Add return-trip reason.
+3. Add needed materials.
+4. Create material reservation.
+5. Create follow-up assignment.
+6. Confirm original work order remains linked.
+7. Confirm billing state is correct.
+
+SCENARIO D — PORTAL SYNC
+1. Create ServiceChannel-sourced job.
+2. Update ETA.
+3. Create portal draft.
+4. Approve.
+5. Send through simulator.
+6. Confirm Sent state.
+7. Trigger failure state.
+8. Retry.
+9. Confirm audit history.
+
+SCENARIO E — SPANISH VOICECONNECT
+1. Create Spanish voice transcript.
+2. Translate to English.
+3. Extract work performed and materials.
+4. Edit translation.
+5. Submit.
+6. Approve.
+7. Confirm both original and translated records remain.
+
+SCENARIO F — INVENTORY
+1. Receive stock at Tampa.
+2. Transfer stock to truck.
+3. Reserve stock for job.
+4. Consume stock.
+5. Return unused stock.
+6. Trigger low-stock alert.
+7. Create reorder suggestion.
+8. Confirm inventory history.
+
+SCENARIO G — ACCOUNTING READINESS
+1. Create invoice.
+2. Record partial payment.
+3. Record full payment.
+4. Create credit.
+5. Create refund.
+6. Confirm customer balance.
+7. Confirm GL impact if GL exists.
+8. Confirm aging.
+9. Confirm reports.
+10. Clearly document any missing accounting capability.
+
+AUTOMATED TESTING
+
+Add or improve:
+- unit tests
+- integration tests
+- route tests
+- permission tests
+- workflow tests
+- data persistence tests
+- form validation tests
+- responsive smoke tests
+- build test
+- lint test
+- console-error check
+
+Use the project’s current testing framework where possible.
+
+Do not introduce a second unnecessary test framework.
+
+UI AND DESIGN PRESERVATION
+
+Maintain the approved ServiceConnect visual direction:
+- premium dark enterprise dashboard
+- deep navy background
+- electric blue accents
+- clear status colors
+- compact dashboard panels
+- right-side RoseOS Intelligence panel
+- clean charts
+- modern map
+- premium logo
+- consistent spacing
+- responsive technician view
+
+Do not let functional fixes degrade the design.
+
+DELIVERABLES
+
+At the end, provide these files or reports inside the repository:
+
+1. `SERVICECONNECT_MASTER_AUDIT.md`
+2. `SERVICECONNECT_REQUIREMENTS_MATRIX.md`
+3. `SERVICECONNECT_GAP_REPORT.md`
+4. `SERVICECONNECT_FIXES_COMPLETED.md`
+5. `SERVICECONNECT_REMAINING_LIMITATIONS.md`
+6. `SERVICECONNECT_END_TO_END_TEST_RESULTS.md`
+7. `SERVICECONNECT_ROLE_PERMISSION_MATRIX.md`
+8. `SERVICECONNECT_INTEGRATION_STATUS.md`
+9. `SERVICECONNECT_ACCOUNTING_READINESS.md`
+10. `SERVICECONNECT_MIGRATION_READINESS.md`
+
+The Requirements Matrix must include columns:
+
+- ID
+- Module
+- Requirement
+- Status
+- Evidence
+- Route
+- Data Source
+- Persistence Verified
+- Permission Verified
+- Test Result
+- Fix Applied
+- Remaining Work
+- Blocker
+
+FINAL RESPONSE FORMAT
+
+When finished, report:
+
+1. Overall completion percentage
+2. Number of complete requirements
+3. Number of partial requirements
+4. Number of placeholders
+5. Number of broken requirements
+6. Number of missing requirements
+7. Number blocked by external integrations
+8. Features fixed during the audit
+9. Features still missing
+10. Accounting replacement readiness
+11. BlueFolder replacement readiness
+12. ServiceChannel integration readiness
+13. Mobile technician readiness
+14. VoiceConnect readiness
+15. GPS routing readiness
+16. Inventory readiness
+17. Customer portal readiness
+18. Security readiness
+19. Test status
+20. Build status
+21. Console error status
+22. Exact next recommended implementation phase
+
+IMPORTANT
+
+Do not merely produce an audit report.
+
+Audit first, then implement and fix as much as possible, then retest, then document the true remaining gaps.
+
+Be honest.
+
+Do not claim that:
+- a static card is intelligence
+- a route stub is a module
+- a mocked API is a live integration
+- an invoice page is an accounting system
+- a responsive screenshot is a technician app
+- a menu entry is a finished feature
+- sample data is persisted production data
+
+The final result must clearly distinguish:
+- fully functional
+- prototype functional
+- simulated integration
+- future-ready architecture
+- incomplete
+- blocked

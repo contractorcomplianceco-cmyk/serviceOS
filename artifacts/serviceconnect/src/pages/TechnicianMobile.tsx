@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { priorityClass, statusClass, relativeDay } from "@/lib/ui";
-import { Wrench, MapPin, Clock, Mic, LogOut } from "lucide-react";
+import { Wrench, MapPin, Clock, Mic, LogOut, LogIn, CheckCircle2 } from "lucide-react";
+
+const fmtTime = (iso?: string) =>
+  iso ? new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "—";
 
 export default function TechnicianMobile() {
-  const { currentUser, workOrders, customers, locations, closeouts, setCurrentUserId } = useAppStore();
+  const { currentUser, workOrders, customers, locations, closeouts, technicianCheckIn, technicianCheckOut, setCurrentUserId } = useAppStore();
   const [, navigate] = useLocation();
 
   const myJobs = workOrders
@@ -55,6 +58,8 @@ export default function TechnicianMobile() {
               const c = customers.find((cc) => cc.id === wo.customerId);
               const loc = locations.find((l) => l.id === wo.locationId);
               const hasCloseout = closeouts.some((co) => co.workOrderId === wo.id);
+              const latestTrip = wo.trips[wo.trips.length - 1];
+              const activeTrip = latestTrip && latestTrip.checkIn && !latestTrip.checkOut ? latestTrip : null;
               
               return (
                 <Card 
@@ -111,6 +116,42 @@ export default function TechnicianMobile() {
                         <Badge variant="outline" className="text-[10px] uppercase tracking-wider font-bold" style={{ color: "var(--sc-blue)", background: "rgba(67,166,255,0.1)", borderColor: "rgba(67,166,255,0.2)" }}>
                           Draft Pending
                         </Badge>
+                      )}
+                    </div>
+                    <div className="w-full rounded-lg p-3 sc-inner flex items-center justify-between gap-3">
+                      <div className="text-xs font-medium text-sc-2 leading-tight">
+                        {activeTrip ? (
+                          <span className="flex items-center gap-1.5" style={{ color: "var(--sc-blue)" }}>
+                            <Clock className="w-3.5 h-3.5 shrink-0" /> On site since {fmtTime(activeTrip.checkIn)}
+                          </span>
+                        ) : latestTrip?.checkOut ? (
+                          <span className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--sc-green)" }} /> Last trip {fmtTime(latestTrip.checkIn)} – {fmtTime(latestTrip.checkOut)}
+                          </span>
+                        ) : (
+                          <span className="text-sc-3">Not checked in</span>
+                        )}
+                      </div>
+                      {activeTrip ? (
+                        <Button
+                          size="sm"
+                          className="text-white shadow-md font-bold h-10 rounded-xl hover:opacity-90 transition-opacity shrink-0"
+                          style={{ background: "var(--sc-green)", border: "1px solid var(--sc-green)" }}
+                          onClick={() => technicianCheckOut(wo.id)}
+                          data-testid={`button-checkout-${wo.id}`}
+                        >
+                          <CheckCircle2 className="w-4 h-4 mr-1.5" /> Check Out
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          className="text-white shadow-md font-bold h-10 rounded-xl blue-glow-soft hover:opacity-90 transition-opacity shrink-0"
+                          style={{ background: "var(--sc-btn)", border: "1px solid var(--sc-btn-highlight)" }}
+                          onClick={() => technicianCheckIn(wo.id)}
+                          data-testid={`button-checkin-${wo.id}`}
+                        >
+                          <LogIn className="w-4 h-4 mr-1.5" /> Check In
+                        </Button>
                       )}
                     </div>
                     <div className="flex gap-3 w-full">

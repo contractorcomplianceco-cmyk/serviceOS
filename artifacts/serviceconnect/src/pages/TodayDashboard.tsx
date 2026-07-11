@@ -1,7 +1,9 @@
+import { useMemo } from "react";
 import { useAppStore } from "@/lib/store";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { AIRecommendation } from "@/lib/types";
+import { computeRecommendations } from "@/lib/recommendations";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 } from "recharts";
@@ -25,9 +27,15 @@ const complianceTrend = [
 ];
 
 export default function TodayDashboard() {
-  const { recommendations, workOrders, invoices, currentUser, dismissRecommendation } = useAppStore();
+  const store = useAppStore();
+  const { workOrders, invoices, currentUser, dismissRecommendation, logAudit } = store;
   const [, navigate] = useLocation();
   const { toast } = useToast();
+
+  const recommendations = useMemo(
+    () => computeRecommendations(store),
+    [store.workOrders, store.users, store.inventory, store.documents, store.invoices, store.customers, store.dismissedRecIds]
+  );
 
   const emergency = workOrders.filter((w) => w.priority === "Emergency" && w.status !== "Closed").length;
   const needScheduled = workOrders.filter((w) => w.status === "Need Scheduled" || w.status === "New").length;
@@ -57,10 +65,12 @@ export default function TodayDashboard() {
     if (rec.type === "Scheduling" && rec.relatedEntityId) return navigate(`/work-orders/${rec.relatedEntityId}`);
     if (rec.type === "Overload") return navigate("/dispatch");
     if (rec.type === "Billing" && rec.relatedEntityId) return navigate(`/work-orders/${rec.relatedEntityId}`);
+    if (rec.type === "Missing Info" && rec.relatedEntityId) return navigate(`/work-orders/${rec.relatedEntityId}`);
     if (rec.type === "AR") return navigate("/accounting");
     if (rec.type === "Inventory") return navigate("/inventory");
     if (rec.type === "Document") return navigate("/documents");
     if (rec.relatedEntityId?.startsWith("wo")) return navigate(`/work-orders/${rec.relatedEntityId}`);
+    logAudit({ action: `${rec.primaryAction} (Draft)`, entityType: "WorkOrder", entityId: rec.relatedEntityId ?? rec.id, summary: `Reviewed recommendation: ${rec.title}` });
     toast({ title: `${rec.primaryAction} drafted`, description: "RoseOS drafted this action for your review." });
   };
 

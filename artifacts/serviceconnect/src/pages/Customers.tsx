@@ -4,14 +4,61 @@ import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { money } from "@/lib/ui";
-import { Search, Building2, ChevronRight, Briefcase } from "lucide-react";
+import { Search, Building2, ChevronRight, Briefcase, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Customer } from "@/lib/types";
 
 export default function Customers() {
-  const { customers, workOrders, locations } = useAppStore();
+  const { customers, workOrders, locations, currentUser, addCustomer } = useAppStore();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newIndustry, setNewIndustry] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+
+  const resetCreate = () => {
+    setNewName("");
+    setNewIndustry("");
+    setNewPhone("");
+    setNewEmail("");
+  };
+
+  const handleCreate = () => {
+    if (!newName.trim()) {
+      toast({ title: "Name required", description: "Enter a customer name." });
+      return;
+    }
+    const customer: Customer = {
+      id: `cust-${Date.now()}`,
+      name: newName.trim(),
+      industry: newIndustry.trim() || "General",
+      phone: newPhone.trim(),
+      email: newEmail.trim(),
+      status: "Active",
+      accountManagerId: currentUser.id,
+      tags: [],
+      contacts: [],
+      rateRules: [],
+      requirements: [],
+      portalRules: "",
+      taxCode: "",
+      balance: 0,
+    };
+    addCustomer(customer);
+    toast({ title: "Customer created", description: `${customer.name} added.` });
+    setCreateOpen(false);
+    resetCreate();
+    navigate(`/customers/${customer.id}`);
+  };
 
   const filtered = customers.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()) || c.industry.toLowerCase().includes(search.toLowerCase()));
 
@@ -24,17 +71,61 @@ export default function Customers() {
             Accounts, requirements, rate rules, and contacts.
           </p>
         </div>
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-sc-3" />
-          <Input 
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)} 
-            placeholder="Search customers..." 
-            className="pl-9 sc-elevated shadow-sm h-9 text-sm text-sc placeholder:text-sc-3" 
-            data-testid="input-search-customer" 
-          />
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-sc-3" />
+            <Input 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)} 
+              placeholder="Search customers..." 
+              className="pl-9 sc-elevated shadow-sm h-9 text-sm text-sc placeholder:text-sc-3" 
+              data-testid="input-search-customer" 
+            />
+          </div>
+          <Button className="text-white blue-glow-soft shrink-0" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}} onClick={() => setCreateOpen(true)} data-testid="button-create-customer">
+            <Plus className="w-4 h-4 mr-2" /> New Customer
+          </Button>
         </div>
       </div>
+
+      <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) resetCreate(); }}>
+        <DialogContent className="max-w-lg bg-card border-panel text-sc">
+          <DialogHeader className="border-b border-panel pb-4">
+            <DialogTitle className="text-lg text-sc flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-sc-blue" /> New Customer
+            </DialogTitle>
+            <DialogDescription className="text-sc-3">Create a customer account. Contacts, rate rules, and requirements can be added later.</DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-sc-2">Customer Name</Label>
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Acme Retail Group" className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-customer-name" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-sc-2">Industry</Label>
+              <Input value={newIndustry} onChange={(e) => setNewIndustry(e.target.value)} placeholder="Retail" className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-customer-industry" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-sc-2">Phone</Label>
+                <Input value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="(555) 123-4567" className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-customer-phone" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-sc-2">Email</Label>
+                <Input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="ops@acme.com" className="text-sc placeholder:text-sc-3" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} data-testid="input-new-customer-email" />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-panel pt-4 sm:justify-between">
+            <Button variant="outline" className="text-sc-2 hover:text-white border-panel hover:bg-white/[0.05]" onClick={() => { setCreateOpen(false); resetCreate(); }} data-testid="button-cancel-customer">Cancel</Button>
+            <Button className="text-white blue-glow-soft" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}} onClick={handleCreate} data-testid="button-save-customer">
+              <Plus className="w-4 h-4 mr-2" /> Create Customer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {filtered.map((c) => {

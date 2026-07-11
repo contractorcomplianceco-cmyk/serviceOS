@@ -10,6 +10,7 @@ import {
   Equipment,
   CustomerDocument,
   Closeout,
+  AuditEvent,
 } from './types';
 
 const now = Date.now();
@@ -255,4 +256,11 @@ export const mockRecommendations: AIRecommendation[] = [
   { id: 'rec6', type: 'Inventory', severity: 'warning', title: 'Inventory below reorder point', description: '1/2" Copper Pipe (4 left, reorder at 10) and T8 Ballast (8 left, reorder at 12) are low. RoseOS suggests a reorder.', confidence: 97, primaryAction: 'Reorder', needsApproval: true },
   { id: 'rec7', type: 'AR', severity: 'warning', title: 'AR risk — aging invoices', description: '3 invoices totaling $1,780 are past due (RaceTrac, Publix, Cracker Barrel). Publix INV-4980 is 40 days out.', confidence: 100, primaryAction: 'Review', needsApproval: false },
   { id: 'rec8', type: 'Missing Info', severity: 'info', title: 'Job missing technician update', description: 'WO-2026-1043 (True Food HVAC) is scheduled but has no check-in or notes from the assigned tech.', confidence: 82, primaryAction: 'Nudge', relatedEntityId: 'wo2', needsApproval: false },
+];
+
+export const mockAuditLog: AuditEvent[] = [
+  { id: 'aud-seed-1', timestamp: iso(-2), actorId: 'u2', actor: 'Mike Ross', action: 'Created', entityType: 'WorkOrder', entityId: 'wo7', summary: 'WO-2026-1030 created (ServiceChannel)' },
+  { id: 'aud-seed-2', timestamp: iso(-1), actorId: 'u2', actor: 'Mike Ross', action: 'Updated', entityType: 'WorkOrder', entityId: 'wo7', summary: 'WO-2026-1030: assigned to David Chen' },
+  { id: 'aud-seed-3', timestamp: iso(-1), actorId: 'u4', actor: 'David Chen', action: 'Checked In', entityType: 'WorkOrder', entityId: 'wo7', summary: 'WO-2026-1030: technician on site' },
+  { id: 'aud-seed-4', timestamp: iso(0), actorId: 'u3', actor: 'Angela Pruitt', action: 'Approved', entityType: 'Closeout', entityId: 'co1', summary: 'Closeout approved for WO-2026-1030' },
 ];
