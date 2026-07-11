@@ -8,7 +8,10 @@ import {
 } from "@workspace/db";
 import { registerJobHandler } from "./queue";
 import { generateRecommendations } from "../recommendations/rules";
-import { runRecurrenceForTenant } from "../recurrence";
+import {
+  runRecurrenceForTenant,
+  runDocumentRemindersForTenant,
+} from "../recurrence";
 import { deliverNotification } from "../notifications/engine";
 import { retryEvent } from "../integrations/framework";
 import { validateBatch, executeBatch } from "../migration/engine";
@@ -88,6 +91,13 @@ registerJobHandler("portal.sync-retry", async (job: Job) => {
 registerJobHandler("contracts.reminders", async (job: Job) => {
   const res = await runRecurrenceForTenant(job.tenantId);
   return { remindersEmitted: res.remindersEmitted };
+});
+
+// documents.reminders — emit expiration reminders for compliance documents/
+// contracts, exactly once per (document, type).
+registerJobHandler("documents.reminders", async (job: Job) => {
+  const res = await runDocumentRemindersForTenant(job.tenantId);
+  return { ...res };
 });
 
 // migration.process — run a dry-run validation or a real import for a batch.

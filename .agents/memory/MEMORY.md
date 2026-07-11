@@ -1,2 +1,3 @@
 - [ServiceConnect data access](serviceconnect-data-access.md) — feature-local API surfaces may call generated react-query hooks directly; shared cross-page state goes through AppContext (store.tsx).
 - [ServiceConnect role gating](serviceconnect-role-gating.md) — client permissions.ts must mirror backend authz.ts (ROLE_NAV + helpers) exactly; server is authoritative.
+- [ServiceConnect schema gotchas](serviceconnect-schema-gotchas.md) — document_reminders already lives in documents.ts (manual reminders); grep schema tree before adding tables; push-based migrations; job-type union location.

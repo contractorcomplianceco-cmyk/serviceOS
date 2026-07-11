@@ -5,6 +5,8 @@ import {
   recurrenceOccurrencesTable,
   serviceContractsTable,
   contractRemindersTable,
+  documentsTable,
+  documentRemindersTable,
   workOrdersTable,
   type RecurrenceSchedule,
 } from "@workspace/db";
@@ -363,6 +365,91 @@ export async function runRecurrenceForTenant(
         metadata: { type },
       });
     }
+  }
+
+  return result;
+}
+
+export interface DocumentReminderRunResult {
+  documentsScanned: number;
+  remindersEmitted: number;
+}
+
+// System actor name stamped on auto-emitted expiration reminders. Used to
+// distinguish them from user-created reminders and to dedupe: at most one
+// system reminder per (document, expiration date).
+const DOCUMENT_REMINDER_ACTOR = "RoseOS Document Reminder Worker";
+
+/**
+ * Emits expiration reminders for compliance documents/contracts that have an
+ * expiration date within the next 30 days or already past. Reuses the existing
+ * document_reminders table; dedupe is app-level (one system reminder per
+ * document + expiration date), so this is safe to run repeatedly on a schedule.
+ */
+export async function runDocumentRemindersForTenant(
+  tenantId: string,
+): Promise<DocumentReminderRunResult> {
+  const now = today();
+  const soon = new Date();
+  soon.setUTCDate(soon.getUTCDate() + 30);
+  const soonStr = soon.toISOString().slice(0, 10);
+
+  const documents = await db
+    .select()
+    .from(documentsTable)
+    .where(eq(documentsTable.tenantId, tenantId));
+
+  const result: DocumentReminderRunResult = {
+    documentsScanned: 0,
+    remindersEmitted: 0,
+  };
+
+  for (const doc of documents) {
+    const expiration = doc.expiration;
+    if (!expiration) continue;
+    result.documentsScanned++;
+
+    let reason = "";
+    if (expiration < now) {
+      reason = `Document "${doc.name}" expired on ${expiration}.`;
+    } else if (expiration <= soonStr) {
+      reason = `Document "${doc.name}" expires on ${expiration}.`;
+    }
+    if (!reason) continue;
+
+    // Dedupe: skip if a system reminder for this document + expiration already
+    // exists, so repeated runs never emit duplicates.
+    const [existing] = await db
+      .select({ id: documentRemindersTable.id })
+      .from(documentRemindersTable)
+      .where(
+        and(
+          eq(documentRemindersTable.tenantId, tenantId),
+          eq(documentRemindersTable.documentId, doc.id),
+          eq(documentRemindersTable.remindAt, expiration),
+          eq(documentRemindersTable.createdByName, DOCUMENT_REMINDER_ACTOR),
+        ),
+      )
+      .limit(1);
+    if (existing) continue;
+
+    await db.insert(documentRemindersTable).values({
+      tenantId,
+      documentId: doc.id,
+      remindAt: expiration,
+      reason,
+      status: "Pending",
+      createdByName: DOCUMENT_REMINDER_ACTOR,
+    });
+    result.remindersEmitted++;
+    await writeAudit({
+      tenantId,
+      actorName: DOCUMENT_REMINDER_ACTOR,
+      action: "Reminder",
+      entityType: "Document",
+      entityId: doc.id,
+      summary: reason,
+    });
   }
 
   return result;

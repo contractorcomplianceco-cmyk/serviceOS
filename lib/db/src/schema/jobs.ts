@@ -22,6 +22,7 @@ export const jobTypes = [
   "notifications.retry",
   "portal.sync-retry",
   "contracts.reminders",
+  "documents.reminders",
   "recurrence.generate",
   "migration.process",
   "closeout.transcribe",

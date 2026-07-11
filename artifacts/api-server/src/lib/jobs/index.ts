@@ -13,6 +13,7 @@ const RECURRING: { type: Parameters<typeof enqueueJob>[0]["type"]; seconds: numb
   { type: "notifications.retry", seconds: 60 },
   { type: "portal.sync-retry", seconds: 90 },
   { type: "contracts.reminders", seconds: 300 },
+  { type: "documents.reminders", seconds: 300 },
   { type: "recurrence.generate", seconds: 300 },
 ];
 

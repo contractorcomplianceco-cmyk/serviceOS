@@ -330,6 +330,34 @@ async function existingSignatures(
   return sigs;
 }
 
+// Resolve a source id to the entity created by a previously-imported migration
+// row of the SAME entity type in this tenant. Scoping by entity type prevents
+// a source id that overlaps across entities (e.g. a customer and a location
+// sharing "1001") from cross-resolving to the wrong entity.
+async function resolveBySourceId(
+  tenantId: string,
+  entity: MigrationEntity,
+  sourceId: string,
+): Promise<string | null> {
+  const [imported] = await db
+    .select({ createdEntityId: migrationRowsTable.createdEntityId })
+    .from(migrationRowsTable)
+    .innerJoin(
+      migrationBatchesTable,
+      eq(migrationRowsTable.batchId, migrationBatchesTable.id),
+    )
+    .where(
+      and(
+        eq(migrationRowsTable.tenantId, tenantId),
+        eq(migrationRowsTable.sourceId, sourceId),
+        eq(migrationRowsTable.status, "Imported"),
+        eq(migrationBatchesTable.entity, entity),
+      ),
+    )
+    .limit(1);
+  return imported?.createdEntityId ?? null;
+}
+
 // Resolve a customer reference (existing customer id, or a source id from a
 // previously-imported customer row in this tenant).
 async function resolveCustomer(
@@ -343,19 +371,23 @@ async function resolveCustomer(
     .where(and(eq(customersTable.tenantId, tenantId), eq(customersTable.id, ref)))
     .limit(1);
   if (byId) return byId.id;
-  // Look up an imported customer row whose sourceId matches.
-  const [imported] = await db
+  return resolveBySourceId(tenantId, "customers", ref);
+}
+
+// Resolve a location reference (existing location id, or a source id from a
+// previously-imported location row in this tenant).
+async function resolveLocation(
+  tenantId: string,
+  ref: string,
+): Promise<string | null> {
+  if (!ref) return null;
+  const [byId] = await db
     .select()
-    .from(migrationRowsTable)
-    .where(
-      and(
-        eq(migrationRowsTable.tenantId, tenantId),
-        eq(migrationRowsTable.sourceId, ref),
-        eq(migrationRowsTable.status, "Imported"),
-      ),
-    )
+    .from(locationsTable)
+    .where(and(eq(locationsTable.tenantId, tenantId), eq(locationsTable.id, ref)))
     .limit(1);
-  return imported?.createdEntityId ?? null;
+  if (byId) return byId.id;
+  return resolveBySourceId(tenantId, "locations", ref);
 }
 
 // ---------------------------------------------------------------------------
@@ -480,12 +512,11 @@ async function insertEntity(
     if (!customerId) throw new Error(`Customer not found for reference "${m.customerRef}"`);
     let locationId = "";
     if (m.locationRef) {
-      const [loc] = await db
-        .select()
-        .from(locationsTable)
-        .where(and(eq(locationsTable.tenantId, tenantId), eq(locationsTable.id, m.locationRef)))
-        .limit(1);
-      locationId = loc?.id ?? "";
+      const resolved = await resolveLocation(tenantId, m.locationRef);
+      if (!resolved) {
+        throw new Error(`Location not found for reference "${m.locationRef}"`);
+      }
+      locationId = resolved;
     }
     const [row] = await db
       .insert(equipmentTable)
@@ -505,12 +536,13 @@ async function insertEntity(
   // work-orders
   const customerId = await resolveCustomer(tenantId, m.customerRef);
   if (!customerId) throw new Error(`Customer not found for reference "${m.customerRef}"`);
+  const locationId = await resolveLocation(tenantId, m.locationRef);
+  if (!locationId) throw new Error(`Location not found for reference "${m.locationRef}"`);
   const [loc] = await db
     .select()
     .from(locationsTable)
-    .where(and(eq(locationsTable.tenantId, tenantId), eq(locationsTable.id, m.locationRef)))
+    .where(and(eq(locationsTable.tenantId, tenantId), eq(locationsTable.id, locationId)))
     .limit(1);
-  if (!loc) throw new Error(`Location not found for reference "${m.locationRef}"`);
   const dueDate = m.dueDate
     ? new Date(m.dueDate).toISOString().slice(0, 10)
     : new Date().toISOString().slice(0, 10);
@@ -521,12 +553,12 @@ async function insertEntity(
       number: m.number,
       source: "Manual",
       customerId,
-      locationId: loc.id,
+      locationId,
       externalId: m.sourceId || null,
       priority: m.priority || "Medium",
       status: m.status || "New",
       type: m.type || "",
-      region: m.region || loc.region || "",
+      region: m.region || loc?.region || "",
       dueDate,
       description: m.description || "",
     })
