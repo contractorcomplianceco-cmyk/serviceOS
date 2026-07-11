@@ -1,0 +1,552 @@
+# SERVICECONNECT DISPATCH CALENDAR
+# CLIENT-SPECIFIC LAYOUT REQUIREMENT
+
+Audit and update the ServiceConnect Dispatch Calendar so it reflects the actual calendar layout and workflow requested by the client.
+
+The attached BlueFolder calendar screenshot is a functional reference.
+
+Do not copy BlueFolder’s outdated visual styling exactly, but preserve the workflow, density, layout logic, and ease of scanning that the client explicitly likes.
+
+This calendar is one of the client’s most important screens.
+
+It must not be replaced with a generic monthly calendar, appointment list, Kanban board, or simplified card grid.
+
+==================================================
+PRIMARY CALENDAR STRUCTURE
+==================================================
+
+Build a team dispatch calendar with:
+
+- technicians listed vertically down the left side
+- technician names in alphabetical order by default
+- technician photo or avatar beside each name
+- dates or days displayed horizontally across the top
+- one horizontal row per technician
+- job cards displayed inside the appropriate technician row and date column
+- multiple jobs stacked vertically within the same technician/day cell
+- visible empty schedule cells
+- compact row heights when no jobs exist
+- expanded row height when jobs are present
+- horizontal scrolling for additional dates
+- vertical scrolling for additional technicians
+- sticky technician-name column
+- sticky date/day header
+- synchronized scrolling
+- current-day highlight
+- weekend visibility
+- optional compact and expanded density modes
+
+The screen should allow dispatchers to scan the full team schedule without opening every work order.
+
+==================================================
+REQUIRED CALENDAR VIEWS
+==================================================
+
+Support:
+
+- Today
+- Day
+- 3-Day
+- Work Week
+- Full Week
+- Custom Date Range
+- Technician Schedule
+- Region Schedule
+- Unscheduled Work Drawer
+
+The primary default should closely follow the attached screenshot:
+
+- technicians down the left
+- days across the top
+- schedule cards inside the grid
+- dense but readable operational layout
+
+Do not make the monthly calendar the primary dispatch view.
+
+==================================================
+TECHNICIAN ROWS
+==================================================
+
+Each technician row should show:
+
+- profile image or avatar
+- technician name
+- role
+- assigned zone or region when enabled
+- on-call indicator
+- availability status
+- total scheduled hours
+- remaining capacity
+- overload warning
+- GPS availability indicator
+- assigned truck when enabled
+
+Allow:
+
+- alphabetical sorting
+- manual sorting
+- sorting by region
+- sorting by availability
+- sorting by workload
+- filtering by role
+- filtering by zone
+- hiding inactive employees
+
+Non-field employees may appear only when selected or when they have calendar events.
+
+==================================================
+JOB CARD CONTENT
+==================================================
+
+Each calendar job card must show the most important details directly on the calendar.
+
+At minimum display:
+
+- scheduled time or time window
+- internal work-order number
+- external portal work-order number when applicable
+- customer name
+- service location or abbreviated address
+- city
+- source portal, such as ServiceChannel
+- status
+- priority
+- first-trip or return-trip label
+- quote status
+- materials status
+- important technician note
+- emergency indicator
+- portal-sync warning when applicable
+
+Example structure:
+
+7–8am  
+#58470 · 348020240  
+Ideal Dental – Beachwalk Shore  
+ServiceChannel · DECA Dental Group  
+SCHEDULED  
+Priority: Urgent  
+St. Johns, FL 32259  
+Smoke test at 8:30am
+
+Cards must support longer information without destroying the grid.
+
+Use:
+
+- concise line wrapping
+- maximum visible lines
+- overflow fade
+- hover or click preview
+- expandable detail popover
+
+==================================================
+COLOR AND STATUS LOGIC
+==================================================
+
+The client likes color-coded schedule information.
+
+Use a modern version of the screenshot’s status system.
+
+Suggested base job card:
+- pale yellow or warm ivory for standard scheduled jobs
+
+Use strong label colors for:
+
+- Scheduled
+- Emergency
+- First Trip
+- Return Trip
+- Quote Approved
+- Materials on Hand
+- Awaiting Materials
+- Needs Approval
+- Completed
+- Cancelled
+- Portal Sync Failed
+
+Example:
+- magenta/purple label for quote-approved or materials-ready
+- orange label for first trip
+- red label for emergency
+- blue label for scheduled
+- green label for completed
+- amber label for awaiting materials
+
+The colors must be configurable in Settings.
+
+Do not rely only on color; include readable text labels.
+
+==================================================
+REMINDERS AND AVAILABILITY EVENTS
+==================================================
+
+The screenshot includes schedule notes such as:
+
+- off after 5pm
+- off after 6pm
+- weekend reminder
+- technician weekend
+- on-call period
+
+Support non-work-order calendar events:
+
+- time off
+- early departure
+- late start
+- lunch or blocked time
+- on-call shift
+- weekend assignment
+- training
+- meeting
+- unavailable
+- truck maintenance
+- personal schedule block
+
+These events must:
+
+- appear in the technician’s row
+- use a distinct visual style from job cards
+- optionally repeat
+- support start and end times
+- support notes
+- affect technician capacity
+- be considered by RoseOS routing recommendations
+
+==================================================
+INTERACTION REQUIREMENTS
+==================================================
+
+Dispatchers must be able to:
+
+- drag a job to another technician
+- drag a job to another day
+- drag a job to another time
+- resize the job duration
+- duplicate an assignment
+- create a return trip
+- add a second technician
+- remove a technician
+- mark a job unscheduled
+- open a quick preview
+- open the full work order
+- change status
+- change priority
+- edit time window
+- edit notes
+- view customer details
+- view location
+- view map
+- view portal source
+- view attachments
+- view materials needed
+
+Every schedule change must:
+
+- require confirmation where appropriate
+- persist to the database
+- create an audit record
+- update technician assignment
+- update workload calculations
+- create notification drafts
+- create portal update drafts where applicable
+
+No external notification or portal update should send without the configured approval.
+
+==================================================
+HOVER AND QUICK PREVIEW
+==================================================
+
+The client specifically wants to avoid repeatedly opening and closing work orders.
+
+When hovering over or single-clicking a job card, show a quick-preview panel containing:
+
+- full work-order number
+- external ID
+- customer
+- complete address
+- contact
+- description
+- technician notes
+- status
+- priority
+- scheduled window
+- portal source
+- PO number
+- materials status
+- quote status
+- attachments count
+- assigned technicians
+- last update
+- portal-sync status
+
+Quick actions:
+
+- Open Work Order
+- Reassign
+- Reschedule
+- View Map
+- Add Note
+- Change Status
+- Create Return Trip
+
+The preview should not require navigating away from the calendar.
+
+==================================================
+UNSCHEDULED JOBS
+==================================================
+
+Add an unscheduled-work drawer or side panel.
+
+It should show:
+
+- emergency jobs
+- jobs needing scheduling
+- jobs waiting on customer
+- jobs waiting on materials
+- jobs ready for return trip
+- jobs by region
+- jobs by portal
+- jobs by priority
+
+Allow a dispatcher to drag an unscheduled job directly onto a technician’s row and date.
+
+Before final placement, show the RoseOS recommendation summary.
+
+==================================================
+ROSEOS ROUTING SUPPORT
+==================================================
+
+When selecting or dragging an unscheduled job, RoseOS should calculate:
+
+- nearest qualified technician
+- estimated travel time
+- current technician location
+- technician’s existing route
+- service zone
+- skills
+- restricted tasks
+- available capacity
+- job priority
+- required inventory
+- truck stock
+- customer requirements
+- overtime risk
+- schedule conflicts
+
+Show:
+
+- recommended technician
+- alternative technicians
+- ETA
+- mileage
+- confidence
+- reason
+- risks
+- inventory match
+- capacity impact
+
+Human approval is mandatory before the schedule is saved.
+
+Do not silently auto-schedule.
+
+==================================================
+REGION AND SMART-LIST SUPPORT
+==================================================
+
+The calendar must integrate with the client’s geographic work model.
+
+Filters should include:
+
+- Tampa
+- Orlando
+- Jacksonville
+- Ocala
+- Daytona
+- Miami
+- Gainesville
+- Melbourne
+- Fort Myers
+- Bradenton/Sarasota
+- St. Pete/Clearwater
+- Brooksville
+- Polk
+- Vero Beach
+- Okeechobee
+- Keys
+- Georgia
+- configurable additional regions
+
+Dispatchers should be able to:
+
+- filter calendar by region
+- view unscheduled jobs in a region
+- identify nearby technicians
+- find open work near a technician who finishes early
+- bundle nearby jobs
+- see cross-region assignments
+
+==================================================
+MULTIPLE ASSIGNMENTS
+==================================================
+
+Support:
+
+- multiple visits on one work order
+- multiple technicians on one assignment
+- separate completion status for each assignment
+- first trip
+- return trip
+- quote visit
+- installation visit
+- follow-up visit
+- inspection visit
+
+A work order must remain open until its required assignments are complete.
+
+Assignment completion must not automatically close the work order unless configured.
+
+==================================================
+CALENDAR SETTINGS
+==================================================
+
+Add settings for:
+
+- default view
+- visible date range
+- workday start
+- workday end
+- row density
+- job-card fields
+- card colors
+- status colors
+- region display
+- sort order
+- weekend visibility
+- employee visibility
+- capacity hours
+- time-window increments
+- drag-and-drop confirmation
+- notification behavior
+- portal-sync behavior
+- approval requirements
+
+==================================================
+RESPONSIVE BEHAVIOR
+==================================================
+
+Desktop:
+- preserve the full technician-by-date grid
+- optimize for dispatch workstations
+- support large monitors
+- support many technicians
+
+Tablet:
+- maintain technician rows
+- allow horizontal date scrolling
+- use compact cards
+- keep sticky names
+
+Mobile:
+- do not force the full desktop grid into a tiny screen
+- provide technician-focused agenda view
+- provide dispatcher day view
+- allow switching between list and compact timeline
+
+==================================================
+PERFORMANCE
+==================================================
+
+The calendar may include many technicians and work orders.
+
+Implement:
+
+- virtualized technician rows if needed
+- efficient date-range queries
+- pagination or incremental loading
+- memoized job cards
+- smooth drag-and-drop
+- no full-page rerender on every interaction
+- loading indicators
+- optimistic updates with rollback
+- error handling
+
+==================================================
+AUDIT REQUIREMENTS
+==================================================
+
+Audit the current calendar implementation and create:
+
+CALENDAR_REQUIREMENTS_AUDIT.md
+
+For each requirement, classify:
+
+- Complete
+- Partial
+- Static
+- Broken
+- Missing
+
+Include evidence:
+
+- route
+- component
+- action tested
+- persistence verified
+- permission verified
+- responsive behavior
+- remaining gap
+
+Do not mark the calendar complete merely because a dispatch page exists.
+
+==================================================
+ACCEPTANCE TEST
+==================================================
+
+Demonstrate this exact workflow:
+
+1. Open the Dispatch Calendar.
+2. Confirm technicians appear vertically and alphabetically.
+3. Confirm multiple days appear horizontally.
+4. Confirm sticky technician column.
+5. Confirm sticky date header.
+6. Confirm multiple jobs can stack in one technician/day cell.
+7. Confirm work-order details appear directly on cards.
+8. Hover over a job and display the full preview.
+9. Drag the job to another technician.
+10. Show RoseOS reassignment recommendation.
+11. Require human approval.
+12. Save the reassignment.
+13. Confirm database persistence.
+14. Confirm workload recalculation.
+15. Confirm audit event.
+16. Create a recurring availability note such as “off after 5pm Mondays.”
+17. Confirm the availability block appears in the correct technician row.
+18. Confirm routing logic respects the availability block.
+19. Filter the calendar to one region.
+20. Drag an unscheduled regional job into the schedule.
+21. Refresh the page and confirm everything persists.
+
+==================================================
+FINAL REPORT
+==================================================
+
+At completion, report:
+
+1. Calendar completion percentage
+2. Screens and routes updated
+3. Components created
+4. Drag-and-drop status
+5. Hover-preview status
+6. Multi-day grid status
+7. Technician sorting status
+8. Availability-event status
+9. Region-filter status
+10. GPS recommendation status
+11. Persistence status
+12. Audit-log status
+13. Responsive status
+14. Performance status
+15. Tests added
+16. Remaining blockers
+
+The final calendar must preserve the client’s preferred operational layout while upgrading it into the premium ServiceConnect design system.

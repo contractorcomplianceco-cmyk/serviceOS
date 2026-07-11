@@ -3,4 +3,4 @@
 - [ServiceConnect schema gotchas](serviceconnect-schema-gotchas.md) — document_reminders already lives in documents.ts (manual reminders); grep schema tree before adding tables; push-based migrations; job-type union location.
 - [ServiceConnect billing / AR invariant](serviceconnect-billing.md) — balance>=0 must be enforced in POST /payments (reject overpay/over-refund 400), not just asserted over seed data.
 - [bash grep masks literals](env-grep-masking.md) — rg/grep hides some string literals (role names, "12 roles", "Refund"); use the read tool to verify exact content.
-- ServiceConnect role model = 12 total (11 internal + 1 Customer Portal user); authz.ts/db ROLES authoritative; frontend mock-data.ts is a legacy 8-role fallback only (recommendations + default user).
+- [ServiceConnect dispatch calendar](serviceconnect-dispatch-calendar.md) — /dispatch is a tech×date grid; persist day as local-noon ISO, preserve WO status on move (only promote New/Triage/Need Scheduled).

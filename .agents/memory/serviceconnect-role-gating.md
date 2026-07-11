@@ -18,3 +18,7 @@ they get 403'd on, or lose access to sections they're entitled to.
 
 **How to apply:** After editing `authz.ts`, grep the same identifiers in `permissions.ts`
 and reconcile. Route-level `Protected allow={nav(key)}` must exist for every gated page.
+
+## Role model count
+
+12 roles total = 11 internal + 1 Customer Portal user. `authz.ts` / DB `ROLES` are authoritative; frontend `mock-data.ts` is a legacy 8-role fallback only (AI recommendations + a default user), not the source of truth.

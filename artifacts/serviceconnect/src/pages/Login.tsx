@@ -46,15 +46,7 @@ export default function Login() {
 
       <div className="w-full max-w-[1000px] z-10">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-3 mb-4 px-4 py-2 rounded-2xl shadow-xl border-panel-subtle" style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}>
-            <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg overflow-hidden ring-1 ring-white/10" style={{ boxShadow: "0 4px 14px rgba(18,104,243,0.3)" }}>
-              <img src={logoIcon} alt="ServiceConnect" className="w-full h-full object-cover" />
-            </div>
-            <div className="text-left">
-              <h1 className="text-2xl font-bold text-sc tracking-tight leading-none">ServiceConnect</h1>
-              <p className="text-xs font-semibold uppercase tracking-widest mt-1" style={{ color: "var(--sc-blue)" }}>RoseOS Intelligence</p>
-            </div>
-          </div>
+          <img src={logoIcon} alt="ServiceConnect" className="w-24 h-24 mx-auto mb-6 object-contain" />
           <p className="text-sc-2 text-lg font-medium max-w-xl mx-auto">
             Secure Command Center Authentication. Sign in with your credentials to enter the environment.
           </p>
