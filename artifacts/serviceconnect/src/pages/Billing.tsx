@@ -55,108 +55,108 @@ export default function Billing() {
     <div className="p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-[1600px] mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900" data-testid="text-page-title">Billing Queue</h1>
-          <p className="text-slate-500 mt-1 text-sm">
+          <h1 className="text-3xl font-bold tracking-tight text-sc" data-testid="text-page-title">Billing Queue</h1>
+          <p className="text-sc-2 mt-1 text-sm">
             Review completed jobs, resolve missing info, and draft invoices. Nothing bills automatically.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="bg-white">
+          <Button variant="outline" className="text-sc-2 hover:text-white" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}}>
             <Download className="w-4 h-4 mr-2" /> Export Queue
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard label="Missing Info" value={missingInfo.length} icon={AlertTriangle} color="text-amber-500" bg="bg-amber-500/10" />
-        <StatCard label="Needs Review" value={needsReview.length} icon={Clock} color="text-blue-500" bg="bg-blue-500/10" />
-        <StatCard label="Ready to Invoice" value={readyToBill.length} icon={CheckCircle2} color="text-emerald-500" bg="bg-emerald-500/10" />
-        <StatCard label="Past Due" value={pastDue.length} icon={DollarSign} color="text-destructive" bg="bg-destructive/10" />
+        <StatCard label="Missing Info" value={missingInfo.length} icon={AlertTriangle} color="text-[color:var(--sc-orange)]" bg="bg-[rgba(255,157,24,0.1)]" />
+        <StatCard label="Needs Review" value={needsReview.length} icon={Clock} color="text-sc-blue" bg="bg-[rgba(67,166,255,0.1)]" />
+        <StatCard label="Ready to Invoice" value={readyToBill.length} icon={CheckCircle2} color="text-[color:var(--sc-green)]" bg="bg-[rgba(56,212,119,0.1)]" />
+        <StatCard label="Past Due" value={pastDue.length} icon={DollarSign} color="text-destructive" bg="bg-[rgba(255,51,72,0.1)]" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Left Column: Job Queue */}
         <div className="space-y-6">
-          <Card className="border border-slate-200/60 shadow-sm bg-white overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-5">
+          <Card className="sc-panel overflow-hidden border-0">
+            <CardHeader className="border-b border-panel py-4 px-5" style={{ background: "var(--sc-inner)" }}>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-500" /> Missing Information
+                <CardTitle className="text-base font-semibold text-sc flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-[color:var(--sc-orange)]" /> Missing Information
                 </CardTitle>
-                <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">{missingInfo.length}</Badge>
+                <Badge variant="outline" className="text-[color:var(--sc-orange)] border-[color:var(--sc-orange)] bg-[rgba(255,157,24,0.1)]">{missingInfo.length}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="p-0 divide-y divide-slate-100">
-              {missingInfo.length === 0 ? <div className="p-6 text-center text-sm text-slate-500">No jobs missing info.</div> : missingInfo.map((wo) => {
+            <CardContent className="p-0 divide-y divide-[color:var(--sc-line-subtle)]">
+              {missingInfo.length === 0 ? <div className="p-6 text-center text-sm text-sc-3">No jobs missing info.</div> : missingInfo.map((wo) => {
                 const c = customers.find((cc) => cc.id === wo.customerId);
                 return (
-                  <div key={wo.id} className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between group" data-testid={`billing-missing-${wo.id}`}>
+                  <div key={wo.id} className="p-4 hover:bg-white/[0.04] transition-colors flex items-center justify-between group" data-testid={`billing-missing-${wo.id}`}>
                     <div>
                       <div className="flex items-center gap-2">
-                        <button className="font-semibold text-slate-900 hover:text-primary transition-colors text-sm" onClick={() => navigate(`/work-orders/${wo.id}`)}>{wo.number}</button>
-                        <span className="text-xs text-slate-500">{c?.name}</span>
+                        <button className="font-semibold text-sc hover:text-sc-blue transition-colors text-sm" onClick={() => navigate(`/work-orders/${wo.id}`)}>{wo.number}</button>
+                        <span className="text-xs text-sc-3">{c?.name}</span>
                       </div>
-                      <div className="text-xs text-amber-600 mt-1 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Labor/Materials need approval</div>
+                      <div className="text-xs text-[color:var(--sc-orange)] mt-1 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Labor/Materials need approval</div>
                     </div>
-                    <Button size="sm" variant="outline" className="opacity-0 group-hover:opacity-100" onClick={() => navigate(`/work-orders/${wo.id}`)}>Resolve</Button>
+                    <Button size="sm" variant="outline" className="opacity-0 group-hover:opacity-100 text-sc-2 hover:text-white" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}} onClick={() => navigate(`/work-orders/${wo.id}`)}>Resolve</Button>
                   </div>
                 );
               })}
             </CardContent>
           </Card>
 
-          <Card className="border border-slate-200/60 shadow-sm bg-white overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-5">
+          <Card className="sc-panel overflow-hidden border-0">
+            <CardHeader className="border-b border-panel py-4 px-5" style={{ background: "var(--sc-inner)" }}>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-blue-500" /> Needs Review
+                <CardTitle className="text-base font-semibold text-sc flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-sc-blue" /> Needs Review
                 </CardTitle>
-                <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">{needsReview.length}</Badge>
+                <Badge variant="outline" className="text-sc-blue border-sc-blue bg-[rgba(67,166,255,0.1)]">{needsReview.length}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="p-0 divide-y divide-slate-100">
-              {needsReview.length === 0 ? <div className="p-6 text-center text-sm text-slate-500">No jobs pending review.</div> : needsReview.map((wo) => {
+            <CardContent className="p-0 divide-y divide-[color:var(--sc-line-subtle)]">
+              {needsReview.length === 0 ? <div className="p-6 text-center text-sm text-sc-3">No jobs pending review.</div> : needsReview.map((wo) => {
                 const c = customers.find((cc) => cc.id === wo.customerId);
                 return (
-                  <div key={wo.id} className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between group" data-testid={`billing-review-${wo.id}`}>
+                  <div key={wo.id} className="p-4 hover:bg-white/[0.04] transition-colors flex items-center justify-between group" data-testid={`billing-review-${wo.id}`}>
                     <div>
                       <div className="flex items-center gap-2">
-                        <button className="font-semibold text-slate-900 hover:text-primary transition-colors text-sm" onClick={() => navigate(`/work-orders/${wo.id}`)}>{wo.number}</button>
-                        <span className="text-xs text-slate-500">{c?.name}</span>
+                        <button className="font-semibold text-sc hover:text-sc-blue transition-colors text-sm" onClick={() => navigate(`/work-orders/${wo.id}`)}>{wo.number}</button>
+                        <span className="text-xs text-sc-3">{c?.name}</span>
                       </div>
-                      <div className="text-xs text-emerald-600 mt-1 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Ready for final check</div>
+                      <div className="text-xs text-sc-blue mt-1 flex items-center gap-1"><Clock className="w-3 h-3" /> Ready for final check</div>
                     </div>
-                    <Button size="sm" className="bg-primary text-white" onClick={() => navigate(`/work-orders/${wo.id}`)} data-testid={`button-review-${wo.id}`}>Review</Button>
+                    <Button size="sm" className="text-white blue-glow-soft" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}} onClick={() => navigate(`/work-orders/${wo.id}`)} data-testid={`button-review-${wo.id}`}>Review</Button>
                   </div>
                 );
               })}
             </CardContent>
           </Card>
 
-          <Card className="border border-slate-200/60 shadow-sm bg-white overflow-hidden">
-            <CardHeader className="bg-emerald-50/50 border-b border-emerald-100 py-4 px-5">
+          <Card className="sc-panel overflow-hidden border-0">
+            <CardHeader className="border-b border-panel py-4 px-5" style={{ background: "var(--sc-inner)" }}>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Ready for Invoice
+                <CardTitle className="text-base font-semibold text-sc flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[color:var(--sc-green)]" /> Ready for Invoice
                 </CardTitle>
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-200">{readyToBill.length}</Badge>
+                <Badge variant="outline" className="text-[color:var(--sc-green)] border-[color:var(--sc-green)] bg-[rgba(56,212,119,0.1)]">{readyToBill.length}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="p-0 divide-y divide-slate-100">
-              {readyToBill.length === 0 ? <div className="p-6 text-center text-sm text-slate-500">No jobs ready to invoice.</div> : readyToBill.map((wo) => {
+            <CardContent className="p-0 divide-y divide-[color:var(--sc-line-subtle)]">
+              {readyToBill.length === 0 ? <div className="p-6 text-center text-sm text-sc-3">No jobs ready to invoice.</div> : readyToBill.map((wo) => {
                 const c = customers.find((cc) => cc.id === wo.customerId);
                 const total = wo.labor.reduce((s, l) => s + l.hours * l.rate, 0) + wo.materials.reduce((s, m) => s + m.quantity * m.billablePrice, 0);
                 return (
-                  <div key={wo.id} className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between group" data-testid={`billing-ready-${wo.id}`}>
+                  <div key={wo.id} className="p-4 hover:bg-white/[0.04] transition-colors flex items-center justify-between group" data-testid={`billing-ready-${wo.id}`}>
                     <div>
                       <div className="flex items-center gap-2">
-                        <button className="font-semibold text-slate-900 hover:text-primary transition-colors text-sm" onClick={() => navigate(`/work-orders/${wo.id}`)}>{wo.number}</button>
-                        <span className="text-xs text-slate-500">{c?.name}</span>
+                        <button className="font-semibold text-sc hover:text-sc-blue transition-colors text-sm" onClick={() => navigate(`/work-orders/${wo.id}`)}>{wo.number}</button>
+                        <span className="text-xs text-sc-3">{c?.name}</span>
                       </div>
-                      <div className="text-sm font-bold text-slate-900 mt-1">{money(total)}</div>
+                      <div className="text-sm font-bold text-sc mt-1">{money(total)}</div>
                     </div>
-                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => createInvoice(wo.id)} data-testid={`button-create-invoice-${wo.id}`}>
+                    <Button size="sm" className="text-white blue-glow-soft" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}} onClick={() => createInvoice(wo.id)} data-testid={`button-create-invoice-${wo.id}`}>
                       Draft Invoice
                     </Button>
                   </div>
@@ -168,33 +168,33 @@ export default function Billing() {
 
         {/* Right Column: Invoice Management */}
         <div className="space-y-6">
-          <Card className="border border-slate-200/60 shadow-sm bg-white overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-5">
+          <Card className="sc-panel overflow-hidden border-0">
+            <CardHeader className="border-b border-panel py-4 px-5" style={{ background: "var(--sc-inner)" }}>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-slate-500" /> Invoice Management
+                <CardTitle className="text-base font-semibold text-sc flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-sc-3" /> Invoice Management
                 </CardTitle>
-                <Badge variant="outline" className="bg-white border-slate-200 text-slate-600">{recentInvoices.length} Recent</Badge>
+                <Badge variant="outline" className="border-panel-strong text-sc-2 bg-transparent">{recentInvoices.length} Recent</Badge>
               </div>
             </CardHeader>
-            <CardContent className="p-0 divide-y divide-slate-100 h-[calc(100vh-24rem)] overflow-y-auto">
-              {recentInvoices.length === 0 ? <div className="p-6 text-center text-sm text-slate-500">No recent invoices.</div> : recentInvoices.map((inv) => {
+            <CardContent className="p-0 divide-y divide-[color:var(--sc-line-subtle)] h-[calc(100vh-24rem)] overflow-y-auto scrollbar-thin">
+              {recentInvoices.length === 0 ? <div className="p-6 text-center text-sm text-sc-3">No recent invoices.</div> : recentInvoices.map((inv) => {
                 const c = customers.find((cc) => cc.id === inv.customerId);
                 return (
-                  <div key={inv.id} className="p-4 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 group cursor-pointer" onClick={() => setSelectedInvoice(inv)}>
+                  <div key={inv.id} className="p-4 hover:bg-white/[0.04] transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 group cursor-pointer" onClick={() => setSelectedInvoice(inv)}>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900 text-sm">{inv.number}</span>
-                        <Badge variant="outline" className={`text-[10px] ${billingClass(inv.status)}`}>{inv.status}</Badge>
+                        <span className="font-semibold text-sc text-sm">{inv.number}</span>
+                        <Badge variant="outline" className={`text-[10px] ${billingClass(inv.status)} bg-transparent border-panel-strong`}>{inv.status}</Badge>
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">{c?.name}</div>
+                      <div className="text-xs text-sc-3 mt-1">{c?.name}</div>
                     </div>
                     <div className="flex items-center gap-4 sm:text-right">
                       <div>
-                        <div className="font-bold text-slate-900">{money(inv.amount)}</div>
-                        <div className="text-xs text-slate-500 mt-0.5">Due {shortDate(inv.dueDate)}</div>
+                        <div className="font-bold text-sc">{money(inv.amount)}</div>
+                        <div className="text-xs text-sc-3 mt-0.5">Due {shortDate(inv.dueDate)}</div>
                       </div>
-                      <Button variant="ghost" size="icon" className="text-slate-400 opacity-0 group-hover:opacity-100">
+                      <Button variant="ghost" size="icon" className="text-sc-3 opacity-0 group-hover:opacity-100 hover:text-white hover:bg-white/[0.05]">
                         <ArrowRight className="w-4 h-4" />
                       </Button>
                     </div>
@@ -207,46 +207,46 @@ export default function Billing() {
       </div>
 
       <Dialog open={!!selectedInvoice} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-card border-panel text-sc">
           {selectedInvoice && (() => {
             const customer = customers.find(c => c.id === selectedInvoice.customerId);
             return (
               <>
-                <DialogHeader className="border-b pb-4">
+                <DialogHeader className="border-b border-panel pb-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <DialogTitle className="text-xl">Invoice {selectedInvoice.number}</DialogTitle>
-                      <DialogDescription className="mt-1 flex items-center gap-2">
+                      <DialogTitle className="text-xl text-sc">Invoice {selectedInvoice.number}</DialogTitle>
+                      <DialogDescription className="mt-1 flex items-center gap-2 text-sc-3">
                         <Badge variant="outline" className={billingClass(selectedInvoice.status)}>{selectedInvoice.status}</Badge>
                         <span>Created {shortDate(selectedInvoice.createdAt)}</span>
                       </DialogDescription>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold">{money(selectedInvoice.amount)}</div>
-                      <div className="text-sm text-muted-foreground">Due {shortDate(selectedInvoice.dueDate)}</div>
+                      <div className="text-2xl font-bold text-sc">{money(selectedInvoice.amount)}</div>
+                      <div className="text-sm text-sc-3">Due {shortDate(selectedInvoice.dueDate)}</div>
                     </div>
                   </div>
                 </DialogHeader>
 
                 <div className="py-4 space-y-6">
-                  <div className="flex justify-between p-4 bg-slate-50 rounded-lg border">
+                  <div className="flex justify-between p-4 sc-inner border-0 rounded-lg">
                     <div>
-                      <div className="text-xs font-semibold uppercase text-slate-500 tracking-wider mb-1">Bill To</div>
-                      <div className="font-semibold flex items-center gap-2"><Building2 className="w-4 h-4 text-slate-400" /> {customer?.name}</div>
-                      <div className="text-sm text-slate-600 mt-1">{customer?.contacts[0]?.email}</div>
+                      <div className="text-xs font-semibold uppercase text-sc-3 tracking-wider mb-1">Bill To</div>
+                      <div className="font-semibold flex items-center gap-2 text-sc"><Building2 className="w-4 h-4 text-sc-3" /> {customer?.name}</div>
+                      <div className="text-sm text-sc-2 mt-1">{customer?.contacts[0]?.email}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs font-semibold uppercase text-slate-500 tracking-wider mb-1">From</div>
-                      <div className="font-semibold text-slate-900">ServiceConnect App</div>
-                      <div className="text-sm text-slate-600 mt-1">billing@serviceconnect.app</div>
+                      <div className="text-xs font-semibold uppercase text-sc-3 tracking-wider mb-1">From</div>
+                      <div className="font-semibold text-sc">ServiceConnect App</div>
+                      <div className="text-sm text-sc-2 mt-1">billing@serviceconnect.app</div>
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2">Line Items</div>
-                    <div className="border rounded-lg overflow-hidden">
+                    <div className="text-xs font-semibold uppercase text-sc-3 tracking-wider mb-2">Line Items</div>
+                    <div className="border border-panel rounded-lg overflow-hidden">
                       <table className="w-full text-sm">
-                        <thead className="bg-slate-50 text-slate-500 border-b">
+                        <thead className="text-sc-3 border-b border-panel" style={{ background: "var(--sc-inner)" }}>
                           <tr>
                             <th className="px-4 py-2 text-left font-medium">Description</th>
                             <th className="px-4 py-2 text-right font-medium">Qty</th>
@@ -254,20 +254,20 @@ export default function Billing() {
                             <th className="px-4 py-2 text-right font-medium">Amount</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y">
+                        <tbody className="divide-y divide-[color:var(--sc-line-subtle)] text-sc-2">
                           {selectedInvoice.lines.map((line, i) => (
                             <tr key={i}>
                               <td className="px-4 py-3">{line.description}</td>
                               <td className="px-4 py-3 text-right">{line.quantity}</td>
                               <td className="px-4 py-3 text-right">{money(line.rate)}</td>
-                              <td className="px-4 py-3 text-right font-medium">{money(line.quantity * line.rate)}</td>
+                              <td className="px-4 py-3 text-right font-medium text-sc">{money(line.quantity * line.rate)}</td>
                             </tr>
                           ))}
                         </tbody>
-                        <tfoot className="bg-slate-50 border-t">
+                        <tfoot className="border-t border-panel" style={{ background: "var(--sc-inner)" }}>
                           <tr>
-                            <td colSpan={3} className="px-4 py-3 text-right font-semibold">Total</td>
-                            <td className="px-4 py-3 text-right font-bold text-slate-900">{money(selectedInvoice.amount)}</td>
+                            <td colSpan={3} className="px-4 py-3 text-right font-semibold text-sc-2">Total</td>
+                            <td className="px-4 py-3 text-right font-bold text-sc">{money(selectedInvoice.amount)}</td>
                           </tr>
                         </tfoot>
                       </table>
@@ -275,13 +275,13 @@ export default function Billing() {
                   </div>
                 </div>
 
-                <DialogFooter className="border-t pt-4 sm:justify-between">
-                  <Button variant="outline" onClick={() => setSelectedInvoice(null)}>Close</Button>
+                <DialogFooter className="border-t border-panel pt-4 sm:justify-between">
+                  <Button variant="outline" className="text-sc-2 hover:text-white border-panel hover:bg-white/[0.05]" onClick={() => setSelectedInvoice(null)}>Close</Button>
                   <div className="flex gap-2">
-                    <Button variant="secondary" className="bg-slate-100 text-slate-900 hover:bg-slate-200">
+                    <Button variant="outline" className="text-sc-2 hover:text-white border-panel hover:bg-white/[0.05]">
                       <LinkIcon className="w-4 h-4 mr-2" /> Copy Link
                     </Button>
-                    <Button onClick={() => handleSendInvoice(selectedInvoice)} disabled={selectedInvoice.status !== "Ready for Invoice"}>
+                    <Button onClick={() => handleSendInvoice(selectedInvoice)} disabled={selectedInvoice.status !== "Ready for Invoice"} className="text-white blue-glow-soft" style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}}>
                       <Send className="w-4 h-4 mr-2" /> Send Invoice
                     </Button>
                   </div>
@@ -297,11 +297,11 @@ export default function Billing() {
 
 function StatCard({ label, value, icon: Icon, color, bg }: { label: string; value: number; icon: any; color: string; bg: string }) {
   return (
-    <Card className="border border-slate-200/60 shadow-sm bg-white">
+    <Card className="sc-panel border-0">
       <CardContent className="p-5 flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-500 mb-1">{label}</p>
-          <p className="text-3xl font-bold text-slate-900">{value}</p>
+          <p className="text-sm font-medium text-sc-2 mb-1">{label}</p>
+          <p className="text-3xl font-bold text-sc">{value}</p>
         </div>
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${bg}`}>
           <Icon className={`w-6 h-6 ${color}`} />

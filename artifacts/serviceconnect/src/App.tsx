@@ -43,7 +43,7 @@ function AccessDenied() {
           <ShieldOff className="w-7 h-7 text-destructive" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Access restricted</h1>
+          <h1 className="text-xl font-bold text-sc">Access restricted</h1>
           <p className="text-muted-foreground mt-1">Your role doesn't have permission to view this section. Switch roles from Settings or the header menu to explore other views.</p>
         </div>
         <Button className="bg-primary text-white" onClick={() => navigate("/today")} data-testid="button-go-home">Back to Today</Button>

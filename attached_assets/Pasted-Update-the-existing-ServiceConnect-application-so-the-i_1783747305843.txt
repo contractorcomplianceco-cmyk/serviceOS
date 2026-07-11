@@ -1,0 +1,581 @@
+Update the existing ServiceConnect application so the interface matches the attached reference design as closely as technically possible.
+
+This is a VISUAL REBUILD of the current frontend, not a new app and not a conceptual redesign.
+
+Do not replace the existing features, routes, data models, seeded data, or working functionality. Preserve the current application behavior and rebuild the presentation layer around it.
+
+PRIMARY REFERENCE
+
+Use the attached dark ServiceConnect Operations Cockpit mockup as the single source of truth for:
+
+- layout
+- visual hierarchy
+- proportions
+- spacing
+- panel placement
+- navigation dimensions
+- dark color system
+- border treatment
+- typography scale
+- dashboard density
+- card construction
+- blue lighting effects
+- status colors
+- map placement
+- RoseOS Intelligence panel
+- quick-action row
+- logo placement
+
+Use the attached ServiceConnect logo as the official application logo.
+
+Do not substitute a generic shield, generic icon, text initials, or recreated approximation when the uploaded logo asset can be used.
+
+CORE RULE
+
+Do not loosely interpret the design.
+
+Reproduce the visible desktop dashboard as accurately as possible while keeping the interface responsive and usable.
+
+The result should look like the reference image was converted into a functioning enterprise web application.
+
+DO NOT
+
+- Do not redesign the page.
+- Do not simplify the layout.
+- Do not move the RoseOS Intelligence panel.
+- Do not change the dark theme into a light theme.
+- Do not use a generic admin dashboard template.
+- Do not use glassmorphism everywhere.
+- Do not use purple gradients.
+- Do not introduce large empty white areas.
+- Do not make the cards oversized.
+- Do not add marketing hero content.
+- Do not add illustrations unrelated to the application.
+- Do not replace the map with a blank placeholder.
+- Do not use excessive glow.
+- Do not turn the design into a metallic video-game interface.
+- Do not make text difficult to read.
+- Do not remove existing routes or interactions.
+
+DESIGN SYSTEM
+
+Use these visual tokens throughout the app.
+
+Backgrounds:
+- Main application background: #06101d
+- Deep page background: #071321
+- Sidebar background: #04101d
+- Top header background: #06111e
+- Primary panel background: #081827
+- Secondary card background: #0a1b2c
+- Elevated card background: #0d2033
+- Inner intelligence card background: #091726
+
+Borders:
+- Default panel border: rgba(127, 164, 196, 0.28)
+- Strong border: rgba(146, 184, 217, 0.42)
+- Active blue border: #208cff
+- Subtle separator: rgba(127, 164, 196, 0.14)
+
+Text:
+- Primary text: #f5f8fc
+- Secondary text: #a8b7ca
+- Muted text: #75869c
+- Bright blue text: #43a6ff
+- Positive green: #38d477
+- Warning orange: #ff9d18
+- Urgent red: #ff3348
+
+Primary actions:
+- Button blue: #1268f3
+- Button hover: #2484ff
+- Button highlight border: #53b7ff
+- Subtle blue glow: rgba(0, 139, 255, 0.22)
+
+Typography:
+Use Inter, Geist, or a similarly clean modern sans-serif.
+
+Typography must feel precise and enterprise-grade.
+
+Suggested scale:
+- Page title: 32–36px, weight 650–700
+- Section title: 18–20px, weight 600
+- Card metric: 38–44px, weight 650
+- Body: 14–16px
+- Supporting text: 12–14px
+- Small badge text: 10–12px, uppercase where appropriate
+
+Avoid ultra-bold headings and avoid oversized marketing typography.
+
+APPLICATION SHELL
+
+Build the desktop layout with three main regions:
+
+1. Fixed left sidebar
+2. Fixed or sticky top header
+3. Scrollable main content area
+
+Target desktop canvas:
+- Optimized for 1440px–1600px wide screens
+- Main dashboard should fit comfortably within one viewport at 1600 × 1000
+- Avoid excessive vertical scrolling on the Today dashboard
+
+LEFT SIDEBAR
+
+Approximate width:
+- 295px on large desktop
+- 250px–270px on standard desktop
+
+Sidebar must use the uploaded ServiceConnect logo at the top.
+
+Logo area:
+- Shield logo on the left
+- “ServiceConnect” wordmark on one line
+- Small subtitle underneath: “WITH ROSEOS INTELLIGENCE”
+- Preserve clear spacing around the logo
+- Do not distort the shield
+
+Navigation items:
+- Today
+- Intake Queue
+- Work Orders
+- Dispatch
+- Technicians
+- Customers
+- Locations
+- Inventory
+- Equipment
+- Billing
+- Accounting
+- Documents
+- Reports
+- Intelligence
+- Settings
+- Supervisor Review
+
+Each item includes:
+- Thin line icon
+- Label
+- Consistent 42–46px row height
+- 16–18px horizontal padding
+- Muted inactive state
+- Bright active state
+
+Active Today navigation:
+- Dark blue interior
+- Bright cyan-blue border
+- Subtle internal circuit-line texture
+- Soft blue glow
+- Rounded 8px corners
+- No oversized pill shape
+
+If an item has a count, show it in a small dark badge on the far right.
+
+Sidebar footer:
+- Circular RoseOS Intelligence orb graphic or refined intelligence emblem
+- “RoseOS Intelligence”
+- “AI-POWERED OPERATIONS”
+- “PREDICT. PREVENT. PERFORM.”
+
+Keep this footer elegant and restrained.
+
+TOP HEADER
+
+Header height:
+- Approximately 78px
+
+Header elements from left to right:
+- Large search field
+- Keyboard shortcut badge
+- Demo role selector
+- Notification bell with unread badge
+- Mail icon
+- Messages icon
+- User avatar
+- Sarah Jenkins
+- Administrator
+
+Search field:
+- Dark interior
+- Subtle gray-blue border
+- Search icon
+- Placeholder:
+  “Search work orders, customers, equipment, documents...”
+- Keyboard shortcut badge on the right
+- Width approximately 570px on large desktop
+
+Role selector:
+- Label: DEMO ROLE
+- Current value: Administrator — Sarah Jenkins
+- Compact dark control
+
+Header separators:
+- Use subtle vertical lines between the major control groups.
+
+TODAY PAGE
+
+Page heading:
+- Operations Cockpit
+- Supporting line:
+  “Good morning, Sarah. System online. All telemetry is nominal.”
+
+Top-right actions:
+- All Work Orders
+- Dispatch Board
+
+All Work Orders:
+- Dark secondary button
+- Wrench icon
+
+Dispatch Board:
+- Bright blue primary button
+- Navigation/dispatch icon
+
+Buttons should have:
+- 10px radius
+- Thin border
+- Clear hover state
+- No excessive shadows
+
+KPI CARD ROW
+
+Create four equal-width cards:
+
+1. Emergency Jobs
+2. Need Scheduled
+3. Ready for Billing
+4. Past Due AR
+
+Each card includes:
+- Metric title
+- Large number
+- Small comparison indicator
+- Icon in a subtle colored square on the right
+- Thin colored accent line on the left
+- Dark gradient panel
+- Fine border
+- Slight depth shadow
+
+Values:
+- Emergency Jobs: 2
+- Need Scheduled: 3
+- Ready for Billing: 2
+- Past Due AR: 3
+
+Supporting data:
+- Emergency Jobs: ↑ 25% vs yesterday
+- Need Scheduled: ↑ 15% vs yesterday
+- Ready for Billing: ↑ 10% vs yesterday
+- Past Due AR: ↑ $12,450
+
+Use:
+- Red for urgent
+- Orange for scheduling warning
+- Blue for billing
+- Red for AR risk
+
+Do not make the KPI cards white or light.
+
+MAIN CONTENT GRID
+
+Use a two-column content structure.
+
+Left/main column:
+- Approximately 66%–70% width
+
+Right intelligence column:
+- Approximately 30%–34% width
+
+The right column must align with the top of the Priority Dispatch Overview panel.
+
+PRIORITY DISPATCH OVERVIEW
+
+Build a large primary panel in the left column.
+
+Panel header:
+- Dispatch/navigation icon
+- Priority Dispatch Overview
+- Right-side badge:
+  “Active Jobs Today: 18”
+
+Main content:
+- Work order number:
+  WO-2026-1043 · Customer Portal
+- Red status dot
+- Description:
+  “Kitchen exhaust fan grinding noise. Suspect bearing failure.”
+- Small status chips:
+  Scheduled
+  Tech Assigned
+
+Metrics:
+- 8 min ETA
+- 0.6 mi Distance
+- High Priority
+
+Map:
+- Dark map background
+- Visible street grid
+- Bright electric-blue route line
+- Blue origin marker
+- Red urgent destination marker
+- Labels such as:
+  RACE TRACK RD
+  UNIVERSITY BLVD
+  S CLARK AVE
+- Compact map controls vertically aligned on the right
+- The map should feel like a real product element, not decorative filler
+
+Actions:
+- View Job
+- Reassign
+
+View Job is primary blue.
+Reassign is dark secondary.
+
+ROSEOS INTELLIGENCE PANEL
+
+The right-side panel is a central part of the design and must not be simplified.
+
+Panel heading:
+- RoseOS Intelligence
+- Small intelligence icon
+- Badge: 8 PENDING
+- Supporting text:
+  “AI-assisted operational drafts requiring human approval.”
+
+Panel background:
+- Very dark navy
+- Fine border
+- Slight circuit-line background texture
+
+Recommendation cards:
+Create at least three visible cards.
+
+Card 1:
+- 94% CONFIDENCE
+- NEEDS HUMAN APPROVAL
+- Emergency job needs scheduling
+- WO-2026-1042 (RaceTrac water leak) is unassigned.
+- RoseOS suggests David Chen — 8 min drive, has drain skills, capacity available.
+
+Card 2:
+- 88% CONFIDENCE
+- NEEDS HUMAN APPROVAL
+- Technician overload warning
+- Tony Alvarez is booked 9.5 hrs against an 8 hr capacity today. Consider reassigning one HVAC job.
+
+Card 3:
+- 100% CONFIDENCE
+- NEEDS HUMAN APPROVAL
+- Job awaiting materials
+- WO-2026-1039 (Publix compressor) is blocked pending Copeland ZB compressor delivery (ETA 2 days).
+
+Each card includes:
+- Confidence badge
+- Approval-status badge
+- Clear title
+- Supporting body text
+- Approve Draft
+- Edit
+- Snooze
+
+Approve Draft:
+- Bright blue
+- Checkmark icon
+
+Edit:
+- Dark outlined button
+- Pencil icon
+
+Snooze:
+- Text action
+
+Panel footer:
+- View all recommendations →
+
+LOWER ANALYTICS ROW
+
+Below the dispatch panel, build two analytics cards.
+
+Card 1:
+Jobs by Status
+- Donut chart
+- Center value: 128 Total
+- Legend:
+  On Track 62 (48%)
+  In Progress 38 (30%)
+  At Risk 18 (14%)
+  On Hold 10 (8%)
+- Link:
+  View full report →
+
+Card 2:
+Compliance Risk Overview
+- Overall Risk Score
+- 72 /100
+- Moderate Risk
+- ↓ 6 pts vs last month
+- Compact line chart
+- Link:
+  View compliance hub →
+
+These cards should be balanced in height and width.
+
+QUICK ACTION ROW
+
+At the bottom of the main left column, create six equal quick-action tiles:
+
+- New Work Order
+- New Customer
+- Time Entry
+- New Invoice
+- Upload Document
+- VoiceConnect
+
+Each tile includes:
+- Thin blue line icon
+- Main label
+- One-line helper text
+- Dark hover state
+- Slight blue highlight on hover
+
+VoiceConnect must use a microphone icon.
+
+FOOTER LINE
+
+At the very bottom of the dashboard:
+“BUILT FOR COMPLIANCE. DESIGNED FOR EXCELLENCE. POWERED BY ROSEOS INTELLIGENCE.”
+
+Use:
+- Uppercase
+- Wide tracking
+- Small muted blue-gray text
+- Center aligned
+
+TEXTURES AND EFFECTS
+
+Use textures subtly.
+
+Allowed:
+- Fine circuit-line pattern
+- Very light blueprint/map texture
+- Soft directional blue glow
+- Gentle border highlights
+- Slight internal panel gradients
+
+Do not:
+- Make every border glow
+- Use animated neon everywhere
+- Add heavy metallic bevels
+- Use large lens flares
+- Reduce readability
+
+COMPONENT CONSTRUCTION
+
+Create reusable components for:
+- SidebarNavItem
+- TopSearch
+- RoleSelector
+- KpiCard
+- SectionPanel
+- StatusBadge
+- ConfidenceBadge
+- ApprovalBadge
+- RecommendationCard
+- MapPanel
+- MetricItem
+- AnalyticsCard
+- QuickActionTile
+
+Keep styling centralized through:
+- Tailwind theme tokens
+- CSS custom properties
+- shared component variants
+
+Do not hardcode inconsistent colors throughout individual files.
+
+RESPONSIVENESS
+
+Desktop:
+- Match the reference as closely as possible.
+
+Tablet:
+- Collapse the right intelligence panel below the dispatch panel.
+- Sidebar may collapse to icons.
+
+Mobile:
+- Sidebar becomes a drawer.
+- KPI cards stack in two columns or one column.
+- Map becomes full width.
+- Intelligence cards stack below.
+- Preserve all actions.
+
+Do not compromise desktop fidelity in order to make mobile easier.
+
+FUNCTIONAL REQUIREMENTS
+
+Every visible control should work or open a realistic prototype state.
+
+Implement:
+- Sidebar navigation
+- Search interaction
+- Role selector
+- All Work Orders button
+- Dispatch Board button
+- View Job
+- Reassign
+- Approve Draft
+- Edit
+- Snooze
+- View all recommendations
+- KPI card navigation
+- Quick-action tiles
+
+Use existing routes where available.
+
+Where a backend action is not implemented, open a modal, drawer, or toast that demonstrates the intended behavior.
+
+Do not leave clickable-looking elements inactive.
+
+QUALITY CONTROL CHECKLIST
+
+Before considering the design complete, compare the app against the reference and verify:
+
+- Sidebar width and color match.
+- Uploaded logo is used.
+- Header height and control placement match.
+- Operations Cockpit heading alignment matches.
+- Four KPI cards appear in one row.
+- Priority Dispatch Overview dominates the left side.
+- Dark route map is visible.
+- RoseOS Intelligence panel occupies the full right column.
+- Three recommendation cards are visible without excessive scrolling.
+- Lower analytics cards match the same visual language.
+- Quick actions appear in one row.
+- Main background remains dark.
+- Text contrast is accessible.
+- Blue accents are consistent.
+- Card spacing is compact and intentional.
+- No large dead spaces remain.
+- All visible buttons respond.
+- No console errors.
+- No broken routes.
+- No layout overflow at 1440px, 1600px, or 1920px widths.
+
+FINAL DELIVERABLE
+
+Complete the visual rebuild and provide:
+
+1. A summary of files changed.
+2. A list of reusable components created.
+3. Confirmation that the uploaded logo is used.
+4. Confirmation that existing functionality and routes were preserved.
+5. Confirmation that all dashboard actions are clickable.
+6. Confirmation that desktop, tablet, and mobile layouts were tested.
+7. Confirmation that there are no console, build, or runtime errors.
+8. A screenshot of the completed Today dashboard at approximately 1600 × 1000.
+
+Do not stop after changing colors.
+
+The finished app must closely reproduce the attached ServiceConnect Operations Cockpit design across the full dashboard structure.

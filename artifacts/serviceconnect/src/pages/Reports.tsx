@@ -7,11 +7,11 @@ import {
 import { DollarSign, CheckCircle2, Users, TrendingUp, Briefcase } from "lucide-react";
 
 const COLORS = [
-  "hsl(221 83% 53%)", // Primary Blue
-  "hsl(142 76% 36%)", // Success Green
-  "hsl(38 92% 50%)",  // Warning Amber
-  "hsl(215 20% 65%)", // Muted Slate
-  "hsl(280 65% 60%)"  // Distinct Purple
+  "#43a6ff", // Primary Blue text-sc-blue equivalent approx
+  "#38d477", // Success Green
+  "#ff9d18", // Warning Amber
+  "#75869c", // Muted Slate
+  "#a8b7ca"  // Secondary 
 ];
 
 export default function Reports() {
@@ -41,49 +41,49 @@ export default function Reports() {
     <div className="p-6 space-y-6 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900" data-testid="text-page-title">Reports & Analytics</h1>
-          <p className="text-slate-500 mt-1 text-sm">Operational and financial performance at a glance.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-sc" data-testid="text-page-title">Reports & Analytics</h1>
+          <p className="text-sc-2 mt-1 text-sm">Operational and financial performance at a glance.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPI label="Total Billed YTD" value={money(totalBilled)} icon={DollarSign} color="text-blue-600" bg="bg-blue-50" />
-        <KPI label="Jobs Completed" value={String(completed)} icon={CheckCircle2} color="text-emerald-600" bg="bg-emerald-50" />
-        <KPI label="Active Customers" value={String(activeCustomers)} icon={Users} color="text-amber-600" bg="bg-amber-50" />
-        <KPI label="Avg Ticket Value" value={money(avgTicket)} icon={TrendingUp} color="text-indigo-600" bg="bg-indigo-50" />
+        <KPI label="Total Billed YTD" value={money(totalBilled)} icon={DollarSign} color="var(--sc-blue)" bg="rgba(67,166,255,0.15)" />
+        <KPI label="Jobs Completed" value={String(completed)} icon={CheckCircle2} color="var(--sc-green)" bg="rgba(56,212,119,0.15)" />
+        <KPI label="Active Customers" value={String(activeCustomers)} icon={Users} color="var(--sc-orange)" bg="rgba(255,157,24,0.15)" />
+        <KPI label="Avg Ticket Value" value={money(avgTicket)} icon={TrendingUp} color="#a8b7ca" bg="rgba(168,183,202,0.15)" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-slate-200/60 shadow-sm bg-white">
+        <Card className="sc-panel border-none hover:border-panel-strong transition-colors">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-slate-500" /> Revenue Trend
+            <CardTitle className="text-base font-semibold text-sc flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-sc-3" /> Revenue Trend
             </CardTitle>
-            <CardDescription>Monthly billed revenue over the last 5 months.</CardDescription>
+            <CardDescription className="text-sc-2">Monthly billed revenue over the last 5 months.</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={revenue} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(214 32% 91%)" />
-                <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} tick={{fill: "hsl(215 16% 47%)"}} dy={10} />
-                <YAxis tickLine={false} axisLine={false} fontSize={12} tick={{fill: "hsl(215 16% 47%)"}} tickFormatter={(v) => `$${v / 1000}k`} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(127,164,196,0.14)" />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} tick={{fill: "#75869c"}} dy={10} />
+                <YAxis tickLine={false} axisLine={false} fontSize={12} tick={{fill: "#75869c"}} tickFormatter={(v) => `$${v / 1000}k`} />
                 <Tooltip 
                   formatter={(v: number) => [money(v), "Revenue"]} 
-                  contentStyle={{ borderRadius: "8px", border: "1px solid hsl(214 32% 91%)", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
-                  cursor={{fill: "hsl(210 40% 96%)"}}
+                  contentStyle={{ background: '#0a1b2c', border: '1px solid rgba(127,164,196,0.28)', borderRadius: 8, color: '#f5f8fc' }}
+                  cursor={{fill: "rgba(127,164,196,0.1)"}}
                 />
-                <Bar dataKey="revenue" fill="hsl(221 83% 53%)" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                <Bar dataKey="revenue" fill="#1268f3" radius={[4, 4, 0, 0]} maxBarSize={60} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/60 shadow-sm bg-white">
+        <Card className="sc-panel border-none hover:border-panel-strong transition-colors">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-slate-500" /> Jobs by Trade Type
+            <CardTitle className="text-base font-semibold text-sc flex items-center gap-2">
+              <Briefcase className="w-4 h-4 text-sc-3" /> Jobs by Trade Type
             </CardTitle>
-            <CardDescription>Distribution of work orders across service categories.</CardDescription>
+            <CardDescription className="text-sc-2">Distribution of work orders across service categories.</CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
             <ResponsiveContainer width="100%" height={320}>
@@ -98,37 +98,38 @@ export default function Reports() {
                   outerRadius={100} 
                   paddingAngle={2}
                   stroke="none"
+                  isAnimationActive={false}
                 >
                   {byType.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ borderRadius: "8px", border: "1px solid hsl(214 32% 91%)", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+                  contentStyle={{ background: '#0a1b2c', border: '1px solid rgba(127,164,196,0.28)', borderRadius: 8, color: '#f5f8fc' }}
                 />
-                <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: "hsl(215 16% 47%)" }} />
+                <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: "#a8b7ca" }} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 border-slate-200/60 shadow-sm bg-white">
+        <Card className="lg:col-span-2 sc-panel border-none hover:border-panel-strong transition-colors">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-              <Users className="w-4 h-4 text-slate-500" /> Technician Job Load
+            <CardTitle className="text-base font-semibold text-sc flex items-center gap-2">
+              <Users className="w-4 h-4 text-sc-3" /> Technician Job Load
             </CardTitle>
-            <CardDescription>Current and historical job assignments by field technician.</CardDescription>
+            <CardDescription className="text-sc-2">Current and historical job assignments by field technician.</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={techLoad} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(214 32% 91%)" />
-                <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} allowDecimals={false} tick={{fill: "hsl(215 16% 47%)"}} />
-                <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} fontSize={12} width={80} tick={{fill: "hsl(222 47% 11%)", fontWeight: 500}} />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(127,164,196,0.14)" />
+                <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} allowDecimals={false} tick={{fill: "#75869c"}} />
+                <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} fontSize={12} width={80} tick={{fill: "#f5f8fc", fontWeight: 500}} />
                 <Tooltip 
                   formatter={(v: number) => [v, "Jobs Assigned"]}
-                  contentStyle={{ borderRadius: "8px", border: "1px solid hsl(214 32% 91%)", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
-                  cursor={{fill: "hsl(210 40% 96%)"}}
+                  contentStyle={{ background: '#0a1b2c', border: '1px solid rgba(127,164,196,0.28)', borderRadius: 8, color: '#f5f8fc' }}
+                  cursor={{fill: "rgba(127,164,196,0.1)"}}
                 />
-                <Bar dataKey="jobs" fill="hsl(142 76% 36%)" radius={[0, 4, 4, 0]} maxBarSize={30} />
+                <Bar dataKey="jobs" fill="#38d477" radius={[0, 4, 4, 0]} maxBarSize={30} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -140,14 +141,14 @@ export default function Reports() {
 
 function KPI({ label, value, icon: Icon, color, bg }: { label: string; value: string; icon: any; color: string; bg: string }) {
   return (
-    <Card className="border-slate-200/60 shadow-sm bg-white hover:shadow-md transition-shadow">
+    <Card className="sc-panel border-none hover:border-panel-strong transition-colors">
       <CardContent className="p-5 flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-500 mb-1">{label}</p>
-          <p className="text-2xl font-bold text-slate-900">{value}</p>
+          <p className="text-sm font-medium text-sc-2 mb-1">{label}</p>
+          <p className="text-2xl font-bold text-sc">{value}</p>
         </div>
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${bg}`}>
-          <Icon className={`w-6 h-6 ${color}`} />
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: bg }}>
+          <Icon className="w-6 h-6" style={{ color }} />
         </div>
       </CardContent>
     </Card>

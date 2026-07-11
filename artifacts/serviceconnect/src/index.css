@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -42,7 +42,7 @@
 
   --color-success: hsl(var(--success));
   --color-success-foreground: hsl(var(--success-foreground));
-  
+
   --color-warning: hsl(var(--warning));
   --color-warning-foreground: hsl(var(--warning-foreground));
 
@@ -63,7 +63,7 @@
   --color-sidebar-accent-border: var(--sidebar-accent-border);
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  --font-sans: "Plus Jakarta Sans", var(--app-font-sans);
+  --font-sans: "Inter", var(--app-font-sans);
   --font-serif: var(--app-font-serif);
   --font-mono: var(--app-font-mono);
 
@@ -73,103 +73,90 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/*
+  ServiceConnect — Operations Cockpit dark theme.
+  Color semantics: GREEN = completed/approved/healthy, RED = urgent/emergency/past-due,
+  AMBER/ORANGE = warnings only, BLUE = primary action / intelligence.
+*/
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
-  
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --card-border: 214 32% 91%;
+  --background: 214 66% 7%;        /* #06101d main app bg */
+  --foreground: 214 47% 97%;       /* #f5f8fc primary text */
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --popover-border: 214 32% 91%;
+  --card: 209 66% 9%;              /* #081827 primary panel */
+  --card-foreground: 214 47% 97%;
+  --card-border: 210 25% 22%;
 
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
+  --popover: 210 62% 10%;          /* #0a1b2c */
+  --popover-foreground: 214 47% 97%;
+  --popover-border: 210 25% 22%;
 
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
+  --primary: 216 90% 51%;          /* #1268f3 button blue */
+  --primary-foreground: 0 0% 100%;
 
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  --secondary: 210 59% 13%;        /* #0d2033 elevated card / dark buttons */
+  --secondary-foreground: 214 30% 90%;
 
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 62% 11%;            /* #0a1b2c */
+  --muted-foreground: 214 15% 62%; /* ~#75869c */
 
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  --accent: 210 55% 16%;
+  --accent-foreground: 214 47% 97%;
 
-  --success: 142 76% 36%;
-  --success-foreground: 210 40% 98%;
+  --destructive: 354 100% 60%;     /* #ff3348 urgent red */
+  --destructive-foreground: 0 0% 100%;
 
-  --warning: 38 92% 50%;
-  --warning-foreground: 210 40% 98%;
+  --success: 144 62% 53%;          /* #38d477 green */
+  --success-foreground: 214 66% 7%;
 
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221 83% 53%;
+  --warning: 35 100% 55%;          /* #ff9d18 orange */
+  --warning-foreground: 214 66% 7%;
 
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 222 47% 15%;
-  --sidebar-primary: 221 83% 53%;
-  --sidebar-primary-foreground: 210 40% 98%;
-  --sidebar-accent: 222 47% 18%;
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-ring: 221 83% 53%;
+  --chart-1: 216 90% 55%;
+  --chart-2: 144 62% 53%;
+  --chart-3: 35 100% 55%;
+  --chart-4: 354 100% 60%;
+  --chart-5: 210 15% 45%;
 
-  --radius: 0.5rem;
+  --border: 210 25% 22%;
+  --input: 210 25% 22%;
+  --ring: 210 100% 63%;
+
+  --sidebar: 211 76% 6%;           /* #04101d */
+  --sidebar-foreground: 214 47% 97%;
+  --sidebar-border: 210 30% 14%;
+  --sidebar-primary: 216 90% 51%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 211 80% 14%;
+  --sidebar-accent-foreground: 214 47% 97%;
+  --sidebar-ring: 210 100% 63%;
+
+  --radius: 0.625rem;
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: Georgia, serif;
-  --app-font-mono: Menlo, monospace;
-}
+  --app-font-mono: 'Geist Mono', Menlo, monospace;
 
-.dark {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-  
-  --card: 222 47% 11%;
-  --card-foreground: 210 40% 98%;
-  --card-border: 222 47% 18%;
-
-  --popover: 222 47% 11%;
-  --popover-foreground: 210 40% 98%;
-  --popover-border: 222 47% 18%;
-
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
-
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-
-  --success: 142 76% 36%;
-  --success-foreground: 210 40% 98%;
-
-  --warning: 38 92% 50%;
-  --warning-foreground: 210 40% 98%;
-
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 48%;
-
-  --sidebar: 222 47% 9%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 217.2 32.6% 17.5%;
-  --sidebar-primary: 221 83% 53%;
-  --sidebar-primary-foreground: 210 40% 98%;
-  --sidebar-accent: 217.2 32.6% 17.5%;
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-ring: 221 83% 53%;
+  /* Raw palette (spec tokens) for centralized use in components */
+  --sc-bg: #06101d;
+  --sc-bg-deep: #071321;
+  --sc-panel: #081827;
+  --sc-panel-2: #0a1b2c;
+  --sc-elevated: #0d2033;
+  --sc-inner: #091726;
+  --sc-line: rgba(127, 164, 196, 0.28);
+  --sc-line-strong: rgba(146, 184, 217, 0.42);
+  --sc-line-subtle: rgba(127, 164, 196, 0.14);
+  --sc-line-active: #208cff;
+  --sc-text: #f5f8fc;
+  --sc-text-2: #a8b7ca;
+  --sc-text-3: #75869c;
+  --sc-blue: #43a6ff;
+  --sc-green: #38d477;
+  --sc-orange: #ff9d18;
+  --sc-red: #ff3348;
+  --sc-btn: #1268f3;
+  --sc-btn-hover: #2484ff;
+  --sc-btn-highlight: #53b7ff;
+  --sc-glow: rgba(0, 139, 255, 0.22);
 }
 
 @layer base {
@@ -178,5 +165,78 @@
   }
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    background-color: var(--sc-bg);
   }
+  ::selection {
+    background: rgba(18, 104, 243, 0.35);
+  }
+}
+
+@layer components {
+  /* Panels & cards */
+  .sc-panel {
+    background: var(--sc-panel);
+    border: 1px solid var(--sc-line);
+    border-radius: var(--radius);
+  }
+  .sc-card {
+    background: var(--sc-panel-2);
+    border: 1px solid var(--sc-line);
+    border-radius: var(--radius);
+  }
+  .sc-elevated {
+    background: var(--sc-elevated);
+    border: 1px solid var(--sc-line);
+    border-radius: var(--radius);
+  }
+  .sc-inner {
+    background: var(--sc-inner);
+    border: 1px solid var(--sc-line);
+    border-radius: calc(var(--radius) - 2px);
+  }
+}
+
+@layer utilities {
+  .border-panel { border-color: var(--sc-line); }
+  .border-panel-strong { border-color: var(--sc-line-strong); }
+  .border-panel-subtle { border-color: var(--sc-line-subtle); }
+
+  .text-sc { color: var(--sc-text); }
+  .text-sc-2 { color: var(--sc-text-2); }
+  .text-sc-3 { color: var(--sc-text-3); }
+  .text-sc-blue { color: var(--sc-blue); }
+
+  /* Subtle circuit-line texture for intelligence surfaces */
+  .circuit-texture {
+    background-image:
+      linear-gradient(rgba(127, 164, 196, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(127, 164, 196, 0.05) 1px, transparent 1px);
+    background-size: 26px 26px;
+  }
+
+  /* Blueprint / map grid texture */
+  .blueprint-grid {
+    background-image:
+      linear-gradient(rgba(67, 166, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(67, 166, 255, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .blue-glow {
+    box-shadow: 0 0 0 1px var(--sc-glow), 0 10px 34px -14px rgba(0, 139, 255, 0.5);
+  }
+  .blue-glow-soft {
+    box-shadow: 0 6px 24px -12px rgba(0, 139, 255, 0.4);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(127, 164, 196, 0.25) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(127, 164, 196, 0.25);
+    border-radius: 999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
 }

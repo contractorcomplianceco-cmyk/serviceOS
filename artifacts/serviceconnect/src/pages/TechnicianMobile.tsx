@@ -15,19 +15,19 @@ export default function TechnicianMobile() {
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
   return (
-    <div className="min-h-[100dvh] bg-slate-100 flex flex-col">
-      <header className="bg-slate-900 text-white px-5 py-4 sticky top-0 z-20 shadow-md">
+    <div className="min-h-[100dvh] flex flex-col" style={{ background: "var(--sc-bg)" }}>
+      <header className="px-5 py-4 sticky top-0 z-20 shadow-md border-b border-panel" style={{ background: "var(--sc-bg-deep)" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)]" style={{ background: "var(--sc-btn)" }}>
               <Wrench className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-base font-bold leading-tight tracking-tight">ServiceConnect Field</div>
-              <div className="text-xs text-blue-300 font-medium leading-tight mt-0.5">{currentUser?.name}</div>
+              <div className="text-base font-bold leading-tight tracking-tight text-sc">ServiceConnect Field</div>
+              <div className="text-xs font-medium leading-tight mt-0.5" style={{ color: "var(--sc-blue)" }}>{currentUser?.name}</div>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800" onClick={() => { setCurrentUserId("u1"); navigate("/login"); }} data-testid="button-logout">
+          <Button variant="ghost" size="icon" className="text-sc-2 hover:text-white hover:bg-white/[0.05]" onClick={() => { setCurrentUserId("u1"); navigate("/login"); }} data-testid="button-logout">
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
@@ -35,18 +35,18 @@ export default function TechnicianMobile() {
 
       <main className="flex-1 p-4 md:p-6 space-y-6 max-w-2xl mx-auto w-full">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight" data-testid="text-page-title">Today's Route</h1>
-          <p className="text-sm font-medium text-slate-500 mt-1">{myJobs.length} active {myJobs.length === 1 ? "job" : "jobs"} assigned</p>
+          <h1 className="text-2xl font-bold text-sc tracking-tight" data-testid="text-page-title">Today's Route</h1>
+          <p className="text-sm font-medium text-sc-2 mt-1">{myJobs.length} active {myJobs.length === 1 ? "job" : "jobs"} assigned</p>
         </div>
 
         {myJobs.length === 0 ? (
-          <Card className="border border-slate-200 shadow-sm bg-white">
+          <Card className="sc-panel border-panel shadow-sm">
             <CardContent className="py-16 text-center">
-              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                <Wrench className="w-8 h-8 text-slate-400" />
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 sc-elevated">
+                <Wrench className="w-8 h-8 text-sc-3" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-1">Route Clear</h3>
-              <p className="text-sm text-slate-500">No active jobs assigned at the moment.</p>
+              <h3 className="text-lg font-semibold text-sc mb-1">Route Clear</h3>
+              <p className="text-sm text-sc-2">No active jobs assigned at the moment.</p>
             </CardContent>
           </Card>
         ) : (
@@ -59,44 +59,44 @@ export default function TechnicianMobile() {
               return (
                 <Card 
                   key={wo.id} 
-                  className="overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-md transition-all bg-white animate-in slide-in-from-bottom-4 fade-in duration-500" 
+                  className="sc-card overflow-hidden shadow-sm hover:shadow-md transition-all animate-in slide-in-from-bottom-4 fade-in duration-500" 
                   style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}
                   data-testid={`tech-job-${wo.id}`}
                 >
                   <CardHeader className="p-4 pb-0 flex flex-row items-start justify-between gap-4">
                     <div>
-                      <div className="text-xs font-bold tracking-wider text-slate-500 mb-1">{wo.number} · {wo.type}</div>
-                      <CardTitle className="text-lg font-bold text-slate-900 leading-tight">{c?.name}</CardTitle>
+                      <div className="text-xs font-bold tracking-wider text-sc-3 mb-1">{wo.number} · {wo.type}</div>
+                      <CardTitle className="text-lg font-bold text-sc leading-tight">{c?.name}</CardTitle>
                     </div>
-                    <Badge variant="outline" className={`shrink-0 uppercase font-bold tracking-wider text-[10px] ${priorityClass(wo.priority)}`}>
+                    <Badge variant="outline" className={`shrink-0 uppercase font-bold tracking-wider text-[10px] ${priorityClass(wo.priority)}`} style={{ background: "var(--sc-elevated)", borderColor: "var(--sc-line)" }}>
                       {wo.priority}
                     </Badge>
                   </CardHeader>
                   
                   <CardContent className="p-4 space-y-4">
-                    <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                    <p className="text-sm text-sc-2 leading-relaxed font-medium">
                       {wo.description}
                     </p>
 
-                    <div className="bg-slate-50 rounded-lg p-3 space-y-2 border border-slate-100">
+                    <div className="rounded-lg p-3 space-y-2 sc-inner">
                       <div className="flex items-start gap-2.5">
-                        <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" /> 
-                        <div className="text-sm font-medium text-slate-700 leading-tight">
+                        <MapPin className="w-4 h-4 text-sc-blue mt-0.5 shrink-0" /> 
+                        <div className="text-sm font-medium text-sc leading-tight">
                           {loc?.name}<br/>
-                          <span className="text-slate-500 font-normal">{loc?.address}, {loc?.city}</span>
+                          <span className="text-sc-2 font-normal">{loc?.address}, {loc?.city}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2.5">
-                        <Clock className="w-4 h-4 text-slate-400 shrink-0" /> 
-                        <div className="text-sm font-medium text-slate-700">
+                        <Clock className="w-4 h-4 text-sc-blue shrink-0" /> 
+                        <div className="text-sm font-medium text-sc">
                           {wo.timeWindow ?? relativeDay(wo.dueDate)}
                         </div>
                       </div>
                     </div>
 
                     {wo.importantNotes && (
-                      <div className="text-xs font-medium bg-amber-500/10 text-amber-800 border border-amber-500/20 rounded-lg px-3 py-2.5 flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+                      <div className="text-xs font-medium rounded-lg px-3 py-2.5 flex items-start gap-2" style={{ background: "rgba(255,157,24,0.1)", color: "var(--sc-orange)", border: "1px solid rgba(255,157,24,0.2)" }}>
+                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: "var(--sc-orange)" }} />
                         {wo.importantNotes}
                       </div>
                     )}
@@ -104,11 +104,11 @@ export default function TechnicianMobile() {
 
                   <CardFooter className="p-4 pt-0 flex flex-col gap-3">
                     <div className="flex items-center justify-between w-full mb-1">
-                      <Badge variant="outline" className={`font-semibold ${statusClass(wo.status)}`}>
+                      <Badge variant="outline" className={`font-semibold ${statusClass(wo.status)}`} style={{ background: "var(--sc-elevated)", borderColor: "var(--sc-line)" }}>
                         {wo.status}
                       </Badge>
                       {hasCloseout && (
-                        <Badge variant="outline" className="text-[10px] text-blue-600 bg-blue-500/10 border-blue-500/20 uppercase tracking-wider font-bold">
+                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider font-bold" style={{ color: "var(--sc-blue)", background: "rgba(67,166,255,0.1)", borderColor: "rgba(67,166,255,0.2)" }}>
                           Draft Pending
                         </Badge>
                       )}
@@ -117,7 +117,8 @@ export default function TechnicianMobile() {
                       <Button 
                         size="lg" 
                         variant="outline" 
-                        className="flex-1 bg-white border-slate-200 shadow-sm text-slate-700 font-bold h-12 rounded-xl"
+                        className="flex-1 font-bold h-12 rounded-xl text-sc-2 hover:text-white transition-colors"
+                        style={{ background: "var(--sc-elevated)", border: "1px solid var(--sc-line)" }}
                         onClick={() => navigate(`/work-orders/${wo.id}`)} 
                         data-testid={`button-details-${wo.id}`}
                       >
@@ -125,7 +126,8 @@ export default function TechnicianMobile() {
                       </Button>
                       <Button 
                         size="lg" 
-                        className="flex-1 bg-primary text-white shadow-md hover:bg-primary/90 font-bold h-12 rounded-xl" 
+                        className="flex-1 text-white shadow-md font-bold h-12 rounded-xl blue-glow-soft hover:opacity-90 transition-opacity" 
+                        style={{ background: "var(--sc-btn)", border: "1px solid var(--sc-btn-highlight)" }}
                         onClick={() => navigate(`/tech/voiceconnect/${wo.id}`)} 
                         data-testid={`button-voiceconnect-${wo.id}`}
                       >

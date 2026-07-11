@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { canAccess, canApproveCloseouts, NavKey } from "@/lib/permissions";
+import logoIcon from "@/assets/logo-icon.png";
 
 const navItems: { name: string; path: string; key: NavKey; icon: typeof LayoutDashboard }[] = [
   { name: "Today", path: "/today", key: "today", icon: LayoutDashboard },
@@ -41,47 +42,94 @@ const navItems: { name: string; path: string; key: NavKey; icon: typeof LayoutDa
 
 export function Sidebar() {
   const [location] = useLocation();
-  const { currentUser } = useAppStore();
-  const visible: { name: string; path: string; key: string; icon: typeof LayoutDashboard }[] = navItems.filter((item) => canAccess(currentUser.role, item.key));
+  const { currentUser, intake } = useAppStore();
+  const visible: { name: string; path: string; key: string; icon: typeof LayoutDashboard }[] =
+    navItems.filter((item) => canAccess(currentUser.role, item.key));
   if (canApproveCloseouts(currentUser.role)) {
     visible.push({ name: "Supervisor Review", path: "/review", key: "review", icon: ClipboardCheck });
   }
 
+  const counts: Record<string, number> = { intake: intake.length };
+
   return (
-    <div className="w-64 flex-shrink-0 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border shadow-xl z-10">
-      <div className="h-16 flex items-center px-4 border-b border-sidebar-border bg-sidebar gap-3">
-        <div className="w-9 h-9 rounded-lg bg-sidebar-primary flex items-center justify-center text-white font-bold text-sm shadow-lg">
-          SC
-        </div>
-        <div className="flex flex-col">
-          <span className="font-bold text-sm tracking-tight">ServiceConnect</span>
-          <span className="text-[10px] text-blue-400 font-medium tracking-wide">RoseOS Intelligence</span>
+    <aside
+      className="w-[264px] flex-shrink-0 flex flex-col z-20 border-r border-panel"
+      style={{ background: "var(--sidebar)" }}
+    >
+      {/* Logo lockup */}
+      <div className="h-[78px] flex items-center gap-3 px-5 border-b border-panel-subtle shrink-0">
+        <img
+          src={logoIcon}
+          alt="ServiceConnect"
+          className="w-10 h-10 rounded-lg object-cover shrink-0 ring-1 ring-white/10"
+        />
+        <div className="flex flex-col leading-none">
+          <span className="text-[17px] font-semibold tracking-tight text-sc">ServiceConnect</span>
+          <span className="text-[9px] mt-1 text-sc-3 font-medium tracking-[0.18em] uppercase">
+            With RoseOS Intelligence
+          </span>
         </div>
       </div>
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5" data-testid="nav-sidebar">
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto scrollbar-thin py-4 px-3 space-y-0.5" data-testid="nav-sidebar">
         {visible.map((item) => {
           const isActive = location === item.path || location.startsWith(item.path + "/");
+          const count = counts[item.key];
           return (
             <Link key={item.path} href={item.path}>
               <div
                 data-testid={`nav-${item.key}`}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
+                  "relative flex items-center gap-3 h-[44px] px-3.5 rounded-lg text-sm font-medium transition-all cursor-pointer group",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                    ? "text-white"
+                    : "text-sc-2 hover:text-white hover:bg-white/[0.04]"
                 )}
+                style={
+                  isActive
+                    ? {
+                        background: "linear-gradient(180deg, rgba(18,104,243,0.22), rgba(18,104,243,0.10))",
+                        border: "1px solid var(--sc-line-active)",
+                        boxShadow: "0 0 0 1px rgba(0,139,255,0.15), 0 6px 18px -10px rgba(0,139,255,0.6)",
+                      }
+                    : undefined
+                }
               >
-                <item.icon className="w-4 h-4 shrink-0" />
-                {item.name}
+                {isActive && (
+                  <span className="absolute inset-0 rounded-lg circuit-texture opacity-40 pointer-events-none" />
+                )}
+                <item.icon className={cn("w-[18px] h-[18px] shrink-0 relative z-10", isActive && "text-sc-blue")} />
+                <span className="relative z-10 flex-1">{item.name}</span>
+                {count ? (
+                  <span
+                    className="relative z-10 min-w-[22px] h-[20px] px-1.5 flex items-center justify-center rounded-md text-[11px] font-semibold text-sc-2"
+                    style={{ background: "var(--sc-elevated)", border: "1px solid var(--sc-line)" }}
+                    data-testid={`nav-count-${item.key}`}
+                  >
+                    {count}
+                  </span>
+                ) : null}
               </div>
             </Link>
           );
         })}
       </nav>
-      <div className="p-4 border-t border-sidebar-border bg-sidebar-accent/20">
-        <div className="text-xs text-sidebar-foreground/50 text-center font-medium">RoseOS Build 2.1.0</div>
+
+      {/* Footer — RoseOS orb */}
+      <div className="px-5 py-6 border-t border-panel-subtle shrink-0 flex flex-col items-center text-center">
+        <div className="relative w-16 h-16 mb-3">
+          <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle at 50% 45%, rgba(67,166,255,0.55), rgba(18,104,243,0.15) 55%, transparent 72%)" }} />
+          <div className="absolute inset-[6px] rounded-full border border-[rgba(67,166,255,0.35)]" />
+          <div className="absolute inset-[13px] rounded-full border border-[rgba(67,166,255,0.25)]" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-sc-blue" />
+          </div>
+        </div>
+        <div className="text-[13px] font-semibold text-sc tracking-wide">RoseOS Intelligence</div>
+        <div className="text-[9px] text-sc-3 tracking-[0.16em] uppercase mt-1">AI-Powered Operations</div>
+        <div className="text-[9px] text-sc-blue/70 tracking-[0.16em] uppercase mt-0.5">Predict. Prevent. Perform.</div>
       </div>
-    </div>
+    </aside>
   );
 }

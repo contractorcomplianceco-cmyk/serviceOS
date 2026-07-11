@@ -19,11 +19,11 @@ export default function WorkOrderDetail() {
   if (!wo) {
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate("/work-orders")} className="mb-4 text-slate-500 hover:text-slate-900"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
-        <Card className="border-slate-200 shadow-sm"><CardContent className="py-20 flex flex-col items-center justify-center text-center">
-          <AlertTriangle className="w-12 h-12 text-slate-300 mb-4" />
-          <h2 className="text-xl font-semibold text-slate-900">Work order not found</h2>
-          <p className="text-slate-500 mt-2">The requested work order does not exist or has been removed.</p>
+        <Button variant="ghost" onClick={() => navigate("/work-orders")} className="mb-4 text-sc-3 hover:text-sc"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
+        <Card className="sc-panel border-panel-subtle shadow-sm"><CardContent className="py-20 flex flex-col items-center justify-center text-center">
+          <AlertTriangle className="w-12 h-12 text-sc-3 mb-4" />
+          <h2 className="text-xl font-semibold text-sc">Work order not found</h2>
+          <p className="text-sc-3 mt-2">The requested work order does not exist or has been removed.</p>
         </CardContent></Card>
       </div>
     );
@@ -52,37 +52,37 @@ export default function WorkOrderDetail() {
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header Strip */}
-      <div className="flex items-center text-sm font-medium text-slate-500 mb-2">
-        <button onClick={() => navigate("/work-orders")} className="hover:text-slate-900 transition-colors flex items-center" data-testid="button-back">
+      <div className="flex items-center text-sm font-medium text-sc-3 mb-2">
+        <button onClick={() => navigate("/work-orders")} className="hover:text-sc transition-colors flex items-center" data-testid="button-back">
           <ArrowLeft className="w-4 h-4 mr-1.5" /> Work Orders
         </button>
-        <span className="mx-2 text-slate-300">/</span>
-        <span className="text-slate-900">{wo.number}</span>
+        <span className="mx-2 text-sc-3 opacity-50">/</span>
+        <span className="text-sc">{wo.number}</span>
       </div>
 
       <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900" data-testid="text-page-title">{wo.number}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-sc" data-testid="text-page-title">{wo.number}</h1>
             <Badge variant="outline" className={`${priorityClass(wo.priority)} px-2.5 py-0.5 text-xs`}>{wo.priority}</Badge>
             <Badge variant="outline" className={`${statusClass(wo.status)} px-2.5 py-0.5 text-xs`}>{wo.status}</Badge>
-            {wo.materialsFlag && <Badge variant="outline" className="bg-slate-100 text-slate-600 border-slate-200 text-[10px] uppercase font-bold tracking-wider">Materials</Badge>}
-            {wo.quoteFlag && <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 text-[10px] uppercase font-bold tracking-wider">Quote Req</Badge>}
+            {wo.materialsFlag && <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider text-sc-2 border-panel bg-[color:var(--sc-elevated)]">Materials</Badge>}
+            {wo.quoteFlag && <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider text-[color:var(--sc-orange)] border-[color:rgba(255,157,24,0.3)] bg-[color:rgba(255,157,24,0.12)]">Quote Req</Badge>}
           </div>
-          <p className="text-slate-500 text-sm font-medium">
-            {wo.type} · {wo.region} · Source: <span className="text-slate-700">{wo.source}</span>
+          <p className="text-sc-3 text-sm font-medium">
+            {wo.type} · {wo.region} · Source: <span className="text-sc-2">{wo.source}</span>
           </p>
         </div>
         
         <div className="flex items-center gap-3 w-full lg:w-auto">
           {canManage && (
             <Select value={wo.status} onValueChange={(v) => updateWorkOrder(wo.id, { status: v as typeof wo.status })}>
-              <SelectTrigger className="w-full lg:w-[220px] bg-white border-slate-200 shadow-sm font-medium" data-testid="select-wo-status">
+              <SelectTrigger className="w-full lg:w-[220px] text-sc font-medium" style={{ background: "var(--sc-elevated)", border: "1px solid var(--sc-line)" }} data-testid="select-wo-status">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}>
                 {["New", "Triage Needed", "Need Scheduled", "Scheduled", "First Trip", "On Site", "Awaiting Materials", "Awaiting Quote Approval", "Return Trip Needed", "Completed Pending Review", "Ready for Billing", "Invoiced", "Closed", "Cancelled"].map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem key={s} value={s} className="text-sc">{s}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -91,7 +91,7 @@ export default function WorkOrderDetail() {
       </div>
 
       {wo.importantNotes && (
-        <div className="flex items-start gap-3 bg-destructive/5 border border-destructive/20 rounded-xl px-5 py-4 text-sm text-destructive/90 shadow-sm">
+        <div className="flex items-start gap-3 rounded-xl px-5 py-4 text-sm shadow-sm" style={{ background: "rgba(255,51,72,0.1)", border: "1px solid rgba(255,51,72,0.25)", color: "var(--sc-red)" }}>
           <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
           <div className="space-y-1">
             <h4 className="font-bold tracking-tight uppercase text-xs">Important / Hazard</h4>
@@ -105,27 +105,27 @@ export default function WorkOrderDetail() {
         
         {/* Left Column: Core Job Details */}
         <div className="xl:col-span-1 space-y-6">
-          <Card className="border-slate-200/60 shadow-sm overflow-hidden">
-            <CardHeader className="bg-slate-50/50 py-3 px-4 border-b border-slate-100">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+          <Card className="sc-panel shadow-sm overflow-hidden border-none rounded-xl">
+            <CardHeader className="py-3 px-4 border-b border-panel-subtle" style={{ background: "var(--sc-inner)" }}>
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-sc-3 flex items-center gap-2">
                 <Building2 className="w-4 h-4" /> Customer & Location
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-5">
               <div>
-                <button onClick={() => navigate(`/customers/${customer?.id}`)} className="font-bold text-primary hover:underline text-base" data-testid="link-customer">{customer?.name}</button>
-                <div className="text-sm text-slate-500 mt-1 flex items-center gap-2"><Phone className="w-3.5 h-3.5" /> {customer?.phone}</div>
+                <button onClick={() => navigate(`/customers/${customer?.id}`)} className="font-bold text-sc-blue hover:underline text-base" data-testid="link-customer">{customer?.name}</button>
+                <div className="text-sm text-sc-3 mt-1 flex items-center gap-2"><Phone className="w-3.5 h-3.5" /> {customer?.phone}</div>
               </div>
-              <div className="h-px bg-slate-100" />
+              <div className="h-px w-full" style={{ background: "var(--sc-line-subtle)" }} />
               <div>
-                <div className="font-semibold text-slate-900 text-sm">{location?.name}</div>
-                <div className="text-sm text-slate-500 mt-1 flex items-start gap-2">
+                <div className="font-semibold text-sc text-sm">{location?.name}</div>
+                <div className="text-sm text-sc-3 mt-1 flex items-start gap-2">
                   <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" /> 
                   <span>{location?.address}<br/>{location?.city}, {location?.state} {location?.zip}</span>
                 </div>
               </div>
               {wo.locationNotes && (
-                <div className="bg-amber-50 rounded-md p-2.5 text-xs text-amber-800 border border-amber-100">
+                <div className="rounded-md p-2.5 text-xs border" style={{ background: "rgba(255,157,24,0.1)", borderColor: "rgba(255,157,24,0.3)", color: "var(--sc-orange)" }}>
                   <span className="font-semibold uppercase tracking-wider text-[10px] block mb-1">Location Notes</span>
                   {wo.locationNotes}
                 </div>
@@ -133,35 +133,35 @@ export default function WorkOrderDetail() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200/60 shadow-sm overflow-hidden">
-            <CardHeader className="bg-slate-50/50 py-3 px-4 border-b border-slate-100">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+          <Card className="sc-panel shadow-sm overflow-hidden border-none rounded-xl">
+            <CardHeader className="py-3 px-4 border-b border-panel-subtle" style={{ background: "var(--sc-inner)" }}>
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-sc-3 flex items-center gap-2">
                 <Truck className="w-4 h-4" /> Schedule & Tech
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
               <div>
-                <div className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Assigned To</div>
+                <div className="text-xs text-sc-3 font-medium uppercase tracking-wider mb-1">Assigned To</div>
                 {tech ? (
-                  <div className="font-semibold text-slate-900">{tech.name}</div>
+                  <div className="font-semibold text-sc">{tech.name}</div>
                 ) : (
-                  <div className="font-medium text-amber-600 flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> Unassigned</div>
+                  <div className="font-medium flex items-center gap-1.5" style={{ color: "var(--sc-orange)" }}><AlertTriangle className="w-3.5 h-3.5" /> Unassigned</div>
                 )}
               </div>
               <div>
-                <div className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Due Date</div>
-                <div className="font-medium text-slate-900 flex items-center gap-2"><Calendar className="w-4 h-4 text-slate-400" /> {shortDate(wo.dueDate)}</div>
+                <div className="text-xs text-sc-3 font-medium uppercase tracking-wider mb-1">Due Date</div>
+                <div className="font-medium text-sc flex items-center gap-2"><Calendar className="w-4 h-4 text-sc-3" /> {shortDate(wo.dueDate)}</div>
               </div>
               <div>
-                <div className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Time Window</div>
-                <div className="font-medium text-slate-900 flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" /> {wo.timeWindow ?? "Flexible"}</div>
+                <div className="text-xs text-sc-3 font-medium uppercase tracking-wider mb-1">Time Window</div>
+                <div className="font-medium text-sc flex items-center gap-2"><Clock className="w-4 h-4 text-sc-3" /> {wo.timeWindow ?? "Flexible"}</div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200/60 shadow-sm overflow-hidden">
-            <CardHeader className="bg-slate-50/50 py-3 px-4 border-b border-slate-100">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+          <Card className="sc-panel shadow-sm overflow-hidden border-none rounded-xl">
+            <CardHeader className="py-3 px-4 border-b border-panel-subtle" style={{ background: "var(--sc-inner)" }}>
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-sc-3 flex items-center gap-2">
                 <Receipt className="w-4 h-4" /> Accounting References
               </CardTitle>
             </CardHeader>
@@ -170,7 +170,7 @@ export default function WorkOrderDetail() {
               <InfoRow label="Reference #" value={wo.referenceNumber} />
               <InfoRow label="External ID" value={wo.externalId} />
               <div className="pt-2">
-                <div className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1.5">Billing Status</div>
+                <div className="text-xs text-sc-3 font-medium uppercase tracking-wider mb-1.5">Billing Status</div>
                 <Badge variant="outline" className={billingClass(wo.billingStatus)}>{wo.billingStatus}</Badge>
               </div>
             </CardContent>
@@ -180,46 +180,46 @@ export default function WorkOrderDetail() {
         {/* Middle Column: Main Content Tabs */}
         <div className="xl:col-span-2 space-y-6">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="w-full justify-start h-12 bg-transparent border-b border-slate-200 rounded-none p-0 space-x-6 overflow-x-auto overflow-y-hidden" data-testid="tabs-wo">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 py-3 font-semibold text-slate-500 data-[state=active]:text-primary h-full">Overview</TabsTrigger>
-              <TabsTrigger value="trips" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 py-3 font-semibold text-slate-500 data-[state=active]:text-primary h-full">Trips <Badge variant="secondary" className="ml-2 bg-slate-100 text-slate-600 text-[10px]">{wo.trips.length}</Badge></TabsTrigger>
-              <TabsTrigger value="labor" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 py-3 font-semibold text-slate-500 data-[state=active]:text-primary h-full">Labor & Materials</TabsTrigger>
-              <TabsTrigger value="activity" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 py-3 font-semibold text-slate-500 data-[state=active]:text-primary h-full">Activity History</TabsTrigger>
+            <TabsList className="w-full justify-start h-12 bg-transparent border-b border-panel-subtle rounded-none p-0 space-x-6 overflow-x-auto overflow-y-hidden" data-testid="tabs-wo">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-sc-blue rounded-none px-2 py-3 font-semibold text-sc-3 data-[state=active]:text-sc-blue h-full">Overview</TabsTrigger>
+              <TabsTrigger value="trips" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-sc-blue rounded-none px-2 py-3 font-semibold text-sc-3 data-[state=active]:text-sc-blue h-full">Trips <Badge variant="secondary" className="ml-2 text-[10px] text-sc-2 border-panel bg-[color:var(--sc-elevated)]">{wo.trips.length}</Badge></TabsTrigger>
+              <TabsTrigger value="labor" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-sc-blue rounded-none px-2 py-3 font-semibold text-sc-3 data-[state=active]:text-sc-blue h-full">Labor & Materials</TabsTrigger>
+              <TabsTrigger value="activity" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-sc-blue rounded-none px-2 py-3 font-semibold text-sc-3 data-[state=active]:text-sc-blue h-full">Activity History</TabsTrigger>
             </TabsList>
 
             <div className="mt-6">
               <TabsContent value="overview" className="space-y-6 m-0 animate-in fade-in duration-300">
-                <Card className="border-slate-200/60 shadow-sm">
-                  <CardHeader className="pb-3"><CardTitle className="text-lg">Job Description</CardTitle></CardHeader>
+                <Card className="sc-panel shadow-sm border-none rounded-xl">
+                  <CardHeader className="pb-3"><CardTitle className="text-lg text-sc">Job Description</CardTitle></CardHeader>
                   <CardContent>
-                    <p className="text-slate-700 whitespace-pre-wrap leading-relaxed">{wo.description}</p>
+                    <p className="text-sc-2 whitespace-pre-wrap leading-relaxed">{wo.description}</p>
                     
                     {wo.quoteNotes && (
-                      <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
-                        <div className="flex items-center gap-2 text-amber-700 font-bold text-sm uppercase tracking-wider mb-2">
+                      <div className="mt-6 rounded-lg p-4" style={{ background: "rgba(255,157,24,0.1)", border: "1px solid rgba(255,157,24,0.3)" }}>
+                        <div className="flex items-center gap-2 font-bold text-sm uppercase tracking-wider mb-2" style={{ color: "var(--sc-orange)" }}>
                           <DollarSign className="w-4 h-4" /> Quote Awaiting Approval
                         </div>
-                        <p className="text-sm text-amber-800">{wo.quoteNotes}</p>
+                        <p className="text-sm" style={{ color: "var(--sc-orange)" }}>{wo.quoteNotes}</p>
                       </div>
                     )}
                   </CardContent>
                 </Card>
 
                 {!tech && canManage && (
-                  <Card className="border-primary/40 bg-primary/5 shadow-sm">
+                  <Card className="shadow-sm border-none rounded-xl" style={{ background: "rgba(67,166,255,0.1)", border: "1px solid rgba(67,166,255,0.3)" }}>
                     <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div>
-                        <div className="font-bold text-slate-900 text-base flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-primary" /> Assign Technician
+                        <div className="font-bold text-sc text-base flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-sc-blue" /> Assign Technician
                         </div>
-                        <div className="text-sm text-slate-600 mt-1">RoseOS suggests <span className="font-semibold text-primary">{techs[0]?.name}</span> based on skills and drive time.</div>
+                        <div className="text-sm text-sc-2 mt-1">RoseOS suggests <span className="font-semibold text-sc-blue">{techs[0]?.name}</span> based on skills and drive time.</div>
                       </div>
                       <Select onValueChange={assign}>
-                        <SelectTrigger className="w-full sm:w-[240px] bg-white border-primary/20 shadow-sm" data-testid="select-assign-tech">
+                        <SelectTrigger className="w-full sm:w-[240px] text-sc" style={{ background: "var(--sc-elevated)", border: "1px solid rgba(67,166,255,0.4)" }} data-testid="select-assign-tech">
                           <SelectValue placeholder="Select technician..." />
                         </SelectTrigger>
-                        <SelectContent>
-                          {techs.map((t) => <SelectItem key={t.id} value={t.id}>{t.name} · {t.zone}</SelectItem>)}
+                        <SelectContent style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}>
+                          {techs.map((t) => <SelectItem key={t.id} value={t.id} className="text-sc">{t.name} · {t.zone}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </CardContent>
@@ -227,18 +227,18 @@ export default function WorkOrderDetail() {
                 )}
 
                 {wo.attachments.length > 0 && (
-                  <Card className="border-slate-200/60 shadow-sm">
-                    <CardHeader className="pb-3"><CardTitle className="text-lg">Attachments</CardTitle></CardHeader>
+                  <Card className="sc-panel shadow-sm border-none rounded-xl">
+                    <CardHeader className="pb-3"><CardTitle className="text-lg text-sc">Attachments</CardTitle></CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {wo.attachments.map(a => (
-                          <div key={a.id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer group">
-                            <div className="w-10 h-10 rounded bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
+                          <div key={a.id} className="flex items-center gap-3 p-3 rounded-lg border border-panel-subtle hover:bg-white/[0.04] transition-colors cursor-pointer group">
+                            <div className="w-10 h-10 rounded flex items-center justify-center shrink-0" style={{ background: "rgba(67,166,255,0.15)", color: "var(--sc-blue)" }}>
                               <FileText className="w-5 h-5" />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-slate-900 truncate group-hover:text-primary transition-colors">{a.name}</p>
-                              <p className="text-xs text-slate-500">{shortDate(a.date)} · {a.uploadedBy}</p>
+                              <p className="text-sm font-medium text-sc truncate group-hover:text-sc-blue transition-colors">{a.name}</p>
+                              <p className="text-xs text-sc-3">{shortDate(a.date)} · {a.uploadedBy}</p>
                             </div>
                           </div>
                         ))}
@@ -253,46 +253,46 @@ export default function WorkOrderDetail() {
                   wo.trips.map((t) => {
                     const tt = users.find((u) => u.id === t.technicianId);
                     return (
-                      <Card key={t.id} className="border-slate-200/60 shadow-sm" data-testid={`trip-${t.id}`}>
-                        <CardHeader className="bg-slate-50/50 py-3 px-5 border-b border-slate-100 flex flex-row items-center justify-between">
+                      <Card key={t.id} className="sc-panel shadow-sm border-none rounded-xl" data-testid={`trip-${t.id}`}>
+                        <CardHeader className="py-3 px-5 border-b border-panel-subtle flex flex-row items-center justify-between" style={{ background: "var(--sc-inner)" }}>
                           <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="bg-white border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">Trip {t.tripNumber}</Badge>
-                            <span className="font-semibold text-slate-900 text-sm">{tt?.name}</span>
+                            <Badge variant="outline" className="text-sc-2 font-bold uppercase tracking-wider text-[10px]" style={{ background: "var(--sc-elevated)", border: "1px solid var(--sc-line)" }}>Trip {t.tripNumber}</Badge>
+                            <span className="font-semibold text-sc text-sm">{tt?.name}</span>
                           </div>
-                          <span className="text-sm font-medium text-slate-500">{shortDate(t.date)}</span>
+                          <span className="text-sm font-medium text-sc-3">{shortDate(t.date)}</span>
                         </CardHeader>
                         <CardContent className="p-5 space-y-4">
                           <div className="flex flex-wrap gap-6">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><Check className="w-4 h-4" /></div>
+                              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(56,212,119,0.15)", color: "var(--sc-green)" }}><Check className="w-4 h-4" /></div>
                               <div>
-                                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Check In</div>
-                                <div className="font-medium text-slate-900 text-sm">{t.checkIn || "—"}</div>
+                                <div className="text-[10px] uppercase font-bold tracking-wider text-sc-3">Check In</div>
+                                <div className="font-medium text-sc text-sm">{t.checkIn || "—"}</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center"><Clock className="w-4 h-4" /></div>
+                              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "var(--sc-elevated)", color: "var(--sc-text-3)" }}><Clock className="w-4 h-4" /></div>
                               <div>
-                                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Check Out</div>
-                                <div className="font-medium text-slate-900 text-sm">{t.checkOut || "—"}</div>
+                                <div className="text-[10px] uppercase font-bold tracking-wider text-sc-3">Check Out</div>
+                                <div className="font-medium text-sc text-sm">{t.checkOut || "—"}</div>
                               </div>
                             </div>
                           </div>
                           
                           {t.workPerformed && (
                             <div className="pt-2">
-                              <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1.5">Work Performed</div>
-                              <p className="text-sm text-slate-700 bg-slate-50 rounded-md p-3 border border-slate-100 leading-relaxed">{t.workPerformed}</p>
+                              <div className="text-[10px] uppercase font-bold tracking-wider text-sc-3 mb-1.5">Work Performed</div>
+                              <p className="text-sm text-sc-2 rounded-md p-3 border border-panel-subtle leading-relaxed" style={{ background: "var(--sc-inner)" }}>{t.workPerformed}</p>
                             </div>
                           )}
                           
                           {t.returnTripReason && (
-                            <div className="mt-2 bg-amber-50 border border-amber-200 rounded-md p-3">
-                              <div className="flex items-center gap-1.5 text-amber-700 font-bold text-xs uppercase tracking-wider mb-1">
+                            <div className="mt-2 rounded-md p-3 border" style={{ background: "rgba(255,157,24,0.1)", borderColor: "rgba(255,157,24,0.3)" }}>
+                              <div className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider mb-1" style={{ color: "var(--sc-orange)" }}>
                                 <AlertTriangle className="w-3.5 h-3.5" /> Return Trip Required
                               </div>
-                              <p className="text-sm text-amber-800">{t.returnTripReason}</p>
-                              {t.materialsNeeded && <p className="text-xs text-amber-700/80 mt-1 font-medium">Needs: {t.materialsNeeded}</p>}
+                              <p className="text-sm text-sc-2">{t.returnTripReason}</p>
+                              {t.materialsNeeded && <p className="text-xs mt-1 font-medium text-sc-3">Needs: {t.materialsNeeded}</p>}
                             </div>
                           )}
                         </CardContent>
@@ -303,25 +303,25 @@ export default function WorkOrderDetail() {
               </TabsContent>
 
               <TabsContent value="labor" className="space-y-6 m-0 animate-in fade-in duration-300">
-                <Card className="border-slate-200/60 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4"><CardTitle className="text-base flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" /> Labor Entries</CardTitle></CardHeader>
+                <Card className="sc-panel shadow-sm overflow-hidden border-none rounded-xl">
+                  <CardHeader className="border-b border-panel-subtle py-4" style={{ background: "var(--sc-inner)" }}><CardTitle className="text-base text-sc flex items-center gap-2"><Clock className="w-4 h-4 text-sc-3" /> Labor Entries</CardTitle></CardHeader>
                   <CardContent className="p-0">
-                    {wo.labor.length === 0 ? <div className="p-6 text-center text-sm text-slate-500">No labor logged.</div> : (
-                      <div className="divide-y divide-slate-100">
+                    {wo.labor.length === 0 ? <div className="p-6 text-center text-sm text-sc-3">No labor logged.</div> : (
+                      <div className="divide-y divide-[color:var(--sc-line-subtle)]">
                         {wo.labor.map((l) => {
                           const lt = users.find((u) => u.id === l.technicianId);
                           return (
-                            <div key={l.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 hover:bg-slate-50/50 transition-colors">
+                            <div key={l.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 hover:bg-white/[0.04] transition-colors">
                               <div>
-                                <div className="font-semibold text-slate-900 text-sm">{lt?.name}</div>
-                                <div className="text-xs text-slate-500 mt-0.5">{shortDate(l.date)} · {l.type} rate</div>
+                                <div className="font-semibold text-sc text-sm">{lt?.name}</div>
+                                <div className="text-xs text-sc-3 mt-0.5">{shortDate(l.date)} · {l.type} rate</div>
                               </div>
                               <div className="flex items-center gap-4 sm:justify-end">
                                 <div className="text-right">
-                                  <div className="font-bold text-slate-900 text-sm">{money(l.hours * l.rate)}</div>
-                                  <div className="text-xs text-slate-500">{l.hours} hrs @ ${l.rate}/hr</div>
+                                  <div className="font-bold text-sc text-sm">{money(l.hours * l.rate)}</div>
+                                  <div className="text-xs text-sc-3">{l.hours} hrs @ ${l.rate}/hr</div>
                                 </div>
-                                {l.approved ? <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] uppercase">Approved</Badge> : <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] uppercase">Pending</Badge>}
+                                {l.approved ? <Badge variant="outline" className="text-[10px] uppercase" style={{ background: "rgba(56,212,119,0.1)", color: "var(--sc-green)", borderColor: "rgba(56,212,119,0.3)" }}>Approved</Badge> : <Badge variant="outline" className="text-[10px] uppercase" style={{ background: "rgba(255,157,24,0.1)", color: "var(--sc-orange)", borderColor: "rgba(255,157,24,0.3)" }}>Pending</Badge>}
                               </div>
                             </div>
                           );
@@ -331,93 +331,84 @@ export default function WorkOrderDetail() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-slate-200/60 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4"><CardTitle className="text-base flex items-center gap-2"><Wrench className="w-4 h-4 text-slate-400" /> Materials Used</CardTitle></CardHeader>
+                <Card className="sc-panel shadow-sm overflow-hidden border-none rounded-xl">
+                  <CardHeader className="border-b border-panel-subtle py-4" style={{ background: "var(--sc-inner)" }}><CardTitle className="text-base text-sc flex items-center gap-2"><Wrench className="w-4 h-4 text-sc-3" /> Materials Used</CardTitle></CardHeader>
                   <CardContent className="p-0">
-                    {wo.materials.length === 0 ? <div className="p-6 text-center text-sm text-slate-500">No materials logged.</div> : (
-                      <div className="divide-y divide-slate-100">
+                    {wo.materials.length === 0 ? <div className="p-6 text-center text-sm text-sc-3">No materials logged.</div> : (
+                      <div className="divide-y divide-[color:var(--sc-line-subtle)]">
                         {wo.materials.map((m) => (
-                          <div key={m.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 hover:bg-slate-50/50 transition-colors">
+                          <div key={m.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 hover:bg-white/[0.04] transition-colors">
                             <div>
-                              <div className="font-semibold text-slate-900 text-sm">{m.name}</div>
-                              <div className="text-xs text-slate-500 mt-0.5">Qty: {m.quantity}</div>
+                              <div className="font-semibold text-sc text-sm">{m.name}</div>
+                              <div className="text-xs text-sc-3 mt-0.5">Qty: {m.quantity}</div>
                             </div>
                             <div className="flex items-center gap-4 sm:justify-end">
                               <div className="text-right">
-                                <div className="font-bold text-slate-900 text-sm">{money(m.quantity * m.billablePrice)}</div>
-                                <div className="text-xs text-slate-500">${m.billablePrice} ea</div>
+                                <div className="font-bold text-sc text-sm">{money(m.quantity * m.billablePrice)}</div>
+                                <div className="text-xs text-sc-3">${m.billablePrice} ea</div>
                               </div>
-                              {m.approved ? <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] uppercase">Approved</Badge> : <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] uppercase">Pending</Badge>}
+                              {m.approved ? <Badge variant="outline" className="text-[10px] uppercase" style={{ background: "rgba(56,212,119,0.1)", color: "var(--sc-green)", borderColor: "rgba(56,212,119,0.3)" }}>Approved</Badge> : <Badge variant="outline" className="text-[10px] uppercase" style={{ background: "rgba(255,157,24,0.1)", color: "var(--sc-orange)", borderColor: "rgba(255,157,24,0.3)" }}>Pending</Badge>}
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
                   </CardContent>
-                  <div className="bg-slate-50 border-t border-slate-200 p-4 flex items-center justify-between">
-                    <span className="font-semibold text-slate-700 uppercase tracking-wider text-xs">Estimated Job Total</span>
-                    <span className="font-bold text-primary text-lg">{money(laborTotal + materialTotal)}</span>
+                  <div className="border-t border-panel-subtle p-4 flex items-center justify-between" style={{ background: "var(--sc-inner)" }}>
+                    <span className="font-semibold text-sc-2 uppercase tracking-wider text-xs">Estimated Job Total</span>
+                    <span className="font-bold text-sc-blue text-lg">{money(laborTotal + materialTotal)}</span>
                   </div>
                 </Card>
               </TabsContent>
 
               <TabsContent value="activity" className="m-0 animate-in fade-in duration-300">
-                <Card className="border-slate-200/60 shadow-sm">
+                <Card className="sc-panel shadow-sm border-none rounded-xl">
+                  <CardHeader className="border-b border-panel-subtle py-4"><CardTitle className="text-base text-sc flex items-center gap-2"><Activity className="w-4 h-4 text-sc-3" /> Audit Log</CardTitle></CardHeader>
                   <CardContent className="p-6">
-                    {wo.internalLog.length === 0 ? <div className="text-center text-sm text-slate-500">No activity yet.</div> : (
-                      <div className="relative space-y-6 before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
-                        {wo.internalLog.map((e, i) => (
-                          <div key={e.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                            <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-slate-200 group-[.is-active]:bg-primary text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10" />
-                            <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
-                              <div className="flex items-center justify-between mb-1">
-                                <div className="font-semibold text-slate-900 text-sm">{e.author}</div>
-                                <time className="text-xs text-slate-500 font-medium">{shortDate(e.timestamp)}</time>
-                              </div>
-                              <div className="text-sm text-slate-600 leading-relaxed">{e.message}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <div className="text-center text-sm text-sc-3 py-10">
+                      Audit log is not available for this job yet.
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
             </div>
           </Tabs>
         </div>
-
-        {/* Right Column: AI & Portal */}
+        
+        {/* Right Column: AI & Side Actions */}
         <div className="xl:col-span-1 space-y-6">
           {woRecommendations.length > 0 && (
-            <Card className="border-0 bg-slate-900 text-slate-100 shadow-xl overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
-              <CardHeader className="border-b border-slate-800/50 pb-3 relative z-10">
-                <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" /> RoseOS Intelligence
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 space-y-4 relative z-10">
+            <Card className="sc-panel circuit-texture overflow-hidden border-none rounded-xl">
+              <div className="px-4 py-3 border-b border-panel-subtle relative" style={{ background: "var(--sc-inner)" }}>
+                <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(67,166,255,0.15), transparent 70%)" }} />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-sc flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-sc-blue" /> RoseOS Analysis
+                </h3>
+              </div>
+              <CardContent className="p-4 space-y-4">
                 {woRecommendations.map((rec) => (
-                  <div key={rec.id} className="bg-slate-800/80 border border-slate-700 rounded-lg p-3.5 group hover:border-primary/50 transition-colors">
-                    <div className="flex justify-between items-start gap-2 mb-2">
-                      <Badge variant="outline" className="bg-slate-900 text-slate-300 border-slate-700 text-[9px] font-mono px-1.5 py-0">
-                        {rec.confidence}% CONF
-                      </Badge>
+                  <div key={rec.id} className="rounded-lg p-3" style={{ background: "var(--sc-panel-2)", border: "1px solid var(--sc-line)" }}>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="text-[9px] font-mono font-semibold tracking-wide text-sc-blue">
+                        {rec.confidence}% CONFIDENCE
+                      </span>
                       {rec.needsApproval && (
-                        <Badge variant="outline" className="text-[9px] text-amber-400 border-amber-400/30 bg-amber-400/10 uppercase tracking-wide px-1.5 py-0">
-                          Review
-                        </Badge>
+                        <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: "var(--sc-orange)", background: "rgba(255,157,24,0.1)", border: "1px solid rgba(255,157,24,0.2)" }}>
+                          Approval
+                        </span>
                       )}
                     </div>
-                    <h3 className="font-semibold text-sm text-white mb-1.5 leading-tight">{rec.title}</h3>
-                    <p className="text-xs text-slate-400 mb-4 leading-relaxed">{rec.description}</p>
-                    <div className="flex flex-col gap-2">
-                      <Button size="sm" className="bg-primary text-white hover:bg-primary/90 text-xs h-8 w-full" onClick={() => handleAct(rec.id)}>
+                    <h4 className="text-sm font-semibold text-sc leading-snug">{rec.title}</h4>
+                    <p className="text-xs text-sc-3 mt-1 leading-relaxed">{rec.description}</p>
+                    <div className="mt-3">
+                      <Button 
+                        size="sm" 
+                        className="w-full text-xs h-8 text-white blue-glow-soft" 
+                        style={{background:'var(--sc-btn)',border:'1px solid var(--sc-btn-highlight)'}}
+                        onClick={() => handleAct(rec.id)}
+                        data-testid={`button-approve-wo-rec-${rec.id}`}
+                      >
                         <Check className="w-3.5 h-3.5 mr-1.5" /> Approve Draft
-                      </Button>
-                      <Button size="sm" variant="outline" className="bg-transparent border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 text-xs h-8 w-full" onClick={() => dismissRecommendation(rec.id)}>
-                        Dismiss
                       </Button>
                     </div>
                   </div>
@@ -426,68 +417,41 @@ export default function WorkOrderDetail() {
             </Card>
           )}
 
-          <Card className="border-slate-200/60 shadow-sm">
-            <CardHeader className="bg-slate-50/50 py-3 px-4 border-b border-slate-100 flex flex-row items-center justify-between">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                <Activity className="w-4 h-4" /> Portal Sync
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-700">Status</span>
-                <Badge variant="outline" className={portalClass(wo.portalSyncStatus)}>{wo.portalSyncStatus}</Badge>
-              </div>
-              
-              <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 text-sm">
-                <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Draft Update Payload</div>
-                <p className="text-slate-600 font-mono text-xs">
-                  Status: {wo.status}<br/>
-                  {tech ? `Tech: ${tech.name}` : "Pending assignment"}<br/>
-                  Date: {shortDate(new Date().toISOString())}
-                </p>
-              </div>
-
-              {canManage ? (
-                <div className="flex flex-col gap-2 pt-2 border-t border-slate-100">
-                  <Button size="sm" className="w-full bg-slate-900 text-white hover:bg-slate-800" onClick={() => { updateWorkOrder(wo.id, { portalSyncStatus: "Sent" }); toast({ title: "Portal update sent", description: "You approved and sent this update to the customer portal." }); }} data-testid="button-approve-portal">
-                    <Send className="w-3.5 h-3.5 mr-2" /> Approve & Sync
-                  </Button>
-                  <Button size="sm" variant="outline" className="w-full text-slate-600" data-testid="button-copy-manual">
-                    <FileText className="w-3.5 h-3.5 mr-2" /> Copy for Manual Portal
-                  </Button>
-                </div>
-              ) : (
-                <div className="pt-2 border-t border-slate-100 text-xs font-medium text-amber-600 flex items-start gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> Portal updates require manager approval.
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-sc-3 mb-2 px-1">Quick Actions</h3>
+            <Button variant="outline" className="w-full justify-start h-10 text-sc-2 hover:text-white" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}}>
+              <FileCheck className="w-4 h-4 mr-2 text-sc-3" /> Approve All Labor/Mats
+            </Button>
+            <Button variant="outline" className="w-full justify-start h-10 text-sc-2 hover:text-white" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}}>
+              <Send className="w-4 h-4 mr-2 text-sc-3" /> Send Portal Update
+            </Button>
+            <Button variant="outline" className="w-full justify-start h-10 text-sc-2 hover:text-white" style={{background:'var(--sc-elevated)',border:'1px solid var(--sc-line)'}}>
+              <Edit2 className="w-4 h-4 mr-2 text-sc-3" /> Edit Work Order
+            </Button>
+          </div>
         </div>
+
       </div>
     </div>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value?: string }) {
-  if (!value) return null;
+function InfoRow({ label, value }: { label: string; value: string | undefined }) {
   return (
     <div>
-      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">{label}</div>
-      <div className="text-sm font-medium text-slate-900 font-mono">{value}</div>
+      <div className="text-xs text-sc-3 font-medium uppercase tracking-wider mb-0.5">{label}</div>
+      <div className="text-sm font-medium text-sc">{value || "—"}</div>
     </div>
   );
 }
 
 function EmptyState({ icon: Icon, title, description }: { icon: any, title: string, description: string }) {
   return (
-    <Card className="border-dashed border-2 border-slate-200 shadow-none bg-slate-50/50">
+    <Card className="sc-panel border-panel-subtle border-dashed shadow-sm">
       <CardContent className="py-12 flex flex-col items-center justify-center text-center">
-        <div className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center mb-3 shadow-sm">
-          <Icon className="w-6 h-6 text-slate-400" />
-        </div>
-        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
-        <p className="text-xs text-slate-500 mt-1 max-w-sm">{description}</p>
+        <Icon className="w-10 h-10 text-sc-3 mb-3" />
+        <h3 className="text-base font-semibold text-sc">{title}</h3>
+        <p className="text-sm text-sc-3 mt-1 max-w-sm">{description}</p>
       </CardContent>
     </Card>
   );
