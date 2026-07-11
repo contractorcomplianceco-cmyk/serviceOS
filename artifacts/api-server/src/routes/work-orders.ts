@@ -31,7 +31,7 @@ import {
   TechnicianCheckOutParams,
 } from "@workspace/api-zod";
 import { requireAuth, requireNav, requireRoles } from "../middleware/auth";
-import { canSchedule, isValidRole } from "../lib/authz";
+import { canSchedule, isFieldRole, isValidRole } from "../lib/authz";
 import { toWorkOrder } from "../lib/serialize-ops";
 import { writeAudit } from "../lib/audit";
 
@@ -207,6 +207,29 @@ router.patch(
         error: "Scheduling requires scheduling authority",
       });
       return;
+    }
+
+    // Field roles (technicians/subcontractors) capture their work through the
+    // dedicated labor/materials/notes and check-in/out endpoints. On the generic
+    // PATCH they may only touch on-site descriptive fields — billing,
+    // assignments, financials, catalog references, and approval-critical arrays
+    // stay off-limits so a technician can't self-authorize billing or ownership.
+    if (isValidRole(user.role) && isFieldRole(user.role)) {
+      const FIELD_EDITABLE = new Set([
+        "description",
+        "importantNotes",
+        "locationNotes",
+        "quoteNotes",
+        "attachments",
+      ]);
+      const attempted = Object.keys(parsed.data);
+      const forbidden = attempted.filter((k) => !FIELD_EDITABLE.has(k));
+      if (forbidden.length) {
+        res.status(403).json({
+          error: `Not authorized to modify: ${forbidden.join(", ")}`,
+        });
+        return;
+      }
     }
 
     const updates: Partial<WorkOrder> = {};

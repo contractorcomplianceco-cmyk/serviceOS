@@ -479,6 +479,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     sendPortalUpdate: (workOrderId, status) => {
       const wo = workOrders.find((w) => w.id === workOrderId);
+      updateWorkOrderM.mutate({
+        id: workOrderId,
+        data: { portalSyncStatus: status } as unknown as WorkOrderUpdate,
+      });
       pushLocalAudit([{ action: 'Portal Sync', entityType: 'Portal', entityId: workOrderId, summary: `${wo?.number ?? workOrderId} → ${status} (${wo?.source ?? 'portal'}) [SIMULATED]` }]);
     },
 
