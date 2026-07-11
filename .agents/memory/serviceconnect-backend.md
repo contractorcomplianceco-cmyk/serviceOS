@@ -11,12 +11,13 @@ description: Durable decisions & guardrail invariants for the ServiceConnect ope
 - Create actions that need a server-assigned id return a Promise resolving to the entity/id (or null); callers must `await` before navigating.
 
 ## Backend guardrails (acceptance invariants — keep enforced)
-**Why:** the task requires backend authz, org1 tenant scoping, idempotency, human-in-the-loop, and audit on *every* mutation. A code review twice caught gaps here (over-broad closeout reads; a non-tenant-scoped lookup in an idempotency branch), so these are easy to regress.
+**Why:** the task requires backend authz, org1 tenant scoping, idempotency, human-in-the-loop, and audit on *every* mutation. These are subtle and easy to regress — the recurring failure modes below are the ones to watch.
 **How to apply** when touching any operational route:
 - Ownership/identity comes from the session user, never from the request body.
 - Closeout reads are gated to approvers (full tenant queue) and field roles (own drafts only); every other role gets 403. Don't fall back to "any authenticated user can read."
-- Editable-state guards matter: an approved closeout is locked; edits are only allowed while it's awaiting review or sent back.
-- **Every** related-entity lookup inside convert/approve transactions must include a tenant predicate — even inside idempotency short-circuit branches and even when the parent row is already tenant-scoped. This is the specific spot reviews keep flagging.
+- Editable-state guards matter: an approved closeout is locked — it can't be edited AND can't be sent back (only a Pending Review draft can be sent back). Guard both endpoints, not just edit.
+- Scheduling requires scheduling authority on **both** create and update — any field that touches scheduling (status→Scheduled, schedule window, time window) must be gated on *every* endpoint that can set it. Guarding only PATCH leaves POST as a bypass.
+- **Every** related-entity lookup inside convert/approve transactions must include a tenant predicate — even inside idempotency short-circuit branches and even when the parent row is already tenant-scoped. This is the single most-missed spot.
 - Idempotency: intake→work-order conversion and closeout approval must be safe to call twice (same work order returned; inventory deducted exactly once). Use a row lock + status gate inside the transaction.
 - Every mutation writes an audit event. For broad update endpoints, audit *any* field change with a generic fallback summary, not only "interesting" fields.
 

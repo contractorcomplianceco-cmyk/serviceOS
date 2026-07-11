@@ -99,6 +99,18 @@ router.post(
     const user = req.user!;
     const d = parsed.data;
 
+    // Creating a work order already in a scheduled state (or with a time
+    // window) is a scheduling decision and requires scheduling authority — the
+    // same guard as PATCH /work-orders/:id. RoseOS never auto-schedules.
+    const isScheduling =
+      d.status === "Scheduled" || d.timeWindow !== undefined;
+    if (isScheduling && !(isValidRole(user.role) && canSchedule(user.role))) {
+      res.status(403).json({
+        error: "Scheduling requires scheduling authority",
+      });
+      return;
+    }
+
     let number = d.number;
     if (!number) {
       const existing = await db
