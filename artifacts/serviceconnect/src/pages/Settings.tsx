@@ -1,13 +1,13 @@
 import { useAppStore } from "@/lib/store";
 import { useLocation } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { roleDescription } from "@/lib/permissions";
-import { RotateCcw, ShieldCheck, Users } from "lucide-react";
+import { RotateCcw, ShieldCheck, Users, Settings2, UserCircle2, HardHat, FileText, Database } from "lucide-react";
 
 export default function Settings() {
   const { users, currentUser, setCurrentUserId, resetData } = useAppStore();
@@ -15,60 +15,113 @@ export default function Settings() {
   const { toast } = useToast();
 
   const guardrails = [
-    { label: "AI may auto-schedule jobs", enabled: false, locked: true },
-    { label: "AI may auto-send customer messages", enabled: false, locked: true },
-    { label: "AI may auto-create invoices", enabled: false, locked: true },
-    { label: "VoiceConnect output saved as draft", enabled: true, locked: true },
-    { label: "Require supervisor review before billing", enabled: true, locked: false },
-    { label: "Show RoseOS recommendations", enabled: true, locked: false },
+    { label: "AI may auto-schedule jobs", enabled: false, locked: true, desc: "Never automatically assign technicians to jobs." },
+    { label: "AI may auto-send customer messages", enabled: false, locked: true, desc: "Never communicate externally without approval." },
+    { label: "AI may auto-create invoices", enabled: false, locked: true, desc: "Never generate financial records automatically." },
+    { label: "VoiceConnect output saved as draft", enabled: true, locked: true, desc: "All AI extracted data saves as a draft first." },
+    { label: "Require supervisor review before billing", enabled: true, locked: false, desc: "Technician closeouts need manager sign-off." },
+    { label: "Show RoseOS recommendations", enabled: true, locked: false, desc: "Display AI suggestions in the Intelligence panel." },
   ];
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto">
+    <div className="p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900" data-testid="text-page-title">Settings</h1>
-        <p className="text-muted-foreground">Roles, permissions, AI guardrails, and demo controls.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900" data-testid="text-page-title">Settings</h1>
+        <p className="text-slate-500 mt-1 text-sm">
+          Roles, permissions, AI guardrails, and system configuration.
+        </p>
       </div>
 
-      <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Users className="w-4 h-4" /> Active User & Role</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">Switch the active user to explore permission-gated views. Currently signed in as <span className="font-medium text-slate-900">{currentUser?.name}</span> ({currentUser?.role}).</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {users.map((u) => (
-              <button key={u.id} onClick={() => { setCurrentUserId(u.id); toast({ title: "Switched user", description: `Now viewing as ${u.name} — ${u.role}.` }); }} className={`text-left p-3 rounded-lg border transition-colors ${currentUser?.id === u.id ? "border-primary bg-primary/5" : "hover:border-slate-300"}`} data-testid={`user-switch-${u.id}`}>
-                <div className="flex items-center justify-between">
-                  <div className="font-medium text-sm">{u.name}</div>
-                  {currentUser?.id === u.id && <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px]">Active</Badge>}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column: Role Simulator */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card className="border border-primary/20 bg-primary/5 shadow-sm">
+             <CardContent className="p-6">
+               <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center mb-4 shadow-lg shadow-primary/30">
+                 <UserCircle2 className="w-6 h-6" />
+               </div>
+               <h3 className="text-lg font-bold text-slate-900 mb-1">Current Session</h3>
+               <div className="text-sm font-medium text-primary mb-3">{currentUser.name} — {currentUser.role}</div>
+               <p className="text-sm text-slate-600 mb-6">{roleDescription(currentUser.role)}</p>
+               <div className="space-y-2">
+                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Switch Role Context</h4>
+                 <div className="space-y-1">
+                   {users.map((u) => (
+                     <button 
+                       key={u.id} 
+                       onClick={() => { setCurrentUserId(u.id); toast({ title: "Context switched", description: `Now viewing as ${u.name} (${u.role}).` }); }} 
+                       className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between ${currentUser?.id === u.id ? "bg-primary text-white font-medium shadow-md" : "hover:bg-white bg-transparent border border-transparent hover:border-slate-200 text-slate-700"}`} 
+                       data-testid={`user-switch-${u.id}`}
+                     >
+                       <div className="flex items-center gap-2">
+                         {u.role.includes("Technician") ? <HardHat className="w-4 h-4 opacity-70" /> : <FileText className="w-4 h-4 opacity-70" />}
+                         {u.name}
+                       </div>
+                       <span className="text-[10px] opacity-70">{u.role.split(' ')[0]}</span>
+                     </button>
+                   ))}
+                 </div>
+               </div>
+             </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column: Settings Panels */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="border border-slate-200/60 shadow-sm bg-white overflow-hidden">
+            <CardHeader className="bg-slate-900 py-5 px-6 border-b border-slate-800">
+              <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-primary" /> RoseOS Guardrails
+              </CardTitle>
+              <CardDescription className="text-slate-400 mt-1 text-sm">
+                Core safety rules that keep AI advisory. Locked rules cannot be bypassed.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 divide-y divide-slate-100">
+              {guardrails.map((g) => (
+                <div key={g.label} className="flex items-start justify-between p-5 hover:bg-slate-50 transition-colors">
+                  <div className="flex-1 pr-4">
+                    <Label className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-1">
+                      {g.label}
+                      {g.locked && <Badge variant="outline" className="text-[10px] bg-slate-100 text-slate-500 uppercase tracking-wide">Locked</Badge>}
+                    </Label>
+                    <p className="text-xs text-slate-500">{g.desc}</p>
+                  </div>
+                  <div className="pt-1">
+                    <Switch checked={g.enabled} disabled={g.locked} data-testid={`switch-${g.label}`} />
+                  </div>
                 </div>
-                <div className="text-xs text-primary">{u.role}</div>
-                <div className="text-xs text-muted-foreground mt-1">{roleDescription(u.role)}</div>
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary" /> AI Guardrails</CardTitle></CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-sm text-muted-foreground mb-3">Core safety rules keep RoseOS advisory. Locked rules cannot be disabled in this prototype.</p>
-          {guardrails.map((g) => (
-            <div key={g.label} className="flex items-center justify-between py-2.5 border-b last:border-0">
-              <Label className="text-sm font-normal flex items-center gap-2">{g.label}{g.locked && <Badge variant="outline" className="text-[10px] bg-slate-100 text-slate-500">Locked</Badge>}</Label>
-              <Switch checked={g.enabled} disabled={g.locked} data-testid={`switch-${g.label}`} />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+          <Card className="border border-destructive/20 shadow-sm bg-white overflow-hidden">
+            <CardHeader className="bg-destructive/5 py-4 px-5 border-b border-destructive/10">
+              <CardTitle className="text-base font-semibold text-destructive flex items-center gap-2">
+                <Database className="w-4 h-4" /> Danger Zone
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-900 mb-1">Reset Sandbox Data</h4>
+                  <p className="text-xs text-slate-500 max-w-sm">This will clear all local storage modifications and restore the original seeded demo database.</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  className="border-destructive text-destructive hover:bg-destructive hover:text-white transition-colors" 
+                  onClick={() => { resetData(); toast({ title: "Data reset", description: "All demo data restored to defaults." }); navigate("/"); }} 
+                  data-testid="button-reset-data"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" /> Factory Reset
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      <Card className="border-destructive/20">
-        <CardHeader><CardTitle className="text-base text-destructive flex items-center gap-2"><RotateCcw className="w-4 h-4" /> Demo Controls</CardTitle></CardHeader>
-        <CardContent className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">Reset all data back to the seeded demo state.</p>
-          <Button variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/5" onClick={() => { resetData(); toast({ title: "Data reset", description: "All demo data restored to defaults." }); navigate("/"); }} data-testid="button-reset-data">Reset Demo Data</Button>
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

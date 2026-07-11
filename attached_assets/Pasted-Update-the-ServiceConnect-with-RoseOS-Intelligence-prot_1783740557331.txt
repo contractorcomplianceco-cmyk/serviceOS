@@ -1,0 +1,305 @@
+Update the ServiceConnect with RoseOS Intelligence prototype to follow the visual design of the attached reference images.
+
+This is a premium field-service operating system, not a generic SaaS dashboard and not a marketing site. The design should feel like a modern command center for dispatch, technicians, work orders, GPS routing, inventory, billing, and accounting.
+
+VISUAL THESIS
+ServiceConnect should feel like a high-end operations cockpit: dark command-center shell, clean white work surfaces, blue intelligence accents, polished mobile cards, sharp hierarchy, and calm professional spacing.
+
+DESIGN DIRECTION
+Match the attached references:
+- Dark navy / near-black app frame
+- Clean white or very light gray main work panels
+- Strong electric blue accent for primary actions and intelligence highlights
+- Green for completed / healthy
+- Red for urgent / blocked
+- Amber only for warnings, not as a brand color
+- Rounded modern panels, but do not over-round everything
+- Subtle shadows and depth
+- Premium, app-like, operational feel
+- Crisp typography
+- Lots of readable spacing
+- Clear status badges
+- Smooth hover states
+- Mobile-friendly technician screens
+
+DO NOT:
+- Do not make it look like BlueFolder.
+- Do not make it look like a plain admin template.
+- Do not use yellow-heavy branding.
+- Do not create a marketing landing page.
+- Do not use cartoon graphics.
+- Do not overload the screen with random cards.
+- Do not use purple SaaS gradients.
+- Do not bury the working app behind hero copy.
+
+APP LAYOUT
+Use a dark command-center shell with:
+- Left sidebar navigation
+- Top operational header
+- Main working area
+- Optional right-side intelligence panel
+
+Sidebar should include:
+- Today
+- Intake Queue
+- Work Orders
+- Dispatch Calendar
+- Technicians
+- Customers
+- Inventory
+- Equipment
+- Billing
+- Accounting
+- Documents
+- Reports
+- Intelligence
+- Settings
+
+Sidebar style:
+- Dark background
+- White/light text
+- Blue active state
+- Simple icons
+- Compact but readable
+- Product name at top: ServiceConnect
+- Small subtitle: RoseOS Intelligence
+
+TOP HEADER
+Include:
+- Search bar
+- Current date
+- “New Work Order” button
+- “Start VoiceConnect” button
+- Notification bell
+- User profile
+- System status indicator
+
+TODAY DASHBOARD DESIGN
+The Today screen should be the first screen.
+
+Use a clean operational layout:
+- Left/main area: priority work, dispatch overview, work orders needing action
+- Right panel: RoseOS Intelligence recommendations
+- Top summary strip with key metrics
+
+Metric examples:
+- Emergency Jobs
+- Need Scheduled
+- Techs Available
+- Ready for Billing
+- Portal Sync Pending
+- Past Due AR
+- Inventory Alerts
+
+The RoseOS Intelligence panel should look premium and distinct:
+- Dark or blue-tinted panel
+- Recommendation cards
+- Confidence labels
+- “Needs Human Approval” labels
+- Buttons: Approve, Edit, Assign, Snooze
+
+DISPATCH CALENDAR DESIGN
+Create a beautiful replacement for the BlueFolder calendar.
+
+Requirements:
+- Technicians down the left side
+- Days/time blocks across the top
+- Job cards inside the schedule
+- Color-coded statuses
+- Filter bar above calendar
+- Unscheduled jobs drawer
+- Job cards with readable priority, customer, city, time window, source, and flags
+
+Job cards should feel modern:
+- Light background
+- Thin colored status strip
+- Compact labels
+- Priority pill
+- Source tag like ServiceChannel or Email
+- Material/quote/return-trip indicators
+
+When clicking an unscheduled job:
+Show a polished “RoseOS Suggested Assignment” drawer or modal with:
+- Best technician
+- Drive time
+- GPS distance
+- Skills match
+- Truck inventory match
+- Workload warning
+- Confidence score
+- Approve Schedule button
+- Choose Different Tech button
+
+WORK ORDER DETAIL DESIGN
+Use a structured detail page:
+- Header with work order number, customer, status, priority
+- Left column for job details
+- Middle section for notes, attachments, timeline
+- Right column for RoseOS recommendations and portal sync status
+- Tabs: Overview, Notes, Schedule, Labor, Materials, Attachments, Billing, Job Cost, Portal Sync, History
+
+Make it easy to scan. Use labels, status chips, and clean dividers.
+
+TECHNICIAN MOBILE DESIGN
+Create a mobile technician experience inspired by the reference images.
+
+Mobile screens:
+- My Jobs Today
+- Job Detail
+- Check In / Check Out
+- Navigate
+- Start VoiceConnect
+- Add Materials
+- Upload Photos
+- Submit for Review
+
+Style:
+- Dark mobile header
+- Large clear job cards
+- Big action buttons
+- Blue primary CTA
+- VoiceConnect recording state should feel modern and simple
+- Use clear “Draft / Needs Review” labels
+
+VOICECONNECT DESIGN
+VoiceConnect should have a premium voice-capture interface.
+
+Include:
+- Large microphone control
+- Live transcript area
+- Structured extraction panel
+- Work performed
+- Materials used
+- Labor time
+- Return-trip reason
+- Billing suggestions
+- Portal update draft
+- Review required badge
+
+Show Spanish-to-English translation as a sample future-ready feature:
+- Original Spanish note
+- English translated summary
+- Review required
+
+BILLING / ACCOUNTING DESIGN
+The billing and accounting sections should feel cleaner and more visual than QuickBooks.
+
+Billing Queue:
+- Jobs ready for invoice
+- Missing info
+- Waiting approval
+- Invoiced
+- Paid
+- Past due
+
+Invoice preview:
+- Polished branded invoice
+- Customer info
+- Labor lines
+- Materials lines
+- Tax
+- Total
+- Payment status
+- Send invoice button
+- Payment link button
+
+Accounting dashboard:
+- AR aging
+- Revenue by customer
+- Revenue by portal/source
+- Profit by job
+- Profit by technician
+- Cash flow forecast placeholder
+- Past due alerts
+
+INVENTORY DESIGN
+Inventory should be visually organized by location:
+- Tampa Shop
+- Orlando Shop
+- Office
+- Trucks
+- Technicians
+
+Use clean inventory tables with:
+- Item
+- Category
+- Quantity
+- Reorder point
+- Location
+- Vendor
+- Cost
+- Billable price
+- Reserved for job
+- Status
+
+Add low-stock badges and reorder suggestion cards.
+
+CUSTOMER DOCUMENT DESIGN
+Customer records should include a document vault.
+
+Documents:
+- COI
+- W-9
+- Contract
+- Site instructions
+- Customer billing rules
+- Portal rules
+
+Use document status badges:
+- Current
+- Missing
+- Expiring Soon
+- Expired
+- Needs Review
+
+INTERACTION STYLE
+Add polished micro-interactions:
+- Smooth sidebar active state
+- Hover previews for job cards
+- Slide-out drawer for job recommendations
+- Modal for VoiceConnect review
+- Soft transitions between tabs
+- Clear loading and empty states
+
+RESPONSIVE REQUIREMENTS
+Desktop:
+- Best for dispatchers and billing users
+- Dense but readable
+- Calendar must be usable
+
+Tablet:
+- Calendar and work order detail should adapt
+
+Mobile:
+- Technician workflow must be primary
+- No tiny text
+- Big tap targets
+- Job cards should stack cleanly
+
+COPY STYLE
+Use operational product language, not marketing copy.
+
+Good labels:
+- Need Scheduled
+- Ready for Billing
+- Portal Sync Pending
+- Materials Needed
+- Return Trip Needed
+- RoseOS Recommendation
+- Needs Human Approval
+- Tech Overload Risk
+- Low Stock
+- Invoice Draft
+
+Avoid fluffy copy.
+
+IMPORTANT BRANDING
+Use:
+- ServiceConnect as the product name
+- RoseOS Intelligence as the intelligence layer
+- VoiceConnect as the voice capture module
+
+Do not use yellow as the RoseOS Intelligence brand color.
+
+FINAL RESULT
+The app should look like a polished, premium, custom-built BlueFolder replacement with a much more modern interface. It should clearly communicate that this is a serious operational system for dispatch, technicians, inventory, billing, accounting, GPS routing, ServiceChannel integration, and AI-assisted human-approved decisions.
