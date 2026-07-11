@@ -56,6 +56,25 @@ router.post(
         if (!invoice) return { notFound: true as const };
 
         const type = d.type ?? "Payment";
+        // Guard the AR invariant (balance = amount - amountPaid never goes
+        // negative): a non-refund payment cannot exceed the remaining balance,
+        // and a refund cannot exceed what has already been paid. Overpayment is
+        // not a supported flow.
+        const balance = invoice.amount - invoice.amountPaid;
+        const EPS = 1e-6;
+        if (type === "Refund") {
+          if (d.amount > invoice.amountPaid + EPS) {
+            return {
+              invalid:
+                "Refund amount exceeds the amount paid on this invoice" as const,
+            };
+          }
+        } else if (d.amount > balance + EPS) {
+          return {
+            invalid:
+              "Payment amount exceeds the invoice's remaining balance" as const,
+          };
+        }
         const delta = type === "Refund" ? -d.amount : d.amount;
         const amountPaid = Math.max(0, invoice.amountPaid + delta);
         const date = d.date
@@ -98,6 +117,10 @@ router.post(
 
       if ("notFound" in out) {
         res.status(400).json({ error: "Invoice not found" });
+        return;
+      }
+      if ("invalid" in out) {
+        res.status(400).json({ error: out.invalid });
         return;
       }
       await writeAudit(

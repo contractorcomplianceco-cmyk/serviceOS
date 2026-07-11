@@ -19,12 +19,12 @@ pnpm --filter @workspace/api-server exec vitest run
   carrying the session cookie via `dev-login`), `anon()`, and
   `createSecondTenant()` (inserts a fresh tenant + admin for isolation tests).
 
-### Suites (27 tests, all passing)
+### Suites (35 tests, all passing)
 
 | File | Covers |
 |---|---|
 | `security.test.ts` | Authentication (401/me/logout), role + nav authorization, portal scoping, cross-tenant isolation |
-| `workflow.test.ts` | Migration dry-run validation, required-field + duplicate detection, repeatable validation, import-before-validate guard, audit-on-mutation, invoice balance invariant (`amount − amountPaid >= 0`), and a deterministic payment→refund round-trip |
+| `workflow.test.ts` | Migration dry-run validation, required-field + duplicate detection, repeatable validation, import-before-validate guard, audit-on-mutation, invoice balance invariant (`amount − amountPaid >= 0`), a deterministic payment→refund round-trip, a full-payment→refund cycle that flips an invoice to **Paid** then reverts it to **Invoiced**, and rejection (400, no state change) of overpayments exceeding the remaining balance and refunds exceeding the amount paid |
 | `closeouts.test.ts` | HITL closeout approval: pending-by-default, non-approver blocked, approve transition, **idempotent repeat approval** (labor posts once; **inventory deducted exactly once with a single `Consumed` audit event**), send-back locked after approval |
 
 ### Design principles
@@ -57,7 +57,7 @@ approval surface renders explicit Approve actions (nothing auto-approves).
 ## Full check status
 
 - **Typecheck** — `pnpm run typecheck` passes (all workspace packages).
-- **Tests** — 27/27 backend integration tests pass.
+- **Tests** — 35/35 backend integration tests pass.
 - **Console** — browser console clean (only Vite HMR messages); server logs show
   no errors.
 - **Lint** — no ESLint config or `lint` script is defined in this workspace, so

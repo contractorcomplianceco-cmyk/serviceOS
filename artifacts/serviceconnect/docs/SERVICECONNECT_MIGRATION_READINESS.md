@@ -8,8 +8,9 @@ well-aligned (future-ready), but no importer/exporter exists.** Migration is a b
 - **Domain model is comprehensive** (`src/lib/types.ts`): customers, contacts, rate rules, locations,
   work orders (trips, labor, materials, attachments, internal log), invoices + payments, inventory,
   equipment, documents, closeouts, users/roles, audit events. This maps cleanly to BlueFolder concepts.
-- **Seeded data is realistic** (FL plumbing/HVAC: 10 users/8 roles, 6 customers, 10 work orders,
-  invoices, inventory, equipment, documents, closeouts) — useful as a mapping reference.
+- **Seeded data is realistic** (FL plumbing/HVAC: 14 users across 12 roles — 11 internal + 1
+  Customer Portal user — 6 customers, 10 work orders, invoices, inventory, equipment, documents,
+  closeouts) — useful as a mapping reference.
 - **No import or export tooling exists.** There is no BlueFolder CSV/API importer and no QuickBooks
   data bridge.
 

@@ -1,3 +1,6 @@
 - [ServiceConnect data access](serviceconnect-data-access.md) — feature-local API surfaces may call generated react-query hooks directly; shared cross-page state goes through AppContext (store.tsx).
 - [ServiceConnect role gating](serviceconnect-role-gating.md) — client permissions.ts must mirror backend authz.ts (ROLE_NAV + helpers) exactly; server is authoritative.
 - [ServiceConnect schema gotchas](serviceconnect-schema-gotchas.md) — document_reminders already lives in documents.ts (manual reminders); grep schema tree before adding tables; push-based migrations; job-type union location.
+- [ServiceConnect billing / AR invariant](serviceconnect-billing.md) — balance>=0 must be enforced in POST /payments (reject overpay/over-refund 400), not just asserted over seed data.
+- [bash grep masks literals](env-grep-masking.md) — rg/grep hides some string literals (role names, "12 roles", "Refund"); use the read tool to verify exact content.
+- ServiceConnect role model = 12 total (11 internal + 1 Customer Portal user); authz.ts/db ROLES authoritative; frontend mock-data.ts is a legacy 8-role fallback only (recommendations + default user).

@@ -17,12 +17,20 @@
 ## Calculation invariant
 
 Each invoice exposes `amount` and `amountPaid`; the balance is `amount − amountPaid`.
-`src/__tests__/workflow.test.ts` asserts two things: (1) across every invoice from
+The invariant is **server-enforced** in `POST /api/payments`: a non-refund payment
+cannot exceed the remaining balance and a refund cannot exceed the amount already
+paid — either is rejected with `400`, so `amount − amountPaid` never goes negative and
+overpayment is not a supported flow.
+
+`src/__tests__/workflow.test.ts` asserts: (1) across every invoice from
 `GET /api/invoices`, `amountPaid >= 0` and `amount − amountPaid >= 0` (balance never
-goes negative), and (2) a deterministic round-trip — recording a `$1` payment against
-an open invoice increases `amountPaid` by exactly `$1`, and a matching `$1` `Refund`
-returns `amountPaid` and the status to their exact prior values — so payment math is
-internally consistent and reversible.
+goes negative); (2) a deterministic round-trip — recording a `$1` payment against an
+open invoice increases `amountPaid` by exactly `$1`, and a matching `$1` `Refund`
+returns `amountPaid` and the status to their exact prior values; (3) paying an
+invoice's full balance flips it to `Paid`, and a matching `Refund` reverts it to
+`Invoiced`; and (4) an overpayment (amount > balance) and an over-refund (amount >
+`amountPaid`) are both rejected with `400` and leave invoice state unchanged — so
+payment math is internally consistent, reversible, and bounded.
 
 ## Authorization
 

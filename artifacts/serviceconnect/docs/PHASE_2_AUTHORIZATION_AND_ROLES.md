@@ -16,11 +16,11 @@ unauthorized requests regardless of UI state.
 
 ## The 12 roles
 
-Administrator, Scheduler, Service Manager, Technician, Lead Technician, Billing,
-Bookkeeper, Subcontractor, Supervisor, Inventory Manager, Sales, and the Customer
-Portal user. (Phase 1 described 8 staff roles from the header switcher; Phase 2's
-authz layer enumerates the full 12 including portal + specialized back-office
-roles.)
+**11 internal roles** — Administrator, Scheduler, Service Manager, Technician, Lead
+Technician, Billing, Bookkeeper, Subcontractor, Supervisor, Inventory Manager, and
+Sales — **plus 1 Customer Portal user role**, for **12 total**. (Earlier Phase 1
+docs referenced only the header-switcher subset; the canonical authz layer
+enumerates all 12, including the portal user and the specialized back-office roles.)
 
 ## Enforcement middleware
 

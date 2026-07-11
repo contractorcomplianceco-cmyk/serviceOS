@@ -17,7 +17,7 @@ A field-service operating system for a plumbing/HVAC service company — replaci
 ## Where things live
 
 - `src/lib/types.ts` — all domain types (source of truth).
-- `src/lib/mock-data.ts` — seeded demo data (10 users/8 roles, 6 customers, 10 work orders, invoices, inventory, equipment, docs, closeouts, AI recommendations).
+- `src/lib/mock-data.ts` — legacy frontend demo seed (AI recommendations + a default fallback user); authoritative data now comes from the API. The canonical role model is **12 roles — 11 internal roles + 1 Customer Portal user** (defined in `authz.ts`/`types.ts`; the backend seed covers all 12).
 - `src/lib/store.tsx` — global store + actions (`useAppStore()`); `resetData()` restores seed.
 - `src/lib/permissions.ts` — role → nav access (`canAccess`, `navFor`), `canApproveCloseouts`, `isFieldRole`.
 - `src/lib/ui.ts` — shared class/format helpers (`priorityClass`, `statusClass`, `billingClass`, `portalClass`, `money`, `shortDate`, `relativeDay`).
@@ -33,7 +33,7 @@ A field-service operating system for a plumbing/HVAC service company — replaci
 
 ## Product
 
-Role-based views across intake, work orders (trips/labor/materials/attachments), dispatch, technicians, customers, locations, inventory, equipment, billing, accounting/AR, documents/compliance, reports, and RoseOS intelligence. Separate mobile technician shell (`/tech`) with VoiceConnect voice-closeout drafting. 8 roles switchable from the header or Settings.
+Role-based views across intake, work orders (trips/labor/materials/attachments), dispatch, technicians, customers, locations, inventory, equipment, billing, accounting/AR, documents/compliance, reports, and RoseOS intelligence. Separate mobile technician shell (`/tech`) with VoiceConnect voice-closeout drafting. 12 roles total — 11 internal roles (switchable from the header or Settings) plus 1 Customer Portal user role.
 
 ## Gotchas
 

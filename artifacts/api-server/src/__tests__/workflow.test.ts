@@ -176,4 +176,91 @@ describe("AR / invoice calculations", () => {
     );
     expect(afterRefund.status).toBe(before.status);
   });
+
+  it("marks an invoice Paid once fully paid, then reverts it to Invoiced on a full refund", async () => {
+    const billing = await loginAs(SEED.billing);
+    const list = await billing.get("/api/invoices");
+    expect(list.status).toBe(200);
+    // An 'Invoiced' invoice with an open balance: paying the balance must flip it
+    // to 'Paid'; refunding the same amount must revert it to 'Invoiced'. The pair
+    // is self-reversing, so it leaves invoice state unchanged.
+    const target = (list.body as ApiInvoice[]).find(
+      (i) => i.status === "Invoiced" && i.amount - i.amountPaid >= 1,
+    );
+    expect(
+      target,
+      "expected a seeded 'Invoiced' invoice with an open balance",
+    ).toBeTruthy();
+    const before = target!;
+    const balance = before.amount - before.amountPaid;
+
+    // 1. Pay the full remaining balance → invoice becomes Paid.
+    const pay = await billing.post("/api/payments").send({
+      invoiceId: before.id,
+      amount: balance,
+      method: "Check",
+    });
+    expect(pay.status).toBe(201);
+    const afterPay = await getInvoice(billing, before.id);
+    expect(afterPay.status).toBe("Paid");
+    expect(afterPay.amountPaid).toBeCloseTo(before.amount, 2);
+
+    // 2. Refund the full balance → the Paid invoice reverts to Invoiced and the
+    //    paid amount returns to its exact prior value.
+    const refund = await billing.post("/api/payments").send({
+      invoiceId: before.id,
+      amount: balance,
+      type: "Refund",
+    });
+    expect(refund.status).toBe(201);
+    const afterRefund = await getInvoice(billing, before.id);
+    expect(afterRefund.status).toBe("Invoiced");
+    expect(afterRefund.amountPaid).toBeCloseTo(before.amountPaid, 2);
+  });
+
+  it("rejects a payment that exceeds the invoice's remaining balance (400, no state change)", async () => {
+    const billing = await loginAs(SEED.billing);
+    const list = await billing.get("/api/invoices");
+    expect(list.status).toBe(200);
+    const target = (list.body as ApiInvoice[]).find(
+      (i) => i.amount - i.amountPaid >= 1,
+    );
+    expect(target, "expected a seeded invoice with an open balance").toBeTruthy();
+    const before = target!;
+    const balance = before.amount - before.amountPaid;
+
+    // Overpay by $1 over the remaining balance → must be rejected.
+    const res = await billing.post("/api/payments").send({
+      invoiceId: before.id,
+      amount: balance + 1,
+      method: "Check",
+    });
+    expect(res.status).toBe(400);
+
+    // The invoice must be untouched (invariant preserved).
+    const after = await getInvoice(billing, before.id);
+    expect(after.amountPaid).toBeCloseTo(before.amountPaid, 2);
+    expect(after.amount - after.amountPaid).toBeGreaterThanOrEqual(0);
+  });
+
+  it("rejects a refund that exceeds the amount already paid (400, no state change)", async () => {
+    const billing = await loginAs(SEED.billing);
+    const list = await billing.get("/api/invoices");
+    expect(list.status).toBe(200);
+    // A refund can never exceed amountPaid; using amountPaid + 1 is always over.
+    const target = (list.body as ApiInvoice[]).find((i) => i.amount > 0);
+    expect(target, "expected a seeded invoice").toBeTruthy();
+    const before = target!;
+
+    const res = await billing.post("/api/payments").send({
+      invoiceId: before.id,
+      amount: before.amountPaid + 1,
+      type: "Refund",
+    });
+    expect(res.status).toBe(400);
+
+    const after = await getInvoice(billing, before.id);
+    expect(after.amountPaid).toBeCloseTo(before.amountPaid, 2);
+    expect(after.amount - after.amountPaid).toBeGreaterThanOrEqual(0);
+  });
 });

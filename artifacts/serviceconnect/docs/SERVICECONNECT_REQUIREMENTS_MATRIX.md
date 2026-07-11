@@ -22,7 +22,7 @@ PARTIAL = partial. "Persistence" = survives reload via localStorage.
 | R12 | Document Vault | Docs + expiry status | PROTO | Docs list w/ statuses | `/documents` | store.documents | Y | Y | PASS | — | Real file upload/storage | Needs storage |
 | R13 | Customer Portal | External customer-facing portal | MISSING | — | — | — | N | N/A | N/A | — | Build entire portal | Needs backend/auth |
 | R14 | Employee/Tech Profiles | Skills, capacity, zone | PROTO | Profiles + capacity fields | `/technicians` | store.users | Y | Y | PASS | — | HR fields, cert tracking | — |
-| R15 | Roles & Permissions | Route-level gating (8 roles) | FULL | `Protected` guards; tech blocked from /review | all | permissions.ts | Y | Y | PASS (e2e) | — | Field-level ACLs | — |
+| R15 | Roles & Permissions | Route-level gating (12 roles: 11 internal + 1 Customer Portal user) | FULL | `Protected` guards; tech blocked from /review | all | permissions.ts | Y | Y | PASS (e2e) | — | Field-level ACLs | — |
 | R16 | Notifications | Email/SMS to customers/techs | SIM | Draft reminders only; no send | `/accounting` etc | store | PARTIAL | Y | PARTIAL | — | Real email/SMS | Needs provider |
 | R17 | Inventory | Stock, deduction, reorder | PROTO | Deduct on material use/approval; reorder recs | `/inventory` | store.inventory | Y | Y | PASS | Consumption/deduction wired | Transfers/reservations UI | — |
 | R18 | Equipment/Assets | Asset records + WO linkage | PROTO | Create dialog + linkage | `/equipment` | store.equipment | Y | Y | PASS | Added create form | Service history depth | — |
@@ -91,4 +91,4 @@ survives via the PostgreSQL database, not localStorage.
   posts once and inventory is deducted exactly once with a single `Consumed` audit
   event — and send-back lock).
 
-27/27 tests pass. See `PHASE_2_TESTING.md` and `PHASE_2_PRODUCTION_READINESS.md`.
+35/35 tests pass. See `PHASE_2_TESTING.md` and `PHASE_2_PRODUCTION_READINESS.md`.

@@ -25,7 +25,7 @@ sandbox-ready, what needs credentials, and what is not yet production-ready. It 
 | Closeout approval + idempotency (HITL) | REAL | Transactional, idempotent; no double-post (tested) |
 | Audit trail | REAL (app-level) | Written on mutations; not yet tamper-evident/WORM |
 | Data migration (CSV dry-run/import/rollback) | REAL | Dry-run, duplicate/required detection tested |
-| Billing / AR (invoices, partial/credit/refund) | REAL (partial) | `balance = amount − amountPaid` holds; payment→refund round-trip tested; no GL |
+| Billing / AR (invoices, partial/credit/refund) | REAL (partial) | `balance = amount − amountPaid` holds and is server-enforced (overpayments and over-refunds rejected with 400); payment→refund round-trip tested; no GL |
 | Authentication (sessions) | REAL | Real credential login (`POST /auth/login`, argon2 + throttling) issues the cookie session; the `dev-login` demo switcher is now hard-disabled when `NODE_ENV=production` (returns 403, no cookie), verified by a test. `SESSION_SECRET` required at startup |
 | Customer portal | SANDBOX | API-scoped and guarded; no external branded self-service experience |
 | GPS smart routing | SIMULATED | Seeded ETA/distance; needs a real geocoding/routing API |
