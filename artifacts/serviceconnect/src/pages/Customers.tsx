@@ -32,7 +32,7 @@ export default function Customers() {
     setNewEmail("");
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!newName.trim()) {
       toast({ title: "Name required", description: "Enter a customer name." });
       return;
@@ -53,11 +53,15 @@ export default function Customers() {
       taxCode: "",
       balance: 0,
     };
-    addCustomer(customer);
-    toast({ title: "Customer created", description: `${customer.name} added.` });
+    const created = await addCustomer(customer);
+    if (!created) {
+      toast({ title: "Could not create customer", description: "Please try again.", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Customer created", description: `${created.name} added.` });
     setCreateOpen(false);
     resetCreate();
-    navigate(`/customers/${customer.id}`);
+    navigate(`/customers/${created.id}`);
   };
 
   const filtered = customers.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()) || c.industry.toLowerCase().includes(search.toLowerCase()));

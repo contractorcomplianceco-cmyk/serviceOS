@@ -4,6 +4,13 @@ import authRouter from "./auth";
 import usersRouter from "./users";
 import sessionsRouter from "./sessions";
 import auditRouter from "./audit";
+import customersRouter from "./customers";
+import locationsRouter from "./locations";
+import employeesRouter from "./employees";
+import inventoryRouter from "./inventory";
+import intakeRouter from "./intake";
+import workOrdersRouter from "./work-orders";
+import closeoutsRouter from "./closeouts";
 
 const router: IRouter = Router();
 
@@ -12,5 +19,12 @@ router.use(authRouter);
 router.use(usersRouter);
 router.use(sessionsRouter);
 router.use(auditRouter);
+router.use(customersRouter);
+router.use(locationsRouter);
+router.use(employeesRouter);
+router.use(inventoryRouter);
+router.use(intakeRouter);
+router.use(workOrdersRouter);
+router.use(closeoutsRouter);
 
 export default router;

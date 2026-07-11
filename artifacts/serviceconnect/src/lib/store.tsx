@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from 'react';
 import {
   User, Customer, Location, WorkOrder, Invoice, AIRecommendation,
   IntakeItem, InventoryItem, Equipment, CustomerDocument, Closeout,
@@ -7,9 +14,46 @@ import {
 } from './types';
 import * as initialData from './mock-data';
 import { useAuth, mapAuthUserToUser, IS_DEV } from './auth';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useListCustomers, useCreateCustomer,
+  useListLocations, useCreateLocation,
+  useListEmployees,
+  useListInventory,
+  useListIntake, useDismissIntake, useConvertIntake,
+  useListWorkOrders, useCreateWorkOrder, useUpdateWorkOrder,
+  useAddLaborEntry, useAddMaterialEntry, useAddWorkOrderNote,
+  useTechnicianCheckIn, useTechnicianCheckOut,
+  useListCloseouts, useUpdateCloseout, useApproveCloseout, useSendBackCloseout,
+  useListAuditEvents,
+  getListCustomersQueryKey, getListLocationsQueryKey, getListInventoryQueryKey,
+  getListIntakeQueryKey, getListWorkOrdersQueryKey, getListCloseoutsQueryKey,
+  getListEmployeesQueryKey, getListAuditEventsQueryKey,
+  type CustomerInput, type LocationInput, type WorkOrderInput,
+  type WorkOrderUpdate, type CloseoutUpdate,
+} from '@workspace/api-client-react';
 
-interface AppState {
-  currentUserId: string;
+// ---------------------------------------------------------------------------
+// Local-only slice. Billing (invoices/payments), equipment, documents, and AI
+// recommendations remain client-side this sprint; the operational spine
+// (customers/locations/work orders/intake/inventory/closeouts/audit) is served
+// from the backend via react-query below.
+// ---------------------------------------------------------------------------
+interface LocalState {
+  invoices: Invoice[];
+  equipment: Equipment[];
+  documents: CustomerDocument[];
+  recommendations: AIRecommendation[];
+  dismissedRecIds: string[];
+  // Ephemeral, client-generated audit for local-only actions (portal sync,
+  // payments, etc.). Backend mutations write their own authoritative audit.
+  localAudit: AuditEvent[];
+}
+
+type AuditInput = Pick<AuditEvent, 'action' | 'entityType' | 'entityId' | 'summary'>;
+
+interface AppContextType {
+  currentUser: User;
   users: User[];
   customers: Customer[];
   locations: Location[];
@@ -23,15 +67,9 @@ interface AppState {
   closeouts: Closeout[];
   auditLog: AuditEvent[];
   dismissedRecIds: string[];
-}
-
-type AuditInput = Pick<AuditEvent, 'action' | 'entityType' | 'entityId' | 'summary'>;
-
-interface AppContextType extends Omit<AppState, 'currentUserId'> {
-  currentUser: User;
   setCurrentUserId: (id: string) => void;
   updateWorkOrder: (id: string, data: Partial<WorkOrder>) => void;
-  addWorkOrder: (data: WorkOrder) => void;
+  addWorkOrder: (data: WorkOrder) => Promise<WorkOrder | null>;
   updateInvoice: (id: string, data: Partial<Invoice>) => void;
   addInvoice: (data: Invoice) => void;
   dismissRecommendation: (id: string) => void;
@@ -39,9 +77,8 @@ interface AppContextType extends Omit<AppState, 'currentUserId'> {
   updateInventory: (id: string, data: Partial<InventoryItem>) => void;
   updateCloseout: (id: string, data: Partial<Closeout>) => void;
   resetData: () => void;
-  // --- workflow actions added for the operational spine ---
   logAudit: (e: AuditInput) => void;
-  convertIntakeToWorkOrder: (intakeId: string, overrides?: Partial<WorkOrder>) => string | null;
+  convertIntakeToWorkOrder: (intakeId: string) => Promise<string | null>;
   addLaborEntry: (workOrderId: string, entry: Omit<LaborEntry, 'id'>) => void;
   addMaterialEntry: (workOrderId: string, entry: Omit<MaterialEntry, 'id'>) => void;
   addWorkOrderNote: (workOrderId: string, message: string) => void;
@@ -49,7 +86,7 @@ interface AppContextType extends Omit<AppState, 'currentUserId'> {
   technicianCheckOut: (workOrderId: string, workPerformed?: string) => void;
   approveCloseout: (closeoutId: string) => void;
   sendBackCloseout: (closeoutId: string, reason?: string) => void;
-  addCustomer: (data: Customer) => void;
+  addCustomer: (data: Customer) => Promise<Customer | null>;
   addLocation: (data: Location) => void;
   addEquipment: (data: Equipment) => void;
   recordPayment: (invoiceId: string, amount: number, type: PaymentType, method?: string) => void;
@@ -58,60 +95,103 @@ interface AppContextType extends Omit<AppState, 'currentUserId'> {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'serviceconnect_data_v3';
+const LOCAL_STORAGE_KEY = 'serviceconnect_local_v4';
 
 let idCounter = 0;
 const genId = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}-${(idCounter++).toString(36)}`;
 
-function freshState(): AppState {
+function freshLocal(): LocalState {
   return {
-    currentUserId: 'u1',
-    users: initialData.mockUsers,
-    customers: initialData.mockCustomers,
-    locations: initialData.mockLocations,
-    workOrders: initialData.mockWorkOrders,
     invoices: initialData.mockInvoices,
-    recommendations: initialData.mockRecommendations,
-    intake: initialData.mockIntakeItems,
-    inventory: initialData.mockInventory,
     equipment: initialData.mockEquipment,
     documents: initialData.mockDocuments,
-    closeouts: initialData.mockCloseouts,
-    auditLog: initialData.mockAuditLog,
+    recommendations: initialData.mockRecommendations,
     dismissedRecIds: [],
+    localAudit: [],
   };
 }
 
-// Parse a free-text labor suggestion like "3.5 hrs standard" into hours.
-function parseHours(text: string): number {
-  const m = text.match(/(\d+(\.\d+)?)/);
-  return m ? parseFloat(m[1]) : 1;
-}
-
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AppState>(() => {
+  const [local, setLocal] = useState<LocalState>(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       try {
-        return { ...freshState(), ...JSON.parse(saved) };
+        return { ...freshLocal(), ...JSON.parse(saved) };
       } catch {
         // fall through to fresh
       }
     }
-    return freshState();
+    return freshLocal();
   });
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(local));
+  }, [local]);
 
   const auth = useAuth();
-  // The authenticated user (from the backend) is the single source of truth for
-  // identity, role, and audit actor. Domain lists (users/customers/etc.) remain
-  // local mock data until later sprints migrate them.
-  const currentUser = auth.user ? mapAuthUserToUser(auth.user) : state.users[0];
+  const currentUser = auth.user
+    ? mapAuthUserToUser(auth.user)
+    : initialData.mockUsers[0];
+  const authed = !!auth.user;
 
+  const qc = useQueryClient();
+  const kCustomers = getListCustomersQueryKey();
+  const kLocations = getListLocationsQueryKey();
+  const kEmployees = getListEmployeesQueryKey();
+  const kInventory = getListInventoryQueryKey();
+  const kIntake = getListIntakeQueryKey();
+  const kWorkOrders = getListWorkOrdersQueryKey();
+  const kCloseouts = getListCloseoutsQueryKey();
+  const kAudit = getListAuditEventsQueryKey();
+
+  const invalidate = useCallback(
+    (keys: readonly (readonly unknown[])[]) => {
+      for (const key of keys) void qc.invalidateQueries({ queryKey: key });
+    },
+    [qc],
+  );
+
+  // --- Reads -------------------------------------------------------------
+  const customersQuery = useListCustomers({ query: { enabled: authed, queryKey: kCustomers } });
+  const locationsQuery = useListLocations({ query: { enabled: authed, queryKey: kLocations } });
+  const employeesQuery = useListEmployees({ query: { enabled: authed, queryKey: kEmployees } });
+  const inventoryQuery = useListInventory({ query: { enabled: authed, queryKey: kInventory } });
+  const intakeQuery = useListIntake({ query: { enabled: authed, queryKey: kIntake } });
+  const workOrdersQuery = useListWorkOrders({ query: { enabled: authed, queryKey: kWorkOrders } });
+  const closeoutsQuery = useListCloseouts({ query: { enabled: authed, queryKey: kCloseouts } });
+  const auditQuery = useListAuditEvents(undefined, { query: { enabled: authed, queryKey: kAudit } });
+
+  // The generated schema types widen enums to `string` and use `null` for
+  // optionals; they are structurally the frontend shapes at runtime, so we
+  // present them as the domain types the pages already consume.
+  const customers = (customersQuery.data ?? []) as unknown as Customer[];
+  const locations = (locationsQuery.data ?? []) as unknown as Location[];
+  const inventory = (inventoryQuery.data ?? []) as unknown as InventoryItem[];
+  const intake = (intakeQuery.data ?? []) as unknown as IntakeItem[];
+  const workOrders = (workOrdersQuery.data ?? []) as unknown as WorkOrder[];
+  const closeouts = (closeoutsQuery.data ?? []) as unknown as Closeout[];
+
+  const employees = (employeesQuery.data ?? []).map(mapAuthUserToUser);
+  const users = employees.length ? employees : [currentUser];
+
+  const backendAudit: AuditEvent[] = (auditQuery.data ?? []).map((e) => ({
+    id: e.id,
+    timestamp: e.timestamp,
+    actorId: e.actorUserId ?? '',
+    actor: e.actorName,
+    action: e.action,
+    entityType: e.entityType as AuditEvent['entityType'],
+    entityId: e.entityId,
+    summary: e.summary,
+  }));
+  const auditLog = [...local.localAudit, ...backendAudit];
+
+  const recommendations = local.recommendations.filter(
+    (r) => !local.dismissedRecIds.includes(r.id),
+  );
+
+  // --- Local audit helpers (for client-only actions) ---------------------
   const buildEvent = (e: AuditInput): AuditEvent => ({
     id: genId('aud'),
     timestamp: new Date().toISOString(),
@@ -119,321 +199,247 @@ export function AppProvider({ children }: { children: ReactNode }) {
     actor: currentUser.name,
     ...e,
   });
+  const pushLocalAudit = (events: AuditInput[]) =>
+    setLocal((s) => ({
+      ...s,
+      localAudit: [...events.map(buildEvent), ...s.localAudit],
+    }));
 
-  // Append audit events to a state object (used inside setState updaters).
-  const withAudit = (s: AppState, events: AuditInput[]): AuditEvent[] => [
-    ...events.map(buildEvent),
-    ...s.auditLog,
-  ];
+  // --- Mutations (with cache invalidation) -------------------------------
+  const createCustomerM = useCreateCustomer({
+    mutation: { onSuccess: () => invalidate([kCustomers, kAudit]) },
+  });
+  const createLocationM = useCreateLocation({
+    mutation: { onSuccess: () => invalidate([kLocations, kAudit]) },
+  });
+  const createWorkOrderM = useCreateWorkOrder({
+    mutation: { onSuccess: () => invalidate([kWorkOrders, kAudit]) },
+  });
+  const updateWorkOrderM = useUpdateWorkOrder({
+    mutation: { onSuccess: () => invalidate([kWorkOrders, kAudit]) },
+  });
+  const addLaborM = useAddLaborEntry({
+    mutation: { onSuccess: () => invalidate([kWorkOrders, kAudit]) },
+  });
+  const addMaterialM = useAddMaterialEntry({
+    mutation: { onSuccess: () => invalidate([kWorkOrders, kInventory, kAudit]) },
+  });
+  const addNoteM = useAddWorkOrderNote({
+    mutation: { onSuccess: () => invalidate([kWorkOrders, kAudit]) },
+  });
+  const checkInM = useTechnicianCheckIn({
+    mutation: { onSuccess: () => invalidate([kWorkOrders, kAudit]) },
+  });
+  const checkOutM = useTechnicianCheckOut({
+    mutation: { onSuccess: () => invalidate([kWorkOrders, kAudit]) },
+  });
+  const dismissIntakeM = useDismissIntake({
+    mutation: { onSuccess: () => invalidate([kIntake, kAudit]) },
+  });
+  const convertIntakeM = useConvertIntake({
+    mutation: { onSuccess: () => invalidate([kIntake, kWorkOrders, kAudit]) },
+  });
+  const updateCloseoutM = useUpdateCloseout({
+    mutation: { onSuccess: () => invalidate([kCloseouts]) },
+  });
+  const approveCloseoutM = useApproveCloseout({
+    mutation: {
+      onSuccess: () =>
+        invalidate([kCloseouts, kWorkOrders, kInventory, kAudit]),
+    },
+  });
+  const sendBackCloseoutM = useSendBackCloseout({
+    mutation: { onSuccess: () => invalidate([kCloseouts, kAudit]) },
+  });
 
   const value: AppContextType = {
-    ...state,
     currentUser,
+    users,
+    customers,
+    locations,
+    workOrders,
+    invoices: local.invoices,
+    recommendations,
+    intake,
+    inventory,
+    equipment: local.equipment,
+    documents: local.documents,
+    closeouts,
+    auditLog,
+    dismissedRecIds: local.dismissedRecIds,
+
     // Context switching is a dev-only convenience backed by the dev-login
-    // endpoint; production bundles never surface a switcher and the backend
-    // rejects the call anyway.
+    // endpoint; production bundles never surface a switcher.
     setCurrentUserId: (id) => {
       if (IS_DEV) void auth.devLogin(id);
     },
 
-    logAudit: (e) => setState((s) => ({ ...s, auditLog: withAudit(s, [e]) })),
+    logAudit: (e) => pushLocalAudit([e]),
 
-    updateWorkOrder: (id, data) =>
-      setState((s) => {
-        const wo = s.workOrders.find((w) => w.id === id);
-        const summaryBits: string[] = [];
-        if (data.status && wo && data.status !== wo.status) summaryBits.push(`status → ${data.status}`);
-        if (data.assignedTechnicianId && wo && data.assignedTechnicianId !== wo.assignedTechnicianId) {
-          const tech = s.users.find((u) => u.id === data.assignedTechnicianId);
-          summaryBits.push(`assigned to ${tech?.name ?? data.assignedTechnicianId}`);
-        }
-        if (data.billingStatus && wo && data.billingStatus !== wo.billingStatus) summaryBits.push(`billing → ${data.billingStatus}`);
-        const events: AuditInput[] = summaryBits.length
-          ? [{ action: 'Updated', entityType: 'WorkOrder', entityId: id, summary: `${wo?.number ?? id}: ${summaryBits.join(', ')}` }]
-          : [];
-        return {
-          ...s,
-          workOrders: s.workOrders.map((w) => (w.id === id ? { ...w, ...data } : w)),
-          auditLog: events.length ? withAudit(s, events) : s.auditLog,
-        };
-      }),
+    updateWorkOrder: (id, data) => {
+      updateWorkOrderM.mutate({ id, data: data as unknown as WorkOrderUpdate });
+    },
 
-    addWorkOrder: (data) =>
-      setState((s) => ({
-        ...s,
-        workOrders: [data, ...s.workOrders],
-        auditLog: withAudit(s, [{ action: 'Created', entityType: 'WorkOrder', entityId: data.id, summary: `${data.number} created (${data.source})` }]),
-      })),
+    addWorkOrder: async (data) => {
+      const input: WorkOrderInput = {
+        number: data.number,
+        source: data.source,
+        customerId: data.customerId,
+        locationId: data.locationId,
+        poNumber: data.poNumber,
+        referenceNumber: data.referenceNumber,
+        externalId: data.externalId,
+        priority: data.priority,
+        status: data.status,
+        type: data.type,
+        region: data.region,
+        dueDate: data.dueDate,
+        billingStatus: data.billingStatus,
+        accountManagerId: data.accountManagerId,
+        serviceManagerId: data.serviceManagerId,
+        assignedTechnicianId: data.assignedTechnicianId,
+        timeWindow: data.timeWindow,
+        description: data.description,
+        importantNotes: data.importantNotes,
+        locationNotes: data.locationNotes,
+        quoteNotes: data.quoteNotes,
+        portalSyncStatus: data.portalSyncStatus,
+        materialsFlag: data.materialsFlag,
+        quoteFlag: data.quoteFlag,
+      };
+      try {
+        const created = await createWorkOrderM.mutateAsync({ data: input });
+        return created as unknown as WorkOrder;
+      } catch {
+        return null;
+      }
+    },
 
+    // Billing stays local this sprint.
     updateInvoice: (id, data) =>
-      setState((s) => {
+      setLocal((s) => {
         const inv = s.invoices.find((i) => i.id === id);
-        const events: AuditInput[] = data.status && inv && data.status !== inv.status
-          ? [{ action: 'Updated', entityType: 'Invoice', entityId: id, summary: `${inv?.number ?? id}: ${data.status}` }]
-          : [];
+        const events: AuditInput[] =
+          data.status && inv && data.status !== inv.status
+            ? [{ action: 'Updated', entityType: 'Invoice', entityId: id, summary: `${inv?.number ?? id}: ${data.status}` }]
+            : [];
         return {
           ...s,
           invoices: s.invoices.map((i) => (i.id === id ? { ...i, ...data } : i)),
-          auditLog: events.length ? withAudit(s, events) : s.auditLog,
+          localAudit: events.length ? [...events.map(buildEvent), ...s.localAudit] : s.localAudit,
         };
       }),
 
     addInvoice: (data) =>
-      setState((s) => ({
+      setLocal((s) => ({
         ...s,
         invoices: [data, ...s.invoices],
-        auditLog: withAudit(s, [{ action: 'Created', entityType: 'Invoice', entityId: data.id, summary: `${data.number} drafted ($${data.amount.toLocaleString()})` }]),
+        localAudit: [buildEvent({ action: 'Created', entityType: 'Invoice', entityId: data.id, summary: `${data.number} drafted ($${data.amount.toLocaleString()})` }), ...s.localAudit],
       })),
 
     dismissRecommendation: (id) =>
-      setState((s) => ({
+      setLocal((s) => ({
         ...s,
-        recommendations: s.recommendations.filter((r) => r.id !== id),
         dismissedRecIds: s.dismissedRecIds.includes(id) ? s.dismissedRecIds : [...s.dismissedRecIds, id],
       })),
 
-    dismissIntake: (id) => setState((s) => ({ ...s, intake: s.intake.filter((i) => i.id !== id) })),
-
-    updateInventory: (id, data) =>
-      setState((s) => ({ ...s, inventory: s.inventory.map((it) => (it.id === id ? { ...it, ...data } : it)) })),
-
-    updateCloseout: (id, data) =>
-      setState((s) => ({ ...s, closeouts: s.closeouts.map((c) => (c.id === id ? { ...c, ...data } : c)) })),
-
-    // --- Intake → Work Order conversion (creates a real, persisted record) ---
-    convertIntakeToWorkOrder: (intakeId, overrides) => {
-      // Guard against a stale outer render snapshot; bail early if the item is gone.
-      if (!state.intake.some((i) => i.id === intakeId)) return null;
-      const newId = genId('wo');
-      setState((s) => {
-        // Read from the current updater snapshot `s`, not the outer `state`,
-        // so rapid repeated conversions compute sequence/lookups correctly.
-        const item = s.intake.find((i) => i.id === intakeId);
-        if (!item) return s;
-        const seq = s.workOrders.length + 1042;
-        const cust = s.customers.find((c) => c.id === item.customerId);
-        const loc =
-          s.locations.find((l) => l.id === (item.locationId ?? '')) ??
-          s.locations.find((l) => l.customerId === item.customerId);
-        const newWO: WorkOrder = {
-          id: newId,
-          number: `WO-2026-${seq}`,
-          source: item.source,
-          customerId: item.customerId,
-          locationId: loc?.id ?? '',
-          priority: item.priority,
-          status: 'Need Scheduled',
-          type: 'Service',
-          region: loc?.region ?? 'Tampa',
-          dueDate: item.requestedDate,
-          billingStatus: 'Needs Review',
-          description: item.description,
-          portalSyncStatus: item.source === 'Manual' ? 'Manual Copy Needed' : 'Draft',
-          trips: [],
-          labor: [],
-          materials: [],
-          attachments: [],
-          internalLog: [{
-            id: genId('log'),
-            timestamp: new Date().toISOString(),
-            author: currentUser.name,
-            message: `Converted from ${item.source} intake.`,
-          }],
-          createdAt: new Date().toISOString(),
-          ...overrides,
-        };
-        return {
-          ...s,
-          workOrders: [newWO, ...s.workOrders],
-          intake: s.intake.filter((i) => i.id !== intakeId),
-          auditLog: withAudit(s, [{
-            action: 'Converted',
-            entityType: 'Intake',
-            entityId: intakeId,
-            summary: `${item.source} intake → ${newWO.number} for ${cust?.name ?? 'customer'}`,
-          }]),
-        };
-      });
-      return newId;
+    dismissIntake: (id) => {
+      dismissIntakeM.mutate({ id });
     },
 
-    addLaborEntry: (workOrderId, entry) =>
-      setState((s) => {
-        const wo = s.workOrders.find((w) => w.id === workOrderId);
-        const full: LaborEntry = { ...entry, id: genId('lab') };
-        return {
-          ...s,
-          workOrders: s.workOrders.map((w) => (w.id === workOrderId ? { ...w, labor: [...w.labor, full] } : w)),
-          auditLog: withAudit(s, [{ action: 'Added Labor', entityType: 'WorkOrder', entityId: workOrderId, summary: `${wo?.number ?? workOrderId}: ${entry.hours}h ${entry.type}` }]),
-        };
-      }),
+    // Inventory is read-only from the backend this sprint; deductions happen
+    // server-side on material add / closeout approval.
+    updateInventory: () => {
+      /* no-op: inventory mutations are downstream work */
+    },
 
-    addMaterialEntry: (workOrderId, entry) =>
-      setState((s) => {
-        const wo = s.workOrders.find((w) => w.id === workOrderId);
-        const full: MaterialEntry = { ...entry, id: genId('mat') };
-        // Deduct from inventory when linked to a stock item.
-        const inventory = entry.inventoryItemId
-          ? s.inventory.map((it) => (it.id === entry.inventoryItemId ? { ...it, quantity: Math.max(0, it.quantity - entry.quantity), lastUsed: new Date().toISOString() } : it))
-          : s.inventory;
-        const events: AuditInput[] = [
-          { action: 'Added Material', entityType: 'WorkOrder', entityId: workOrderId, summary: `${wo?.number ?? workOrderId}: ${entry.quantity}× ${entry.name}` },
-        ];
-        if (entry.inventoryItemId) {
-          events.push({ action: 'Consumed', entityType: 'Inventory', entityId: entry.inventoryItemId, summary: `-${entry.quantity} ${entry.name} (${wo?.number ?? workOrderId})` });
-        }
-        return {
-          ...s,
-          workOrders: s.workOrders.map((w) => (w.id === workOrderId ? { ...w, materials: [...w.materials, full] } : w)),
-          inventory,
-          auditLog: withAudit(s, events),
-        };
-      }),
+    updateCloseout: (id, data) => {
+      updateCloseoutM.mutate({ id, data: data as unknown as CloseoutUpdate });
+    },
 
-    addWorkOrderNote: (workOrderId, message) =>
-      setState((s) => {
-        const wo = s.workOrders.find((w) => w.id === workOrderId);
-        const note = { id: genId('log'), timestamp: new Date().toISOString(), author: currentUser.name, message };
-        return {
-          ...s,
-          workOrders: s.workOrders.map((w) => (w.id === workOrderId ? { ...w, internalLog: [...w.internalLog, note] } : w)),
-          auditLog: withAudit(s, [{ action: 'Note Added', entityType: 'WorkOrder', entityId: workOrderId, summary: `${wo?.number ?? workOrderId}: note added` }]),
-        };
-      }),
+    convertIntakeToWorkOrder: async (intakeId) => {
+      try {
+        const wo = await convertIntakeM.mutateAsync({ id: intakeId });
+        return (wo as unknown as WorkOrder).id;
+      } catch {
+        return null;
+      }
+    },
 
-    technicianCheckIn: (workOrderId) =>
-      setState((s) => {
-        const wo = s.workOrders.find((w) => w.id === workOrderId);
-        if (!wo) return s;
-        const nowIso = new Date().toISOString();
-        const trip = {
-          id: genId('trip'),
-          tripNumber: (wo.trips[wo.trips.length - 1]?.tripNumber ?? 0) + 1,
-          technicianId: wo.assignedTechnicianId ?? currentUser.id,
-          date: nowIso,
-          checkIn: nowIso,
-        };
-        return {
-          ...s,
-          workOrders: s.workOrders.map((w) => (w.id === workOrderId ? { ...w, status: 'On Site', trips: [...w.trips, trip] } : w)),
-          auditLog: withAudit(s, [{ action: 'Checked In', entityType: 'WorkOrder', entityId: workOrderId, summary: `${wo.number}: technician on site` }]),
-        };
-      }),
+    addLaborEntry: (workOrderId, entry) => {
+      addLaborM.mutate({ id: workOrderId, data: entry });
+    },
 
-    technicianCheckOut: (workOrderId, workPerformed) =>
-      setState((s) => {
-        const wo = s.workOrders.find((w) => w.id === workOrderId);
-        if (!wo) return s;
-        const nowIso = new Date().toISOString();
-        const trips = wo.trips.length
-          ? wo.trips.map((t, i) => (i === wo.trips.length - 1 ? { ...t, checkOut: nowIso, workPerformed: workPerformed ?? t.workPerformed } : t))
-          : wo.trips;
-        return {
-          ...s,
-          workOrders: s.workOrders.map((w) => (w.id === workOrderId ? { ...w, trips } : w)),
-          auditLog: withAudit(s, [{ action: 'Checked Out', entityType: 'WorkOrder', entityId: workOrderId, summary: `${wo.number}: technician checked out` }]),
-        };
-      }),
+    addMaterialEntry: (workOrderId, entry) => {
+      addMaterialM.mutate({ id: workOrderId, data: entry });
+    },
 
-    // --- Supervisor approves closeout: populates WO labor/materials, deducts inventory ---
-    approveCloseout: (closeoutId) =>
-      setState((s) => {
-        const co = s.closeouts.find((c) => c.id === closeoutId);
-        if (!co) return s;
-        // Idempotency guard: only a Pending Review closeout may be approved.
-        // Prevents double-posting of labor/materials and double inventory deduction.
-        if (co.status !== 'Pending Review') return s;
-        const wo = s.workOrders.find((w) => w.id === co.workOrderId);
-        if (!wo) return s;
-        const events: AuditInput[] = [
-          { action: 'Approved', entityType: 'Closeout', entityId: closeoutId, summary: `Closeout approved for ${wo.number}` },
-        ];
+    addWorkOrderNote: (workOrderId, message) => {
+      addNoteM.mutate({ id: workOrderId, data: { message } });
+    },
 
-        // Build labor entry from the AI-suggested labor.
-        const laborEntry: LaborEntry = {
-          id: genId('lab'),
-          technicianId: co.technicianId,
-          date: co.submittedAt,
-          hours: parseHours(co.laborSuggested),
-          rate: s.users.find((u) => u.id === co.technicianId)?.hourlyCost ? 125 : 125,
-          type: 'Standard',
-          approved: true,
-        };
+    technicianCheckIn: (workOrderId) => {
+      checkInM.mutate({ id: workOrderId, data: {} });
+    },
 
-        // Map detected materials to inventory items (by fuzzy name match) and deduct.
-        let inventory = [...s.inventory];
-        const materialEntries: MaterialEntry[] = co.materialsDetected.map((detected) => {
-          const match = inventory.find((it) => detected.toLowerCase().includes(it.name.toLowerCase()) || it.name.toLowerCase().includes(detected.toLowerCase().replace(/^\d+\s*[x×]?\s*/, '')));
-          const qtyMatch = detected.match(/^(\d+)/);
-          const qty = qtyMatch ? parseInt(qtyMatch[1], 10) : 1;
-          if (match) {
-            inventory = inventory.map((it) => (it.id === match.id ? { ...it, quantity: Math.max(0, it.quantity - qty), lastUsed: new Date().toISOString() } : it));
-            events.push({ action: 'Consumed', entityType: 'Inventory', entityId: match.id, summary: `-${qty} ${match.name} (${wo.number})` });
-          }
-          return {
-            id: genId('mat'),
-            inventoryItemId: match?.id,
-            name: match?.name ?? detected,
-            quantity: qty,
-            cost: match?.cost ?? 0,
-            billablePrice: match?.billablePrice ?? 0,
-            approved: true,
-          };
-        });
+    technicianCheckOut: (workOrderId, workPerformed) => {
+      checkOutM.mutate({ id: workOrderId, data: workPerformed ? { workPerformed } : {} });
+    },
 
-        return {
-          ...s,
-          closeouts: s.closeouts.map((c) => (c.id === closeoutId ? { ...c, status: 'Approved' } : c)),
-          inventory,
-          workOrders: s.workOrders.map((w) =>
-            w.id === wo.id
-              ? {
-                  ...w,
-                  status: 'Ready for Billing',
-                  billingStatus: 'Ready for Invoice',
-                  labor: [...w.labor, laborEntry],
-                  materials: [...w.materials, ...materialEntries],
-                  internalLog: [...w.internalLog, { id: genId('log'), timestamp: new Date().toISOString(), author: currentUser.name, message: 'Closeout approved; labor & materials posted, inventory deducted.' }],
-                }
-              : w
-          ),
-          auditLog: withAudit(s, events),
-        };
-      }),
+    approveCloseout: (closeoutId) => {
+      approveCloseoutM.mutate({ id: closeoutId });
+    },
 
-    sendBackCloseout: (closeoutId, reason) =>
-      setState((s) => {
-        const co = s.closeouts.find((c) => c.id === closeoutId);
-        return {
-          ...s,
-          closeouts: s.closeouts.map((c) => (c.id === closeoutId ? { ...c, status: 'Sent Back' } : c)),
-          auditLog: withAudit(s, [{ action: 'Sent Back', entityType: 'Closeout', entityId: closeoutId, summary: `Returned to technician${reason ? `: ${reason}` : ''}${co ? '' : ''}` }]),
-        };
-      }),
+    sendBackCloseout: (closeoutId, reason) => {
+      sendBackCloseoutM.mutate({ id: closeoutId, data: reason ? { reason } : {} });
+    },
 
-    addCustomer: (data) =>
-      setState((s) => ({
-        ...s,
-        customers: [data, ...s.customers],
-        auditLog: withAudit(s, [{ action: 'Created', entityType: 'Customer', entityId: data.id, summary: `Customer ${data.name} created` }]),
-      })),
+    addCustomer: async (data) => {
+      const input: CustomerInput = {
+        name: data.name,
+        industry: data.industry,
+        phone: data.phone,
+        email: data.email,
+        status: data.status,
+        accountManagerId: data.accountManagerId,
+        tags: data.tags,
+        contacts: data.contacts,
+        rateRules: data.rateRules,
+        requirements: data.requirements,
+        portalRules: data.portalRules,
+        taxCode: data.taxCode,
+      };
+      try {
+        const created = await createCustomerM.mutateAsync({ data: input });
+        return created as unknown as Customer;
+      } catch {
+        return null;
+      }
+    },
 
-    addLocation: (data) =>
-      setState((s) => ({
-        ...s,
-        locations: [data, ...s.locations],
-        auditLog: withAudit(s, [{ action: 'Created', entityType: 'Location', entityId: data.id, summary: `Location ${data.name} created` }]),
-      })),
+    addLocation: (data) => {
+      const input: LocationInput = {
+        customerId: data.customerId,
+        name: data.name,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        zip: data.zip,
+        region: data.region,
+        notes: data.notes,
+      };
+      createLocationM.mutate({ data: input });
+    },
 
     addEquipment: (data) =>
-      setState((s) => ({
+      setLocal((s) => ({
         ...s,
         equipment: [data, ...s.equipment],
-        auditLog: withAudit(s, [{ action: 'Created', entityType: 'Equipment', entityId: data.id, summary: `Equipment ${data.assetName} created` }]),
+        localAudit: [buildEvent({ action: 'Created', entityType: 'Equipment', entityId: data.id, summary: `Equipment ${data.assetName} created` }), ...s.localAudit],
       })),
 
     recordPayment: (invoiceId, amount, type, method = 'Manual') =>
-      setState((s) => {
+      setLocal((s) => {
         const inv = s.invoices.find((i) => i.id === invoiceId);
         if (!inv) return s;
         const payment: Payment = {
@@ -447,11 +453,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         };
         const priorPaid = inv.amountPaid ?? 0;
         const signed = type === 'Refund' ? -Math.abs(amount) : Math.abs(amount);
-        // Clamp to [0, amount] so refunds cannot drive paid negative and
-        // overpayments cannot exceed the invoice total.
         const amountPaid = Math.max(0, Math.min(inv.amount, priorPaid + signed));
         const fullyPaid = amountPaid >= inv.amount;
-        // Recompute status every mutation so a refund on a Paid invoice reverts it.
         const nextStatus: BillingStatus = fullyPaid
           ? 'Paid'
           : inv.status === 'Paid'
@@ -468,25 +471,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
                   status: nextStatus,
                   paidDate: fullyPaid ? new Date().toISOString() : undefined,
                 }
-              : i
+              : i,
           ),
-          auditLog: withAudit(s, [{ action: type, entityType: 'Payment', entityId: invoiceId, summary: `${inv.number}: ${type} $${amount.toLocaleString()} (${method})` }]),
+          localAudit: [buildEvent({ action: type, entityType: 'Payment', entityId: invoiceId, summary: `${inv.number}: ${type} $${amount.toLocaleString()} (${method})` }), ...s.localAudit],
         };
       }),
 
-    sendPortalUpdate: (workOrderId, status) =>
-      setState((s) => {
-        const wo = s.workOrders.find((w) => w.id === workOrderId);
-        return {
-          ...s,
-          workOrders: s.workOrders.map((w) => (w.id === workOrderId ? { ...w, portalSyncStatus: status } : w)),
-          auditLog: withAudit(s, [{ action: 'Portal Sync', entityType: 'Portal', entityId: workOrderId, summary: `${wo?.number ?? workOrderId} → ${status} (${wo?.source ?? 'portal'}) [SIMULATED]` }]),
-        };
-      }),
+    sendPortalUpdate: (workOrderId, status) => {
+      const wo = workOrders.find((w) => w.id === workOrderId);
+      pushLocalAudit([{ action: 'Portal Sync', entityType: 'Portal', entityId: workOrderId, summary: `${wo?.number ?? workOrderId} → ${status} (${wo?.source ?? 'portal'}) [SIMULATED]` }]);
+    },
 
     resetData: () => {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
-      setState(freshState());
+      setLocal(freshLocal());
+      invalidate([kCustomers, kLocations, kEmployees, kInventory, kIntake, kWorkOrders, kCloseouts, kAudit]);
     },
   };
 

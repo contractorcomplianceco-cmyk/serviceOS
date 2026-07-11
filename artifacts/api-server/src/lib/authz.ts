@@ -67,3 +67,16 @@ export function canApproveCloseouts(role: Role): boolean {
 export function canManageUsers(role: Role): boolean {
   return role === "Administrator";
 }
+
+// Roles with scheduling/dispatch authority. Scheduling a work order (moving it
+// to "Scheduled" or setting a schedule window) is a human decision restricted to
+// these roles — RoseOS never auto-schedules, so the backend enforces approval.
+const SCHEDULING_ROLES: Role[] = [
+  "Administrator",
+  "Service Manager",
+  "Scheduler",
+  "Supervisor",
+];
+export function canSchedule(role: Role): boolean {
+  return SCHEDULING_ROLES.includes(role);
+}

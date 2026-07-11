@@ -381,3 +381,1771 @@ export const RevokeSessionParams = zod.object({
 export const RevokeSessionResponse = zod.void()
 
 
+/**
+ * @summary List customers for the current tenant
+ */
+export const ListCustomersResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "industry": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "status": zod.string(),
+  "accountManagerId": zod.string(),
+  "tags": zod.array(zod.string()),
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "title": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "primary": zod.boolean().optional()
+})),
+  "rateRules": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "laborRate": zod.number(),
+  "afterHoursRate": zod.number(),
+  "notes": zod.string().optional()
+})),
+  "requirements": zod.array(zod.string()),
+  "portalRules": zod.string(),
+  "taxCode": zod.string(),
+  "balance": zod.number(),
+  "createdAt": zod.coerce.date().optional(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListCustomersResponse = zod.array(ListCustomersResponseItem)
+
+
+/**
+ * @summary Create a customer
+ */
+
+
+
+export const CreateCustomerBody = zod.object({
+  "name": zod.string().min(1),
+  "industry": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "email": zod.string().optional(),
+  "status": zod.string().optional(),
+  "accountManagerId": zod.string().optional(),
+  "tags": zod.array(zod.string()).optional(),
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "title": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "primary": zod.boolean().optional()
+})).optional(),
+  "rateRules": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "laborRate": zod.number(),
+  "afterHoursRate": zod.number(),
+  "notes": zod.string().optional()
+})).optional(),
+  "requirements": zod.array(zod.string()).optional(),
+  "portalRules": zod.string().optional(),
+  "taxCode": zod.string().optional()
+})
+
+export const CreateCustomerResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "industry": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "status": zod.string(),
+  "accountManagerId": zod.string(),
+  "tags": zod.array(zod.string()),
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "title": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "primary": zod.boolean().optional()
+})),
+  "rateRules": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "laborRate": zod.number(),
+  "afterHoursRate": zod.number(),
+  "notes": zod.string().optional()
+})),
+  "requirements": zod.array(zod.string()),
+  "portalRules": zod.string(),
+  "taxCode": zod.string(),
+  "balance": zod.number(),
+  "createdAt": zod.coerce.date().optional(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Update a customer
+ */
+export const UpdateCustomerParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const UpdateCustomerBody = zod.object({
+  "name": zod.string().min(1).optional(),
+  "industry": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "email": zod.string().optional(),
+  "status": zod.string().optional(),
+  "accountManagerId": zod.string().optional(),
+  "tags": zod.array(zod.string()).optional(),
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "title": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "primary": zod.boolean().optional()
+})).optional(),
+  "rateRules": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "laborRate": zod.number(),
+  "afterHoursRate": zod.number(),
+  "notes": zod.string().optional()
+})).optional(),
+  "requirements": zod.array(zod.string()).optional(),
+  "portalRules": zod.string().optional(),
+  "taxCode": zod.string().optional(),
+  "balance": zod.number().optional()
+})
+
+export const UpdateCustomerResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "industry": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "status": zod.string(),
+  "accountManagerId": zod.string(),
+  "tags": zod.array(zod.string()),
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "title": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "primary": zod.boolean().optional()
+})),
+  "rateRules": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "laborRate": zod.number(),
+  "afterHoursRate": zod.number(),
+  "notes": zod.string().optional()
+})),
+  "requirements": zod.array(zod.string()),
+  "portalRules": zod.string(),
+  "taxCode": zod.string(),
+  "balance": zod.number(),
+  "createdAt": zod.coerce.date().optional(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List locations for the current tenant
+ */
+export const ListLocationsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "name": zod.string(),
+  "address": zod.string(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "zip": zod.string(),
+  "region": zod.string(),
+  "notes": zod.string(),
+  "createdAt": zod.coerce.date().optional(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListLocationsResponse = zod.array(ListLocationsResponseItem)
+
+
+/**
+ * @summary Create a location
+ */
+
+
+
+
+export const CreateLocationBody = zod.object({
+  "customerId": zod.string().min(1),
+  "name": zod.string().min(1),
+  "address": zod.string().optional(),
+  "city": zod.string().optional(),
+  "state": zod.string().optional(),
+  "zip": zod.string().optional(),
+  "region": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const CreateLocationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "name": zod.string(),
+  "address": zod.string(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "zip": zod.string(),
+  "region": zod.string(),
+  "notes": zod.string(),
+  "createdAt": zod.coerce.date().optional(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Update a location
+ */
+export const UpdateLocationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const UpdateLocationBody = zod.object({
+  "name": zod.string().min(1).optional(),
+  "address": zod.string().optional(),
+  "city": zod.string().optional(),
+  "state": zod.string().optional(),
+  "zip": zod.string().optional(),
+  "region": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateLocationResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "customerId": zod.string(),
+  "name": zod.string(),
+  "address": zod.string(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "zip": zod.string(),
+  "region": zod.string(),
+  "notes": zod.string(),
+  "createdAt": zod.coerce.date().optional(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List employees (directory) for the current tenant
+ */
+export const ListEmployeesResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "email": zod.string(),
+  "name": zod.string(),
+  "role": zod.enum(['Administrator', 'Service Manager', 'Scheduler', 'Supervisor', 'Lead Technician', 'Technician', 'Billing', 'Bookkeeper', 'Inventory Manager', 'Sales', 'Subcontractor', 'Customer Portal User']),
+  "active": zod.boolean(),
+  "mustResetPassword": zod.boolean(),
+  "emailVerified": zod.boolean(),
+  "mfaEnabled": zod.boolean(),
+  "customerId": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "zone": zod.string().nullish(),
+  "skills": zod.array(zod.string()).nullish(),
+  "restrictedTasks": zod.array(zod.string()).nullish(),
+  "workloadHours": zod.number().nullish(),
+  "capacityHours": zod.number().nullish(),
+  "truckId": zod.string().nullish(),
+  "gpsConsent": zod.boolean().nullish(),
+  "hourlyCost": zod.number().nullish(),
+  "lastLoginAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date().optional()
+})
+export const ListEmployeesResponse = zod.array(ListEmployeesResponseItem)
+
+
+/**
+ * @summary List inventory items for the current tenant
+ */
+export const ListInventoryResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "vendor": zod.string(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "quantity": zod.number(),
+  "reorderPoint": zod.number(),
+  "compatibleJobTypes": zod.array(zod.string()),
+  "location": zod.string(),
+  "locationDetail": zod.string().nullish(),
+  "reservedForJob": zod.string().nullish(),
+  "lastUsed": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish()
+})
+export const ListInventoryResponse = zod.array(ListInventoryResponseItem)
+
+
+/**
+ * @summary List open intake records for the current tenant
+ */
+export const ListIntakeResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string().nullish(),
+  "priority": zod.string(),
+  "requestedDate": zod.string(),
+  "description": zod.string(),
+  "hasAttachments": zod.boolean(),
+  "duplicateOf": zod.string().nullish(),
+  "missingFields": zod.array(zod.string()),
+  "suggestedAction": zod.string(),
+  "status": zod.string(),
+  "convertedWorkOrderId": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListIntakeResponse = zod.array(ListIntakeResponseItem)
+
+
+/**
+ * @summary Create an intake record
+ */
+
+
+
+
+export const CreateIntakeBody = zod.object({
+  "source": zod.string().optional(),
+  "customerId": zod.string().min(1),
+  "locationId": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "requestedDate": zod.string(),
+  "description": zod.string().min(1),
+  "hasAttachments": zod.boolean().optional(),
+  "duplicateOf": zod.string().optional(),
+  "missingFields": zod.array(zod.string()).optional(),
+  "suggestedAction": zod.string().optional()
+})
+
+export const CreateIntakeResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string().nullish(),
+  "priority": zod.string(),
+  "requestedDate": zod.string(),
+  "description": zod.string(),
+  "hasAttachments": zod.boolean(),
+  "duplicateOf": zod.string().nullish(),
+  "missingFields": zod.array(zod.string()),
+  "suggestedAction": zod.string(),
+  "status": zod.string(),
+  "convertedWorkOrderId": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Dismiss an intake record
+ */
+export const DismissIntakeParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DismissIntakeResponse = zod.void()
+
+
+/**
+ * @summary Convert an intake record into a work order (idempotent)
+ */
+export const ConvertIntakeParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ConvertIntakeResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "number": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "region": zod.string(),
+  "dueDate": zod.string(),
+  "billingStatus": zod.string(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "scheduleApprovedBy": zod.string().nullish(),
+  "scheduleApprovedAt": zod.coerce.date().nullish(),
+  "description": zod.string(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List work orders for the current tenant
+ */
+export const ListWorkOrdersResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "number": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "region": zod.string(),
+  "dueDate": zod.string(),
+  "billingStatus": zod.string(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "scheduleApprovedBy": zod.string().nullish(),
+  "scheduleApprovedAt": zod.coerce.date().nullish(),
+  "description": zod.string(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListWorkOrdersResponse = zod.array(ListWorkOrdersResponseItem)
+
+
+/**
+ * @summary Create a work order
+ */
+
+
+
+
+
+export const CreateWorkOrderBody = zod.object({
+  "number": zod.string().optional(),
+  "source": zod.string().optional(),
+  "customerId": zod.string().min(1),
+  "locationId": zod.string().min(1),
+  "poNumber": zod.string().optional(),
+  "referenceNumber": zod.string().optional(),
+  "externalId": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "status": zod.string().optional(),
+  "type": zod.string().optional(),
+  "region": zod.string().optional(),
+  "dueDate": zod.string().optional(),
+  "billingStatus": zod.string().optional(),
+  "accountManagerId": zod.string().optional(),
+  "serviceManagerId": zod.string().optional(),
+  "assignedTechnicianId": zod.string().optional(),
+  "timeWindow": zod.string().optional(),
+  "description": zod.string().min(1),
+  "importantNotes": zod.string().optional(),
+  "locationNotes": zod.string().optional(),
+  "quoteNotes": zod.string().optional(),
+  "portalSyncStatus": zod.string().optional(),
+  "materialsFlag": zod.boolean().optional(),
+  "quoteFlag": zod.boolean().optional()
+})
+
+export const CreateWorkOrderResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "number": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "region": zod.string(),
+  "dueDate": zod.string(),
+  "billingStatus": zod.string(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "scheduleApprovedBy": zod.string().nullish(),
+  "scheduleApprovedAt": zod.coerce.date().nullish(),
+  "description": zod.string(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Get a work order
+ */
+export const GetWorkOrderParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetWorkOrderResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "number": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "region": zod.string(),
+  "dueDate": zod.string(),
+  "billingStatus": zod.string(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "scheduleApprovedBy": zod.string().nullish(),
+  "scheduleApprovedAt": zod.coerce.date().nullish(),
+  "description": zod.string(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Update a work order (scheduling transitions require scheduling permission)
+ */
+export const UpdateWorkOrderParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateWorkOrderBody = zod.object({
+  "number": zod.string().optional(),
+  "source": zod.string().optional(),
+  "customerId": zod.string().optional(),
+  "locationId": zod.string().optional(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string().optional(),
+  "status": zod.string().optional(),
+  "type": zod.string().optional(),
+  "region": zod.string().optional(),
+  "dueDate": zod.string().optional(),
+  "billingStatus": zod.string().optional(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "description": zod.string().optional(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string().optional(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})).optional(),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})).optional(),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})).optional(),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})).optional(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})).optional(),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})).optional(),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})).optional()
+})
+
+export const UpdateWorkOrderResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "number": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "region": zod.string(),
+  "dueDate": zod.string(),
+  "billingStatus": zod.string(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "scheduleApprovedBy": zod.string().nullish(),
+  "scheduleApprovedAt": zod.coerce.date().nullish(),
+  "description": zod.string(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Append a labor entry to a work order
+ */
+export const AddLaborEntryParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const AddLaborEntryBody = zod.object({
+  "technicianId": zod.string().min(1),
+  "date": zod.string().optional(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean().optional()
+})
+
+export const AddLaborEntryResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "number": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "region": zod.string(),
+  "dueDate": zod.string(),
+  "billingStatus": zod.string(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "scheduleApprovedBy": zod.string().nullish(),
+  "scheduleApprovedAt": zod.coerce.date().nullish(),
+  "description": zod.string(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Append a material entry to a work order
+ */
+export const AddMaterialEntryParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const AddMaterialEntryBody = zod.object({
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string().min(1),
+  "quantity": zod.number(),
+  "cost": zod.number().optional(),
+  "billablePrice": zod.number().optional(),
+  "approved": zod.boolean().optional()
+})
+
+export const AddMaterialEntryResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "number": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "region": zod.string(),
+  "dueDate": zod.string(),
+  "billingStatus": zod.string(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "scheduleApprovedBy": zod.string().nullish(),
+  "scheduleApprovedAt": zod.coerce.date().nullish(),
+  "description": zod.string(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Append an internal log note to a work order
+ */
+export const AddWorkOrderNoteParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const AddWorkOrderNoteBody = zod.object({
+  "message": zod.string().min(1)
+})
+
+export const AddWorkOrderNoteResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "number": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "region": zod.string(),
+  "dueDate": zod.string(),
+  "billingStatus": zod.string(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "scheduleApprovedBy": zod.string().nullish(),
+  "scheduleApprovedAt": zod.coerce.date().nullish(),
+  "description": zod.string(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Technician check-in — opens a trip and captures a GPS event
+ */
+export const TechnicianCheckInParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const TechnicianCheckInBody = zod.object({
+  "lat": zod.number().optional(),
+  "lng": zod.number().optional()
+})
+
+export const TechnicianCheckInResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "number": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "region": zod.string(),
+  "dueDate": zod.string(),
+  "billingStatus": zod.string(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "scheduleApprovedBy": zod.string().nullish(),
+  "scheduleApprovedAt": zod.coerce.date().nullish(),
+  "description": zod.string(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Technician check-out — closes the open trip and captures a GPS event
+ */
+export const TechnicianCheckOutParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const TechnicianCheckOutBody = zod.object({
+  "lat": zod.number().optional(),
+  "lng": zod.number().optional(),
+  "workPerformed": zod.string().optional()
+})
+
+export const TechnicianCheckOutResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "number": zod.string(),
+  "source": zod.string(),
+  "customerId": zod.string(),
+  "locationId": zod.string(),
+  "poNumber": zod.string().nullish(),
+  "referenceNumber": zod.string().nullish(),
+  "externalId": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "region": zod.string(),
+  "dueDate": zod.string(),
+  "billingStatus": zod.string(),
+  "accountManagerId": zod.string().nullish(),
+  "serviceManagerId": zod.string().nullish(),
+  "assignedTechnicianId": zod.string().nullish(),
+  "timeWindow": zod.string().nullish(),
+  "scheduledStart": zod.coerce.date().nullish(),
+  "scheduledEnd": zod.coerce.date().nullish(),
+  "scheduleApprovedBy": zod.string().nullish(),
+  "scheduleApprovedAt": zod.coerce.date().nullish(),
+  "description": zod.string(),
+  "importantNotes": zod.string().nullish(),
+  "locationNotes": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "portalSyncStatus": zod.string(),
+  "materialsFlag": zod.boolean().nullish(),
+  "quoteFlag": zod.boolean().nullish(),
+  "trips": zod.array(zod.object({
+  "id": zod.string(),
+  "tripNumber": zod.number(),
+  "technicianId": zod.string().optional(),
+  "date": zod.string(),
+  "managerOnSite": zod.string().optional(),
+  "checkIn": zod.string().optional(),
+  "checkOut": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "materialsNeeded": zod.string().optional(),
+  "checkInLat": zod.number().optional(),
+  "checkInLng": zod.number().optional(),
+  "checkOutLat": zod.number().optional(),
+  "checkOutLng": zod.number().optional()
+})),
+  "labor": zod.array(zod.object({
+  "id": zod.string(),
+  "technicianId": zod.string(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "rate": zod.number(),
+  "type": zod.string(),
+  "approved": zod.boolean()
+})),
+  "materials": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryItemId": zod.string().optional(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "cost": zod.number(),
+  "billablePrice": zod.number(),
+  "approved": zod.boolean()
+})),
+  "expenses": zod.array(zod.object({
+  "id": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "category": zod.string(),
+  "approved": zod.boolean()
+})),
+  "attachments": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "uploadedBy": zod.string(),
+  "date": zod.string()
+})),
+  "internalLog": zod.array(zod.object({
+  "id": zod.string(),
+  "timestamp": zod.string(),
+  "author": zod.string(),
+  "message": zod.string()
+})),
+  "statusHistory": zod.array(zod.object({
+  "status": zod.string(),
+  "at": zod.string(),
+  "by": zod.string()
+})),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary List closeouts for the current tenant
+ */
+export const ListCloseoutsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "workOrderId": zod.string(),
+  "technicianId": zod.string(),
+  "submittedAt": zod.coerce.date(),
+  "transcript": zod.string(),
+  "transcriptLanguage": zod.string(),
+  "translatedSummary": zod.string().nullish(),
+  "aiSummary": zod.string(),
+  "workPerformed": zod.string(),
+  "materialsDetected": zod.array(zod.string()),
+  "laborSuggested": zod.string(),
+  "returnTripReason": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "missingInfo": zod.array(zod.string()),
+  "customerUpdateText": zod.string(),
+  "billingLines": zod.array(zod.string()),
+  "portalUpdateText": zod.string(),
+  "status": zod.string(),
+  "reviewedBy": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "reviewNote": zod.string().nullish()
+})
+export const ListCloseoutsResponse = zod.array(ListCloseoutsResponseItem)
+
+
+/**
+ * @summary Submit a VoiceConnect closeout draft (routes to Pending Review)
+ */
+
+
+
+
+export const CreateCloseoutBody = zod.object({
+  "workOrderId": zod.string().min(1),
+  "technicianId": zod.string().min(1),
+  "transcript": zod.string().optional(),
+  "transcriptLanguage": zod.string().optional(),
+  "translatedSummary": zod.string().optional(),
+  "aiSummary": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "materialsDetected": zod.array(zod.string()).optional(),
+  "laborSuggested": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "quoteNotes": zod.string().optional(),
+  "missingInfo": zod.array(zod.string()).optional(),
+  "customerUpdateText": zod.string().optional(),
+  "billingLines": zod.array(zod.string()).optional(),
+  "portalUpdateText": zod.string().optional()
+})
+
+export const CreateCloseoutResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "workOrderId": zod.string(),
+  "technicianId": zod.string(),
+  "submittedAt": zod.coerce.date(),
+  "transcript": zod.string(),
+  "transcriptLanguage": zod.string(),
+  "translatedSummary": zod.string().nullish(),
+  "aiSummary": zod.string(),
+  "workPerformed": zod.string(),
+  "materialsDetected": zod.array(zod.string()),
+  "laborSuggested": zod.string(),
+  "returnTripReason": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "missingInfo": zod.array(zod.string()),
+  "customerUpdateText": zod.string(),
+  "billingLines": zod.array(zod.string()),
+  "portalUpdateText": zod.string(),
+  "status": zod.string(),
+  "reviewedBy": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "reviewNote": zod.string().nullish()
+})
+
+
+/**
+ * @summary Edit a closeout draft (before approval)
+ */
+export const UpdateCloseoutParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateCloseoutBody = zod.object({
+  "transcript": zod.string().optional(),
+  "transcriptLanguage": zod.string().optional(),
+  "translatedSummary": zod.string().optional(),
+  "aiSummary": zod.string().optional(),
+  "workPerformed": zod.string().optional(),
+  "materialsDetected": zod.array(zod.string()).optional(),
+  "laborSuggested": zod.string().optional(),
+  "returnTripReason": zod.string().optional(),
+  "quoteNotes": zod.string().optional(),
+  "missingInfo": zod.array(zod.string()).optional(),
+  "customerUpdateText": zod.string().optional(),
+  "billingLines": zod.array(zod.string()).optional(),
+  "portalUpdateText": zod.string().optional()
+})
+
+export const UpdateCloseoutResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "workOrderId": zod.string(),
+  "technicianId": zod.string(),
+  "submittedAt": zod.coerce.date(),
+  "transcript": zod.string(),
+  "transcriptLanguage": zod.string(),
+  "translatedSummary": zod.string().nullish(),
+  "aiSummary": zod.string(),
+  "workPerformed": zod.string(),
+  "materialsDetected": zod.array(zod.string()),
+  "laborSuggested": zod.string(),
+  "returnTripReason": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "missingInfo": zod.array(zod.string()),
+  "customerUpdateText": zod.string(),
+  "billingLines": zod.array(zod.string()),
+  "portalUpdateText": zod.string(),
+  "status": zod.string(),
+  "reviewedBy": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "reviewNote": zod.string().nullish()
+})
+
+
+/**
+ * @summary Approve a closeout (idempotent) — posts labor/materials, deducts inventory once, hands off to billing
+ */
+export const ApproveCloseoutParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ApproveCloseoutResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "workOrderId": zod.string(),
+  "technicianId": zod.string(),
+  "submittedAt": zod.coerce.date(),
+  "transcript": zod.string(),
+  "transcriptLanguage": zod.string(),
+  "translatedSummary": zod.string().nullish(),
+  "aiSummary": zod.string(),
+  "workPerformed": zod.string(),
+  "materialsDetected": zod.array(zod.string()),
+  "laborSuggested": zod.string(),
+  "returnTripReason": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "missingInfo": zod.array(zod.string()),
+  "customerUpdateText": zod.string(),
+  "billingLines": zod.array(zod.string()),
+  "portalUpdateText": zod.string(),
+  "status": zod.string(),
+  "reviewedBy": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "reviewNote": zod.string().nullish()
+})
+
+
+/**
+ * @summary Send a closeout back to the technician with a reason
+ */
+export const SendBackCloseoutParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const SendBackCloseoutBody = zod.object({
+  "reason": zod.string().optional()
+})
+
+export const SendBackCloseoutResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "workOrderId": zod.string(),
+  "technicianId": zod.string(),
+  "submittedAt": zod.coerce.date(),
+  "transcript": zod.string(),
+  "transcriptLanguage": zod.string(),
+  "translatedSummary": zod.string().nullish(),
+  "aiSummary": zod.string(),
+  "workPerformed": zod.string(),
+  "materialsDetected": zod.array(zod.string()),
+  "laborSuggested": zod.string(),
+  "returnTripReason": zod.string().nullish(),
+  "quoteNotes": zod.string().nullish(),
+  "missingInfo": zod.array(zod.string()),
+  "customerUpdateText": zod.string(),
+  "billingLines": zod.array(zod.string()),
+  "portalUpdateText": zod.string(),
+  "status": zod.string(),
+  "reviewedBy": zod.string().nullish(),
+  "reviewedAt": zod.coerce.date().nullish(),
+  "reviewNote": zod.string().nullish()
+})
+
+

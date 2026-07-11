@@ -22,8 +22,8 @@ export default function IntakeQueue() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
-  const handleConvert = (intakeId: string, customerName?: string) => {
-    const newId = convertIntakeToWorkOrder(intakeId);
+  const handleConvert = async (intakeId: string, customerName?: string) => {
+    const newId = await convertIntakeToWorkOrder(intakeId);
     if (newId) {
       toast({ title: "Work Order created", description: `${customerName ?? "Customer"} intake converted to a real work order. Opening it now.` });
       navigate(`/work-orders/${newId}`);

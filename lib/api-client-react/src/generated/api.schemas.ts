@@ -194,6 +194,484 @@ export interface SessionInfo {
   current: boolean;
 }
 
+export interface Contact {
+  id: string;
+  name: string;
+  title: string;
+  phone: string;
+  email: string;
+  primary?: boolean;
+}
+
+export interface RateRule {
+  id: string;
+  label: string;
+  laborRate: number;
+  afterHoursRate: number;
+  notes?: string;
+}
+
+export interface Customer {
+  id: string;
+  tenantId: string;
+  name: string;
+  industry: string;
+  phone: string;
+  email: string;
+  status: string;
+  accountManagerId: string;
+  tags: string[];
+  contacts: Contact[];
+  rateRules: RateRule[];
+  requirements: string[];
+  portalRules: string;
+  taxCode: string;
+  balance: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CustomerInput {
+  /** @minLength 1 */
+  name: string;
+  industry?: string;
+  phone?: string;
+  email?: string;
+  status?: string;
+  accountManagerId?: string;
+  tags?: string[];
+  contacts?: Contact[];
+  rateRules?: RateRule[];
+  requirements?: string[];
+  portalRules?: string;
+  taxCode?: string;
+}
+
+export interface CustomerUpdate {
+  /** @minLength 1 */
+  name?: string;
+  industry?: string;
+  phone?: string;
+  email?: string;
+  status?: string;
+  accountManagerId?: string;
+  tags?: string[];
+  contacts?: Contact[];
+  rateRules?: RateRule[];
+  requirements?: string[];
+  portalRules?: string;
+  taxCode?: string;
+  balance?: number;
+}
+
+export interface Location {
+  id: string;
+  tenantId: string;
+  customerId: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  region: string;
+  notes: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface LocationInput {
+  /** @minLength 1 */
+  customerId: string;
+  /** @minLength 1 */
+  name: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  region?: string;
+  notes?: string;
+}
+
+export interface LocationUpdate {
+  /** @minLength 1 */
+  name?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  region?: string;
+  notes?: string;
+}
+
+export interface InventoryItem {
+  id: string;
+  tenantId: string;
+  name: string;
+  category: string;
+  vendor: string;
+  cost: number;
+  billablePrice: number;
+  quantity: number;
+  reorderPoint: number;
+  compatibleJobTypes: string[];
+  location: string;
+  /** @nullable */
+  locationDetail?: string | null;
+  /** @nullable */
+  reservedForJob?: string | null;
+  /** @nullable */
+  lastUsed?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface IntakeItem {
+  id: string;
+  tenantId: string;
+  source: string;
+  customerId: string;
+  /** @nullable */
+  locationId?: string | null;
+  priority: string;
+  requestedDate: string;
+  description: string;
+  hasAttachments: boolean;
+  /** @nullable */
+  duplicateOf?: string | null;
+  missingFields: string[];
+  suggestedAction: string;
+  status: string;
+  /** @nullable */
+  convertedWorkOrderId?: string | null;
+  createdAt: string;
+}
+
+export interface IntakeInput {
+  source?: string;
+  /** @minLength 1 */
+  customerId: string;
+  locationId?: string;
+  priority?: string;
+  requestedDate: string;
+  /** @minLength 1 */
+  description: string;
+  hasAttachments?: boolean;
+  duplicateOf?: string;
+  missingFields?: string[];
+  suggestedAction?: string;
+}
+
+export interface Trip {
+  id: string;
+  tripNumber: number;
+  technicianId?: string;
+  date: string;
+  managerOnSite?: string;
+  checkIn?: string;
+  checkOut?: string;
+  workPerformed?: string;
+  returnTripReason?: string;
+  materialsNeeded?: string;
+  checkInLat?: number;
+  checkInLng?: number;
+  checkOutLat?: number;
+  checkOutLng?: number;
+}
+
+export interface LaborEntry {
+  id: string;
+  technicianId: string;
+  date: string;
+  hours: number;
+  rate: number;
+  type: string;
+  approved: boolean;
+}
+
+export interface MaterialEntry {
+  id: string;
+  inventoryItemId?: string;
+  name: string;
+  quantity: number;
+  cost: number;
+  billablePrice: number;
+  approved: boolean;
+}
+
+export interface ExpenseEntry {
+  id: string;
+  description: string;
+  amount: number;
+  category: string;
+  approved: boolean;
+}
+
+export interface Attachment {
+  id: string;
+  name: string;
+  type: string;
+  uploadedBy: string;
+  date: string;
+}
+
+export interface LogEntry {
+  id: string;
+  timestamp: string;
+  author: string;
+  message: string;
+}
+
+export interface StatusHistoryEntry {
+  status: string;
+  at: string;
+  by: string;
+}
+
+export interface WorkOrder {
+  id: string;
+  tenantId: string;
+  number: string;
+  source: string;
+  customerId: string;
+  locationId: string;
+  /** @nullable */
+  poNumber?: string | null;
+  /** @nullable */
+  referenceNumber?: string | null;
+  /** @nullable */
+  externalId?: string | null;
+  priority: string;
+  status: string;
+  type: string;
+  region: string;
+  dueDate: string;
+  billingStatus: string;
+  /** @nullable */
+  accountManagerId?: string | null;
+  /** @nullable */
+  serviceManagerId?: string | null;
+  /** @nullable */
+  assignedTechnicianId?: string | null;
+  /** @nullable */
+  timeWindow?: string | null;
+  /** @nullable */
+  scheduledStart?: string | null;
+  /** @nullable */
+  scheduledEnd?: string | null;
+  /** @nullable */
+  scheduleApprovedBy?: string | null;
+  /** @nullable */
+  scheduleApprovedAt?: string | null;
+  description: string;
+  /** @nullable */
+  importantNotes?: string | null;
+  /** @nullable */
+  locationNotes?: string | null;
+  /** @nullable */
+  quoteNotes?: string | null;
+  portalSyncStatus: string;
+  /** @nullable */
+  materialsFlag?: boolean | null;
+  /** @nullable */
+  quoteFlag?: boolean | null;
+  trips: Trip[];
+  labor: LaborEntry[];
+  materials: MaterialEntry[];
+  expenses: ExpenseEntry[];
+  attachments: Attachment[];
+  internalLog: LogEntry[];
+  statusHistory: StatusHistoryEntry[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface WorkOrderInput {
+  number?: string;
+  source?: string;
+  /** @minLength 1 */
+  customerId: string;
+  /** @minLength 1 */
+  locationId: string;
+  poNumber?: string;
+  referenceNumber?: string;
+  externalId?: string;
+  priority?: string;
+  status?: string;
+  type?: string;
+  region?: string;
+  dueDate?: string;
+  billingStatus?: string;
+  accountManagerId?: string;
+  serviceManagerId?: string;
+  assignedTechnicianId?: string;
+  timeWindow?: string;
+  /** @minLength 1 */
+  description: string;
+  importantNotes?: string;
+  locationNotes?: string;
+  quoteNotes?: string;
+  portalSyncStatus?: string;
+  materialsFlag?: boolean;
+  quoteFlag?: boolean;
+}
+
+export interface WorkOrderUpdate {
+  number?: string;
+  source?: string;
+  customerId?: string;
+  locationId?: string;
+  /** @nullable */
+  poNumber?: string | null;
+  /** @nullable */
+  referenceNumber?: string | null;
+  /** @nullable */
+  externalId?: string | null;
+  priority?: string;
+  status?: string;
+  type?: string;
+  region?: string;
+  dueDate?: string;
+  billingStatus?: string;
+  /** @nullable */
+  accountManagerId?: string | null;
+  /** @nullable */
+  serviceManagerId?: string | null;
+  /** @nullable */
+  assignedTechnicianId?: string | null;
+  /** @nullable */
+  timeWindow?: string | null;
+  /** @nullable */
+  scheduledStart?: string | null;
+  /** @nullable */
+  scheduledEnd?: string | null;
+  description?: string;
+  /** @nullable */
+  importantNotes?: string | null;
+  /** @nullable */
+  locationNotes?: string | null;
+  /** @nullable */
+  quoteNotes?: string | null;
+  portalSyncStatus?: string;
+  /** @nullable */
+  materialsFlag?: boolean | null;
+  /** @nullable */
+  quoteFlag?: boolean | null;
+  trips?: Trip[];
+  labor?: LaborEntry[];
+  materials?: MaterialEntry[];
+  expenses?: ExpenseEntry[];
+  attachments?: Attachment[];
+  internalLog?: LogEntry[];
+  statusHistory?: StatusHistoryEntry[];
+}
+
+export interface LaborInput {
+  /** @minLength 1 */
+  technicianId: string;
+  date?: string;
+  hours: number;
+  rate: number;
+  type: string;
+  approved?: boolean;
+}
+
+export interface MaterialInput {
+  inventoryItemId?: string;
+  /** @minLength 1 */
+  name: string;
+  quantity: number;
+  cost?: number;
+  billablePrice?: number;
+  approved?: boolean;
+}
+
+export interface NoteInput {
+  /** @minLength 1 */
+  message: string;
+}
+
+export interface CheckInInput {
+  lat?: number;
+  lng?: number;
+}
+
+export interface CheckOutInput {
+  lat?: number;
+  lng?: number;
+  workPerformed?: string;
+}
+
+export interface Closeout {
+  id: string;
+  tenantId: string;
+  workOrderId: string;
+  technicianId: string;
+  submittedAt: string;
+  transcript: string;
+  transcriptLanguage: string;
+  /** @nullable */
+  translatedSummary?: string | null;
+  aiSummary: string;
+  workPerformed: string;
+  materialsDetected: string[];
+  laborSuggested: string;
+  /** @nullable */
+  returnTripReason?: string | null;
+  /** @nullable */
+  quoteNotes?: string | null;
+  missingInfo: string[];
+  customerUpdateText: string;
+  billingLines: string[];
+  portalUpdateText: string;
+  status: string;
+  /** @nullable */
+  reviewedBy?: string | null;
+  /** @nullable */
+  reviewedAt?: string | null;
+  /** @nullable */
+  reviewNote?: string | null;
+}
+
+export interface CloseoutInput {
+  /** @minLength 1 */
+  workOrderId: string;
+  /** @minLength 1 */
+  technicianId: string;
+  transcript?: string;
+  transcriptLanguage?: string;
+  translatedSummary?: string;
+  aiSummary?: string;
+  workPerformed?: string;
+  materialsDetected?: string[];
+  laborSuggested?: string;
+  returnTripReason?: string;
+  quoteNotes?: string;
+  missingInfo?: string[];
+  customerUpdateText?: string;
+  billingLines?: string[];
+  portalUpdateText?: string;
+}
+
+export interface CloseoutUpdate {
+  transcript?: string;
+  transcriptLanguage?: string;
+  translatedSummary?: string;
+  aiSummary?: string;
+  workPerformed?: string;
+  materialsDetected?: string[];
+  laborSuggested?: string;
+  returnTripReason?: string;
+  quoteNotes?: string;
+  missingInfo?: string[];
+  customerUpdateText?: string;
+  billingLines?: string[];
+  portalUpdateText?: string;
+}
+
+export interface CloseoutReviewInput {
+  reason?: string;
+}
+
 export type ListAuditEventsParams = {
 entityType?: string;
 action?: string;

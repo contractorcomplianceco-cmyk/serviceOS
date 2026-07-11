@@ -18,6 +18,20 @@ tags:
     description: Session management operations
   - name: audit
     description: Audit log operations
+  - name: customers
+    description: Customer operations
+  - name: locations
+    description: Location operations
+  - name: employees
+    description: Employee directory operations
+  - name: inventory
+    description: Inventory operations
+  - name: intake
+    description: Intake queue operations
+  - name: work-orders
+    description: Work order operations
+  - name: closeouts
+    description: Closeout and supervisor review operations
 paths:
   /healthz:
     get:
@@ -470,6 +484,768 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: List customers for the current tenant
+      responses:
+        "200":
+          description: Customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createCustomer
+      tags: [customers]
+      summary: Create a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /customers/{id}:
+    patch:
+      operationId: updateCustomer
+      tags: [customers]
+      summary: Update a customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /locations:
+    get:
+      operationId: listLocations
+      tags: [locations]
+      summary: List locations for the current tenant
+      responses:
+        "200":
+          description: Locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Location"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createLocation
+      tags: [locations]
+      summary: Create a location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LocationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Location"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /locations/{id}:
+    patch:
+      operationId: updateLocation
+      tags: [locations]
+      summary: Update a location
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LocationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Location"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /employees:
+    get:
+      operationId: listEmployees
+      tags: [employees]
+      summary: List employees (directory) for the current tenant
+      responses:
+        "200":
+          description: Employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /inventory:
+    get:
+      operationId: listInventory
+      tags: [inventory]
+      summary: List inventory items for the current tenant
+      responses:
+        "200":
+          description: Inventory items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryItem"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /intake:
+    get:
+      operationId: listIntake
+      tags: [intake]
+      summary: List open intake records for the current tenant
+      responses:
+        "200":
+          description: Intake records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IntakeItem"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createIntake
+      tags: [intake]
+      summary: Create an intake record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntakeInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntakeItem"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /intake/{id}/dismiss:
+    post:
+      operationId: dismissIntake
+      tags: [intake]
+      summary: Dismiss an intake record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Dismissed
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /intake/{id}/convert:
+    post:
+      operationId: convertIntake
+      tags: [intake]
+      summary: Convert an intake record into a work order (idempotent)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The work order created (or previously created) from this intake
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkOrder"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /work-orders:
+    get:
+      operationId: listWorkOrders
+      tags: [work-orders]
+      summary: List work orders for the current tenant
+      responses:
+        "200":
+          description: Work orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkOrder"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createWorkOrder
+      tags: [work-orders]
+      summary: Create a work order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkOrderInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkOrder"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /work-orders/{id}:
+    get:
+      operationId: getWorkOrder
+      tags: [work-orders]
+      summary: Get a work order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Work order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkOrder"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateWorkOrder
+      tags: [work-orders]
+      summary: Update a work order (scheduling transitions require scheduling permission)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkOrderUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkOrder"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden (scheduling requires approval permission)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /work-orders/{id}/labor:
+    post:
+      operationId: addLaborEntry
+      tags: [work-orders]
+      summary: Append a labor entry to a work order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LaborInput"
+      responses:
+        "200":
+          description: Updated work order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkOrder"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /work-orders/{id}/materials:
+    post:
+      operationId: addMaterialEntry
+      tags: [work-orders]
+      summary: Append a material entry to a work order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaterialInput"
+      responses:
+        "200":
+          description: Updated work order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkOrder"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /work-orders/{id}/notes:
+    post:
+      operationId: addWorkOrderNote
+      tags: [work-orders]
+      summary: Append an internal log note to a work order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteInput"
+      responses:
+        "200":
+          description: Updated work order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkOrder"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /work-orders/{id}/check-in:
+    post:
+      operationId: technicianCheckIn
+      tags: [work-orders]
+      summary: Technician check-in — opens a trip and captures a GPS event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckInInput"
+      responses:
+        "200":
+          description: Updated work order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkOrder"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /work-orders/{id}/check-out:
+    post:
+      operationId: technicianCheckOut
+      tags: [work-orders]
+      summary: Technician check-out — closes the open trip and captures a GPS event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckOutInput"
+      responses:
+        "200":
+          description: Updated work order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkOrder"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /closeouts:
+    get:
+      operationId: listCloseouts
+      tags: [closeouts]
+      summary: List closeouts for the current tenant
+      responses:
+        "200":
+          description: Closeouts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Closeout"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createCloseout
+      tags: [closeouts]
+      summary: Submit a VoiceConnect closeout draft (routes to Pending Review)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloseoutInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Closeout"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Work order not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /closeouts/{id}:
+    patch:
+      operationId: updateCloseout
+      tags: [closeouts]
+      summary: Edit a closeout draft (before approval)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloseoutUpdate"
+      responses:
+        "200":
+          description: Updated closeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Closeout"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /closeouts/{id}/approve:
+    post:
+      operationId: approveCloseout
+      tags: [closeouts]
+      summary: Approve a closeout (idempotent) — posts labor/materials, deducts inventory once, hands off to billing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Approved closeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Closeout"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /closeouts/{id}/send-back:
+    post:
+      operationId: sendBackCloseout
+      tags: [closeouts]
+      summary: Send a closeout back to the technician with a reason
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloseoutReviewInput"
+      responses:
+        "200":
+          description: Sent back
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Closeout"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -781,3 +1557,638 @@ components:
           format: date-time
         current:
           type: boolean
+
+    Contact:
+      type: object
+      required: [id, name, title, phone, email]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        title: { type: string }
+        phone: { type: string }
+        email: { type: string }
+        primary: { type: boolean }
+
+    RateRule:
+      type: object
+      required: [id, label, laborRate, afterHoursRate]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        laborRate: { type: number }
+        afterHoursRate: { type: number }
+        notes: { type: string }
+
+    Customer:
+      type: object
+      required:
+        - id
+        - tenantId
+        - name
+        - industry
+        - phone
+        - email
+        - status
+        - accountManagerId
+        - tags
+        - contacts
+        - rateRules
+        - requirements
+        - portalRules
+        - taxCode
+        - balance
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        name: { type: string }
+        industry: { type: string }
+        phone: { type: string }
+        email: { type: string }
+        status: { type: string }
+        accountManagerId: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        contacts:
+          type: array
+          items: { $ref: "#/components/schemas/Contact" }
+        rateRules:
+          type: array
+          items: { $ref: "#/components/schemas/RateRule" }
+        requirements:
+          type: array
+          items: { type: string }
+        portalRules: { type: string }
+        taxCode: { type: string }
+        balance: { type: number }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    CustomerInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        industry: { type: string }
+        phone: { type: string }
+        email: { type: string }
+        status: { type: string }
+        accountManagerId: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        contacts:
+          type: array
+          items: { $ref: "#/components/schemas/Contact" }
+        rateRules:
+          type: array
+          items: { $ref: "#/components/schemas/RateRule" }
+        requirements:
+          type: array
+          items: { type: string }
+        portalRules: { type: string }
+        taxCode: { type: string }
+
+    CustomerUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        industry: { type: string }
+        phone: { type: string }
+        email: { type: string }
+        status: { type: string }
+        accountManagerId: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        contacts:
+          type: array
+          items: { $ref: "#/components/schemas/Contact" }
+        rateRules:
+          type: array
+          items: { $ref: "#/components/schemas/RateRule" }
+        requirements:
+          type: array
+          items: { type: string }
+        portalRules: { type: string }
+        taxCode: { type: string }
+        balance: { type: number }
+
+    Location:
+      type: object
+      required:
+        - id
+        - tenantId
+        - customerId
+        - name
+        - address
+        - city
+        - state
+        - zip
+        - region
+        - notes
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        customerId: { type: string }
+        name: { type: string }
+        address: { type: string }
+        city: { type: string }
+        state: { type: string }
+        zip: { type: string }
+        region: { type: string }
+        notes: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    LocationInput:
+      type: object
+      required: [customerId, name]
+      properties:
+        customerId: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        address: { type: string }
+        city: { type: string }
+        state: { type: string }
+        zip: { type: string }
+        region: { type: string }
+        notes: { type: string }
+
+    LocationUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        address: { type: string }
+        city: { type: string }
+        state: { type: string }
+        zip: { type: string }
+        region: { type: string }
+        notes: { type: string }
+
+    InventoryItem:
+      type: object
+      required:
+        - id
+        - tenantId
+        - name
+        - category
+        - vendor
+        - cost
+        - billablePrice
+        - quantity
+        - reorderPoint
+        - compatibleJobTypes
+        - location
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        name: { type: string }
+        category: { type: string }
+        vendor: { type: string }
+        cost: { type: number }
+        billablePrice: { type: number }
+        quantity: { type: integer }
+        reorderPoint: { type: integer }
+        compatibleJobTypes:
+          type: array
+          items: { type: string }
+        location: { type: string }
+        locationDetail: { type: ["string", "null"] }
+        reservedForJob: { type: ["string", "null"] }
+        lastUsed: { type: ["string", "null"], format: date-time }
+        notes: { type: ["string", "null"] }
+
+    IntakeItem:
+      type: object
+      required:
+        - id
+        - tenantId
+        - source
+        - customerId
+        - priority
+        - requestedDate
+        - description
+        - hasAttachments
+        - missingFields
+        - suggestedAction
+        - status
+        - createdAt
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        source: { type: string }
+        customerId: { type: string }
+        locationId: { type: ["string", "null"] }
+        priority: { type: string }
+        requestedDate: { type: string }
+        description: { type: string }
+        hasAttachments: { type: boolean }
+        duplicateOf: { type: ["string", "null"] }
+        missingFields:
+          type: array
+          items: { type: string }
+        suggestedAction: { type: string }
+        status: { type: string }
+        convertedWorkOrderId: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+
+    IntakeInput:
+      type: object
+      required: [customerId, description, requestedDate]
+      properties:
+        source: { type: string }
+        customerId: { type: string, minLength: 1 }
+        locationId: { type: string }
+        priority: { type: string }
+        requestedDate: { type: string }
+        description: { type: string, minLength: 1 }
+        hasAttachments: { type: boolean }
+        duplicateOf: { type: string }
+        missingFields:
+          type: array
+          items: { type: string }
+        suggestedAction: { type: string }
+
+    Trip:
+      type: object
+      required: [id, tripNumber, date]
+      properties:
+        id: { type: string }
+        tripNumber: { type: integer }
+        technicianId: { type: string }
+        date: { type: string }
+        managerOnSite: { type: string }
+        checkIn: { type: string }
+        checkOut: { type: string }
+        workPerformed: { type: string }
+        returnTripReason: { type: string }
+        materialsNeeded: { type: string }
+        checkInLat: { type: number }
+        checkInLng: { type: number }
+        checkOutLat: { type: number }
+        checkOutLng: { type: number }
+
+    LaborEntry:
+      type: object
+      required: [id, technicianId, date, hours, rate, type, approved]
+      properties:
+        id: { type: string }
+        technicianId: { type: string }
+        date: { type: string }
+        hours: { type: number }
+        rate: { type: number }
+        type: { type: string }
+        approved: { type: boolean }
+
+    MaterialEntry:
+      type: object
+      required: [id, name, quantity, cost, billablePrice, approved]
+      properties:
+        id: { type: string }
+        inventoryItemId: { type: string }
+        name: { type: string }
+        quantity: { type: number }
+        cost: { type: number }
+        billablePrice: { type: number }
+        approved: { type: boolean }
+
+    ExpenseEntry:
+      type: object
+      required: [id, description, amount, category, approved]
+      properties:
+        id: { type: string }
+        description: { type: string }
+        amount: { type: number }
+        category: { type: string }
+        approved: { type: boolean }
+
+    Attachment:
+      type: object
+      required: [id, name, type, uploadedBy, date]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        type: { type: string }
+        uploadedBy: { type: string }
+        date: { type: string }
+
+    LogEntry:
+      type: object
+      required: [id, timestamp, author, message]
+      properties:
+        id: { type: string }
+        timestamp: { type: string }
+        author: { type: string }
+        message: { type: string }
+
+    StatusHistoryEntry:
+      type: object
+      required: [status, at, by]
+      properties:
+        status: { type: string }
+        at: { type: string }
+        by: { type: string }
+
+    WorkOrder:
+      type: object
+      required:
+        - id
+        - tenantId
+        - number
+        - source
+        - customerId
+        - locationId
+        - priority
+        - status
+        - type
+        - region
+        - dueDate
+        - billingStatus
+        - portalSyncStatus
+        - trips
+        - labor
+        - materials
+        - expenses
+        - attachments
+        - internalLog
+        - statusHistory
+        - description
+        - createdAt
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        number: { type: string }
+        source: { type: string }
+        customerId: { type: string }
+        locationId: { type: string }
+        poNumber: { type: ["string", "null"] }
+        referenceNumber: { type: ["string", "null"] }
+        externalId: { type: ["string", "null"] }
+        priority: { type: string }
+        status: { type: string }
+        type: { type: string }
+        region: { type: string }
+        dueDate: { type: string }
+        billingStatus: { type: string }
+        accountManagerId: { type: ["string", "null"] }
+        serviceManagerId: { type: ["string", "null"] }
+        assignedTechnicianId: { type: ["string", "null"] }
+        timeWindow: { type: ["string", "null"] }
+        scheduledStart: { type: ["string", "null"], format: date-time }
+        scheduledEnd: { type: ["string", "null"], format: date-time }
+        scheduleApprovedBy: { type: ["string", "null"] }
+        scheduleApprovedAt: { type: ["string", "null"], format: date-time }
+        description: { type: string }
+        importantNotes: { type: ["string", "null"] }
+        locationNotes: { type: ["string", "null"] }
+        quoteNotes: { type: ["string", "null"] }
+        portalSyncStatus: { type: string }
+        materialsFlag: { type: ["boolean", "null"] }
+        quoteFlag: { type: ["boolean", "null"] }
+        trips:
+          type: array
+          items: { $ref: "#/components/schemas/Trip" }
+        labor:
+          type: array
+          items: { $ref: "#/components/schemas/LaborEntry" }
+        materials:
+          type: array
+          items: { $ref: "#/components/schemas/MaterialEntry" }
+        expenses:
+          type: array
+          items: { $ref: "#/components/schemas/ExpenseEntry" }
+        attachments:
+          type: array
+          items: { $ref: "#/components/schemas/Attachment" }
+        internalLog:
+          type: array
+          items: { $ref: "#/components/schemas/LogEntry" }
+        statusHistory:
+          type: array
+          items: { $ref: "#/components/schemas/StatusHistoryEntry" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    WorkOrderInput:
+      type: object
+      required: [customerId, locationId, description]
+      properties:
+        number: { type: string }
+        source: { type: string }
+        customerId: { type: string, minLength: 1 }
+        locationId: { type: string, minLength: 1 }
+        poNumber: { type: string }
+        referenceNumber: { type: string }
+        externalId: { type: string }
+        priority: { type: string }
+        status: { type: string }
+        type: { type: string }
+        region: { type: string }
+        dueDate: { type: string }
+        billingStatus: { type: string }
+        accountManagerId: { type: string }
+        serviceManagerId: { type: string }
+        assignedTechnicianId: { type: string }
+        timeWindow: { type: string }
+        description: { type: string, minLength: 1 }
+        importantNotes: { type: string }
+        locationNotes: { type: string }
+        quoteNotes: { type: string }
+        portalSyncStatus: { type: string }
+        materialsFlag: { type: boolean }
+        quoteFlag: { type: boolean }
+
+    WorkOrderUpdate:
+      type: object
+      properties:
+        number: { type: string }
+        source: { type: string }
+        customerId: { type: string }
+        locationId: { type: string }
+        poNumber: { type: ["string", "null"] }
+        referenceNumber: { type: ["string", "null"] }
+        externalId: { type: ["string", "null"] }
+        priority: { type: string }
+        status: { type: string }
+        type: { type: string }
+        region: { type: string }
+        dueDate: { type: string }
+        billingStatus: { type: string }
+        accountManagerId: { type: ["string", "null"] }
+        serviceManagerId: { type: ["string", "null"] }
+        assignedTechnicianId: { type: ["string", "null"] }
+        timeWindow: { type: ["string", "null"] }
+        scheduledStart: { type: ["string", "null"], format: date-time }
+        scheduledEnd: { type: ["string", "null"], format: date-time }
+        description: { type: string }
+        importantNotes: { type: ["string", "null"] }
+        locationNotes: { type: ["string", "null"] }
+        quoteNotes: { type: ["string", "null"] }
+        portalSyncStatus: { type: string }
+        materialsFlag: { type: ["boolean", "null"] }
+        quoteFlag: { type: ["boolean", "null"] }
+        trips:
+          type: array
+          items: { $ref: "#/components/schemas/Trip" }
+        labor:
+          type: array
+          items: { $ref: "#/components/schemas/LaborEntry" }
+        materials:
+          type: array
+          items: { $ref: "#/components/schemas/MaterialEntry" }
+        expenses:
+          type: array
+          items: { $ref: "#/components/schemas/ExpenseEntry" }
+        attachments:
+          type: array
+          items: { $ref: "#/components/schemas/Attachment" }
+        internalLog:
+          type: array
+          items: { $ref: "#/components/schemas/LogEntry" }
+        statusHistory:
+          type: array
+          items: { $ref: "#/components/schemas/StatusHistoryEntry" }
+
+    LaborInput:
+      type: object
+      required: [technicianId, hours, rate, type]
+      properties:
+        technicianId: { type: string, minLength: 1 }
+        date: { type: string }
+        hours: { type: number }
+        rate: { type: number }
+        type: { type: string }
+        approved: { type: boolean }
+
+    MaterialInput:
+      type: object
+      required: [name, quantity]
+      properties:
+        inventoryItemId: { type: string }
+        name: { type: string, minLength: 1 }
+        quantity: { type: number }
+        cost: { type: number }
+        billablePrice: { type: number }
+        approved: { type: boolean }
+
+    NoteInput:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, minLength: 1 }
+
+    CheckInInput:
+      type: object
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+
+    CheckOutInput:
+      type: object
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+        workPerformed: { type: string }
+
+    Closeout:
+      type: object
+      required:
+        - id
+        - tenantId
+        - workOrderId
+        - technicianId
+        - submittedAt
+        - transcript
+        - transcriptLanguage
+        - aiSummary
+        - workPerformed
+        - materialsDetected
+        - laborSuggested
+        - missingInfo
+        - customerUpdateText
+        - billingLines
+        - portalUpdateText
+        - status
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        workOrderId: { type: string }
+        technicianId: { type: string }
+        submittedAt: { type: string, format: date-time }
+        transcript: { type: string }
+        transcriptLanguage: { type: string }
+        translatedSummary: { type: ["string", "null"] }
+        aiSummary: { type: string }
+        workPerformed: { type: string }
+        materialsDetected:
+          type: array
+          items: { type: string }
+        laborSuggested: { type: string }
+        returnTripReason: { type: ["string", "null"] }
+        quoteNotes: { type: ["string", "null"] }
+        missingInfo:
+          type: array
+          items: { type: string }
+        customerUpdateText: { type: string }
+        billingLines:
+          type: array
+          items: { type: string }
+        portalUpdateText: { type: string }
+        status: { type: string }
+        reviewedBy: { type: ["string", "null"] }
+        reviewedAt: { type: ["string", "null"], format: date-time }
+        reviewNote: { type: ["string", "null"] }
+
+    CloseoutInput:
+      type: object
+      required: [workOrderId, technicianId]
+      properties:
+        workOrderId: { type: string, minLength: 1 }
+        technicianId: { type: string, minLength: 1 }
+        transcript: { type: string }
+        transcriptLanguage: { type: string }
+        translatedSummary: { type: string }
+        aiSummary: { type: string }
+        workPerformed: { type: string }
+        materialsDetected:
+          type: array
+          items: { type: string }
+        laborSuggested: { type: string }
+        returnTripReason: { type: string }
+        quoteNotes: { type: string }
+        missingInfo:
+          type: array
+          items: { type: string }
+        customerUpdateText: { type: string }
+        billingLines:
+          type: array
+          items: { type: string }
+        portalUpdateText: { type: string }
+
+    CloseoutUpdate:
+      type: object
+      properties:
+        transcript: { type: string }
+        transcriptLanguage: { type: string }
+        translatedSummary: { type: string }
+        aiSummary: { type: string }
+        workPerformed: { type: string }
+        materialsDetected:
+          type: array
+          items: { type: string }
+        laborSuggested: { type: string }
+        returnTripReason: { type: string }
+        quoteNotes: { type: string }
+        missingInfo:
+          type: array
+          items: { type: string }
+        customerUpdateText: { type: string }
+        billingLines:
+          type: array
+          items: { type: string }
+        portalUpdateText: { type: string }
+
+    CloseoutReviewInput:
+      type: object
+      properties:
+        reason: { type: string }

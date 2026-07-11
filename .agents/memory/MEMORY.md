@@ -1,2 +1,3 @@
 - [ServiceConnect store invariants](serviceconnect-store-invariants.md) — updater-snapshot reads, idempotency guards tied to UI filters, localStorage key bumps.
 - [ServiceConnect auth architecture](serviceconnect-auth.md) — provider ordering, auth gate (both login redirects), IS_DEV-gated dev surfaces, shared logout, seed.
+- [ServiceConnect backend migration](serviceconnect-backend.md) — store react-query facade, local-only slice, backend authz/tenant/audit guardrails, seed conventions.

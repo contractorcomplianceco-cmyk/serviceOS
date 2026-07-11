@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import type { User } from "@workspace/db";
 import { getUserForToken } from "../lib/auth/session";
 import { SESSION_COOKIE_NAME } from "../lib/auth/config";
-import { isValidRole, type Role } from "../lib/authz";
+import { hasNavAccess, isValidRole, type NavKey, type Role } from "../lib/authz";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -49,6 +49,25 @@ export function requireRoles(...roles: Role[]) {
       return;
     }
     if (!isValidRole(user.role) || !roles.includes(user.role)) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    next();
+  };
+}
+
+/**
+ * Require the authenticated user's role to have access to a given nav section.
+ * Mirrors the client route guards so backend authz never diverges from the UI.
+ */
+export function requireNav(key: NavKey) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+    if (!isValidRole(user.role) || !hasNavAccess(user.role, key)) {
       res.status(403).json({ error: "Forbidden" });
       return;
     }

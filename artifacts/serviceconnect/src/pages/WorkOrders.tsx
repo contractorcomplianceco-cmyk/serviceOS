@@ -40,7 +40,7 @@ export default function WorkOrders() {
     setNewDescription("");
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!newCustomerId || !newLocationId || !newDescription.trim()) {
       toast({ title: "Missing information", description: "Customer, location, and description are required." });
       return;
@@ -69,11 +69,15 @@ export default function WorkOrders() {
       internalLog: [],
       createdAt: new Date().toISOString(),
     };
-    addWorkOrder(wo);
-    toast({ title: "Work order created", description: `${wo.number} created for ${customers.find((c) => c.id === newCustomerId)?.name}.` });
+    const created = await addWorkOrder(wo);
+    if (!created) {
+      toast({ title: "Could not create work order", description: "Please try again.", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Work order created", description: `${created.number} created for ${customers.find((c) => c.id === newCustomerId)?.name}.` });
     setCreateOpen(false);
     resetCreate();
-    navigate(`/work-orders/${id}`);
+    navigate(`/work-orders/${created.id}`);
   };
 
   const isTech = currentUser.role === "Technician" || currentUser.role === "Subcontractor";
