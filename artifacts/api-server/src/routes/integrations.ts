@@ -24,9 +24,10 @@ import {
 import {
   listEvents,
   simulateInbound,
-  approveOutbound,
+  approveEvent,
   rejectOutbound,
   retryEvent,
+  runConnectionLifecycle,
 } from "../lib/integrations/framework";
 import { writeAudit } from "../lib/audit";
 
@@ -122,6 +123,18 @@ router.patch("/integrations/:id", requireAuth, async (req, res) => {
     .set(patch)
     .where(eq(integrationConnectionsTable.id, existing.id))
     .returning();
+
+  // Run the connection lifecycle when the state actually transitions (sandbox
+  // connect/authenticate/refresh or disconnect — no real credentials used).
+  let lifecycleDetail = "";
+  if (body.data.state !== undefined && body.data.state !== existing.state) {
+    lifecycleDetail = await runConnectionLifecycle(row.id, body.data.state);
+  }
+  const [fresh] = await db
+    .select()
+    .from(integrationConnectionsTable)
+    .where(eq(integrationConnectionsTable.id, row.id));
+
   await writeAudit(
     {
       tenantId: user.tenantId,
@@ -130,12 +143,12 @@ router.patch("/integrations/:id", requireAuth, async (req, res) => {
       action: "integration.update",
       entityType: "Integration",
       entityId: row.id,
-      summary: `Updated ${row.provider} connection (${row.state}/${row.environment})`,
+      summary: `Updated ${row.provider} connection (${row.state}/${row.environment})${lifecycleDetail ? ` — ${lifecycleDetail}` : ""}`,
       ip: req.ip,
     },
     req,
   );
-  res.json(toIntegrationConnection(row));
+  res.json(toIntegrationConnection(fresh ?? row));
 });
 
 /** POST /integrations/:id/simulate-inbound — simulate an inbound message. */
@@ -223,16 +236,19 @@ router.post("/integration-events/:id/approve", requireAuth, async (req, res) => 
     return;
   }
   try {
-    const event = await approveOutbound(user.tenantId, parsed.data.id, user.id);
+    const event = await approveEvent(user.tenantId, parsed.data.id, user.id);
     await writeAudit(
       {
         tenantId: user.tenantId,
         actorUserId: user.id,
         actorName: user.name,
-        action: "integration.approve_outbound",
+        action:
+          event.direction === "Inbound"
+            ? "integration.approve_inbound"
+            : "integration.approve_outbound",
         entityType: "Integration",
         entityId: event.id,
-        summary: `Approved outbound ${event.eventType} (${event.status})`,
+        summary: `Approved ${event.direction.toLowerCase()} ${event.eventType} (${event.status})`,
         ip: req.ip,
       },
       req,

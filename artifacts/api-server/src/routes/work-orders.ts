@@ -44,6 +44,7 @@ import {
   notifyWorkOrderScheduled,
   notifyWorkOrderCompleted,
 } from "../lib/notifications/dispatch-helpers";
+import { queueOutboundWorkOrderStatus } from "../lib/integrations/framework";
 
 const router: IRouter = Router();
 
@@ -342,6 +343,14 @@ router.patch(
     }
     if (d.status === "Completed" && wo.status !== "Completed") {
       await notifyWorkOrderCompleted(updated);
+    }
+
+    // A status change on an externally-sourced work order enqueues an OUTBOUND
+    // status update to the originating integration — held for human approval
+    // before the (simulated) submission runs. Populates the approval queue from
+    // real business actions, not just seed data.
+    if (d.status && d.status !== wo.status) {
+      await queueOutboundWorkOrderStatus(user.tenantId, updated);
     }
 
     res.json(toWorkOrder(updated));

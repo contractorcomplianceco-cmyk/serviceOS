@@ -92,11 +92,42 @@ export async function simulateInbound(
     );
   }
 
-  const inbound = await adapter.simulateInbound(conn);
+  // Poll a batch from the adapter; process the first message (sandbox produces
+  // one per click). fetch() defaults to a single inbound() under the hood.
+  const [inbound] = await adapter.fetch(conn);
   let hist = history([], "Received", `Inbound ${inbound.eventType} received`);
 
   // Map inbound → local draft shape.
-  const mapping = await adapter.mapInbound(conn, inbound.payload);
+  const mapping = await adapter.map(conn, inbound.payload);
+
+  // Inbound sources flagged requiresApproval (email/portal) are held for a
+  // human before anything is created — they do NOT auto-apply.
+  if (mapping.requiresApproval) {
+    hist = history(
+      hist,
+      "PendingApproval",
+      `Mapped to ${mapping.entityType} — held for staff approval before applying`,
+    );
+    const [held] = await db
+      .insert(integrationEventsTable)
+      .values({
+        tenantId,
+        connectionId,
+        direction: "Inbound",
+        eventType: inbound.eventType,
+        externalId: inbound.externalId,
+        entityType: mapping.entityType,
+        status: "PendingApproval",
+        requiresApproval: "true",
+        payload: inbound.payload,
+        mappedPayload: mapping.mapped,
+        statusHistory: hist,
+      })
+      .returning();
+    await bumpConnection(connectionId, { lastInboundAt: new Date() });
+    return held;
+  }
+
   hist = history(hist, "Mapped", `Mapped to ${mapping.entityType} draft`);
 
   const [event] = await db
@@ -137,7 +168,7 @@ async function applyInboundEvent(eventId: string): Promise<IntegrationEvent> {
 
   // Re-run the mapping from the stored raw payload so corrected config (e.g. a
   // newly-set default customer) is applied on retry.
-  const mapping = await adapter.mapInbound(
+  const mapping = await adapter.map(
     conn,
     (event.payload ?? {}) as Record<string, unknown>,
   );
@@ -194,6 +225,7 @@ async function applyInboundEvent(eventId: string): Promise<IntegrationEvent> {
     })
     .returning();
 
+  let recordDetail = "";
   if (event.externalId) {
     await db.insert(integrationIdMapTable).values({
       tenantId: event.tenantId,
@@ -202,6 +234,9 @@ async function applyInboundEvent(eventId: string): Promise<IntegrationEvent> {
       entityType: "Intake",
       entityId: intake.id,
     });
+    // Adapter records the external↔local mapping (audit hook).
+    const rec = await adapter.record(conn, event.externalId, "Intake", intake.id);
+    recordDetail = ` — ${rec.detail}`;
   }
 
   await bumpConnection(event.connectionId, { lastInboundAt: new Date() });
@@ -215,12 +250,60 @@ async function applyInboundEvent(eventId: string): Promise<IntegrationEvent> {
       statusHistory: history(
         event.statusHistory,
         "Ignored",
-        `Applied as Draft intake ${intake.id} (awaiting human triage)`,
+        `Applied as Draft intake ${intake.id} (awaiting human triage)${recordDetail}`,
       ),
     })
     .where(eq(integrationEventsTable.id, event.id))
     .returning();
   return updated;
+}
+
+/**
+ * Approve a held INBOUND event (email/portal) — a human has vetted the parsed
+ * request, so now apply it as a Draft intake (still human-triaged downstream).
+ */
+export async function approveInbound(
+  tenantId: string,
+  eventId: string,
+  approverUserId: string,
+): Promise<IntegrationEvent> {
+  const event = await loadEvent(eventId);
+  if (!event || event.tenantId !== tenantId)
+    throw new Error("Event not found");
+  if (event.direction !== "Inbound" || event.status !== "PendingApproval") {
+    return event;
+  }
+  await db
+    .update(integrationEventsTable)
+    .set({
+      status: "Approved",
+      approvedByUserId: approverUserId,
+      approvedAt: new Date(),
+      statusHistory: history(
+        event.statusHistory,
+        "Approved",
+        "Inbound approved by staff — applying as Draft intake",
+      ),
+    })
+    .where(eq(integrationEventsTable.id, eventId));
+  return applyInboundEvent(eventId);
+}
+
+/**
+ * Approve dispatcher: inbound held events get applied; outbound queued events
+ * get submitted. Both remain strictly human-gated (HITL).
+ */
+export async function approveEvent(
+  tenantId: string,
+  eventId: string,
+  approverUserId: string,
+): Promise<IntegrationEvent> {
+  const event = await loadEvent(eventId);
+  if (!event || event.tenantId !== tenantId)
+    throw new Error("Event not found");
+  return event.direction === "Inbound"
+    ? approveInbound(tenantId, eventId, approverUserId)
+    : approveOutbound(tenantId, eventId, approverUserId);
 }
 
 /**
@@ -291,7 +374,7 @@ export async function approveOutbound(
     .where(eq(integrationEventsTable.id, eventId));
 
   const attempt = event.attempts + 1;
-  const result = await adapter.submitOutbound(conn, event.payload);
+  const result = await adapter.submit(conn, event.payload);
   if (result.ok) {
     hist = history(hist, "Submitted", result.detail);
     await bumpConnection(conn.id, { lastOutboundAt: new Date() });
@@ -351,6 +434,18 @@ export async function retryEvent(
     throw new Error("Event not found");
   if (event.status !== "Failed") return event;
 
+  // Consult the adapter's retry policy before doing anything.
+  const conn = await loadConnection(event.connectionId);
+  if (conn) {
+    const adapter = adapterForProvider(conn.provider);
+    if (adapter) {
+      const decision = await adapter.retry(conn, event.eventType);
+      if (!decision.retryable) {
+        return finishEvent(eventId, "Failed", `Retry blocked: ${decision.detail}`);
+      }
+    }
+  }
+
   if (event.direction === "Outbound") {
     const [row] = await db
       .update(integrationEventsTable)
@@ -409,4 +504,98 @@ async function bumpConnection(
     .update(integrationConnectionsTable)
     .set(patch)
     .where(eq(integrationConnectionsTable.id, id));
+}
+
+/**
+ * Run the connection lifecycle when a connection's state changes. Entering a
+ * processing state runs connect → authenticate → refresh (sandbox, no real
+ * credentials); leaving to Disabled runs disconnect. Clears/records lastError.
+ * Returns a human-readable detail string for auditing. Best-effort.
+ */
+export async function runConnectionLifecycle(
+  connectionId: string,
+  targetState: string,
+): Promise<string> {
+  const conn = await loadConnection(connectionId);
+  if (!conn) return "Connection not found";
+  const adapter = adapterForProvider(conn.provider);
+  if (!adapter) return `No adapter for provider ${conn.provider}`;
+
+  if (targetState === "Disabled") {
+    const res = await adapter.disconnect(conn);
+    await bumpConnection(connectionId, { lastError: res.ok ? null : res.detail });
+    return res.detail;
+  }
+  if (isProcessing(targetState)) {
+    const connected = await adapter.connect(conn);
+    const auth = await adapter.authenticate(conn);
+    const refreshed = await adapter.refresh(conn);
+    const ok = connected.ok && auth.ok && refreshed.ok;
+    const tokenHint = refreshed.tokenHint ?? auth.tokenHint ?? connected.tokenHint;
+    await db
+      .update(integrationConnectionsTable)
+      .set({
+        lastError: ok ? null : [connected, auth, refreshed].find((r) => !r.ok)?.detail ?? null,
+        ...(tokenHint ? { tokenHint } : {}),
+      })
+      .where(eq(integrationConnectionsTable.id, connectionId));
+    return `${connected.detail}; ${auth.detail}; ${refreshed.detail}`;
+  }
+  return `State set to ${targetState}`;
+}
+
+/**
+ * When a work order linked to an external system changes status, enqueue an
+ * OUTBOUND status update on the originating (or an active outbound-capable)
+ * connection. It lands in the approval queue (PendingApproval) — a human must
+ * approve before the (simulated) submission runs. Best-effort; returns null if
+ * there is no eligible connection. This is what makes the outbound approval
+ * queue populate dynamically from real business actions, not just seed data.
+ */
+export async function queueOutboundWorkOrderStatus(
+  tenantId: string,
+  wo: { id: string; number: string; externalId: string | null; status: string },
+): Promise<IntegrationEvent | null> {
+  if (!wo.externalId) return null;
+
+  // Prefer the connection that originally imported this external id.
+  let conn: IntegrationConnection | undefined;
+  const [idMap] = await db
+    .select()
+    .from(integrationIdMapTable)
+    .where(
+      and(
+        eq(integrationIdMapTable.tenantId, tenantId),
+        eq(integrationIdMapTable.externalId, wo.externalId),
+      ),
+    )
+    .limit(1);
+  if (idMap) conn = await loadConnection(idMap.connectionId);
+
+  // Fall back to an active outbound-capable connection.
+  if (!conn || !isProcessing(conn.state)) {
+    const rows = await db
+      .select()
+      .from(integrationConnectionsTable)
+      .where(eq(integrationConnectionsTable.tenantId, tenantId));
+    conn = rows.find(
+      (c) =>
+        isProcessing(c.state) &&
+        (c.provider === "ServiceChannel" || c.provider === "GenericPortal"),
+    );
+  }
+  if (!conn || !isProcessing(conn.state)) return null;
+
+  return queueOutbound(
+    tenantId,
+    conn.id,
+    "work_order.status_update",
+    {
+      externalId: wo.externalId,
+      workOrderNumber: wo.number,
+      status: wo.status,
+      note: `Work order ${wo.number} status is now ${wo.status}`,
+    },
+    { entityType: "WorkOrder", entityId: wo.id, externalId: wo.externalId },
+  );
 }

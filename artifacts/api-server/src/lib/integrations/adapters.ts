@@ -5,12 +5,14 @@ import { estimateEta } from "../providers/routing";
 // ---------------------------------------------------------------------------
 // Integration adapters — all sandbox/simulated.
 //
-// Every adapter implements one common interface so the framework can drive any
-// external system the same way: authenticate → receive/fetch inbound →
-// map → apply (creates a Draft locally) and, for outbound, map → submit (held
-// behind human approval). No adapter contacts a real system; ServiceChannel
-// runs against built-in fixtures, EmailIntake parses a simulated inbound email,
-// and GenericPortal maps an arbitrary portal payload.
+// Every adapter implements one common lifecycle interface so the framework can
+// drive any external system the same way:
+//   connect → authenticate → refresh → inbound/fetch → map → (apply) → record
+//   submit (outbound, held behind human approval) → retry → disconnect
+// No adapter contacts a real system; ServiceChannel runs against built-in
+// fixtures, EmailIntake parses a simulated inbound email, and GenericPortal maps
+// an arbitrary portal payload. Inbound sources that require triage return
+// requiresApproval so the framework holds them for a human before applying.
 // ---------------------------------------------------------------------------
 
 export interface InboundPayload {
@@ -37,22 +39,124 @@ export interface SubmitResult {
   externalId?: string;
 }
 
+/** Result of a connection-lifecycle operation (connect/refresh/disconnect). */
+export interface LifecycleResult {
+  ok: boolean;
+  detail: string;
+  tokenHint?: string;
+}
+
+/** Whether a failed event may be retried, per the adapter's policy. */
+export interface RetryDecision {
+  retryable: boolean;
+  detail: string;
+}
+
+/** Audit note produced when an external↔local id mapping is recorded. */
+export interface RecordResult {
+  detail: string;
+}
+
+/**
+ * Common adapter lifecycle. Lifecycle methods (connect/refresh/disconnect),
+ * fetch, retry, and record have sensible sandbox defaults via `defineAdapter`;
+ * each concrete adapter only supplies `inbound` + `map` (and overrides
+ * `authenticate`/`submit` where meaningful).
+ */
 export interface IntegrationAdapter {
   provider: string;
-  /** Simulate authentication / token refresh. */
+  /** Establish the (sandbox) connection. */
+  connect(conn: IntegrationConnection): Promise<LifecycleResult>;
+  /** Simulate authentication. */
   authenticate(conn: IntegrationConnection): Promise<AuthResult>;
-  /** Produce a simulated inbound payload (used by "simulate inbound"). */
-  simulateInbound(conn: IntegrationConnection): Promise<InboundPayload>;
+  /** Simulate a token refresh. */
+  refresh(conn: IntegrationConnection): Promise<LifecycleResult>;
+  /** Produce a single simulated inbound payload. */
+  inbound(conn: IntegrationConnection): Promise<InboundPayload>;
+  /** Poll/fetch a batch of inbound payloads (defaults to one `inbound`). */
+  fetch(conn: IntegrationConnection): Promise<InboundPayload[]>;
   /** Map an external inbound payload into a local draft shape. */
-  mapInbound(
+  map(
     conn: IntegrationConnection,
     payload: Record<string, unknown>,
   ): Promise<MappedInbound>;
-  /** Build the outbound payload for a local entity (simulated submit). */
-  submitOutbound(
+  /** Build + submit the outbound payload for a local entity (simulated). */
+  submit(
     conn: IntegrationConnection,
     mapped: Record<string, unknown>,
   ): Promise<SubmitResult>;
+  /** Decide whether a failed event may be retried. */
+  retry(
+    conn: IntegrationConnection,
+    eventType: string,
+  ): Promise<RetryDecision>;
+  /** Record an external↔local id mapping (audit hook). */
+  record(
+    conn: IntegrationConnection,
+    externalId: string,
+    entityType: string,
+    entityId: string,
+  ): Promise<RecordResult>;
+  /** Tear down the (sandbox) connection. */
+  disconnect(conn: IntegrationConnection): Promise<LifecycleResult>;
+}
+
+/** An adapter definition — required parts plus optional overrides. */
+type AdapterDef = Pick<IntegrationAdapter, "provider" | "inbound" | "map"> &
+  Partial<IntegrationAdapter>;
+
+/**
+ * Fill in default sandbox lifecycle behavior so each adapter only needs to
+ * define what is actually distinct (inbound + map, and any custom auth/submit).
+ */
+function defineAdapter(def: AdapterDef): IntegrationAdapter {
+  const provider = def.provider;
+  return {
+    provider,
+    inbound: def.inbound,
+    map: def.map,
+    connect:
+      def.connect ??
+      (async () => ({
+        ok: true,
+        detail: `${provider} sandbox connection established (no real credentials used)`,
+      })),
+    authenticate:
+      def.authenticate ??
+      (async (conn) => ({
+        ok: true,
+        detail: `${provider} sandbox authentication accepted`,
+        tokenHint: conn.tokenHint ?? undefined,
+      })),
+    refresh:
+      def.refresh ??
+      (async (conn) => ({
+        ok: true,
+        detail: `${provider} token refreshed (sandbox)`,
+        tokenHint: conn.tokenHint ?? undefined,
+      })),
+    fetch: def.fetch ?? (async (conn) => [await def.inbound(conn)]),
+    submit:
+      def.submit ??
+      (async () => ({
+        ok: true,
+        detail: `${provider} has no outbound channel (simulated)`,
+      })),
+    retry:
+      def.retry ??
+      (async () => ({ retryable: true, detail: "Retry permitted (sandbox)" })),
+    record:
+      def.record ??
+      (async (conn, externalId, entityType, entityId) => ({
+        detail: `Recorded ${entityType} ${entityId} ↔ ${conn.provider}:${externalId}`,
+      })),
+    disconnect:
+      def.disconnect ??
+      (async () => ({
+        ok: true,
+        detail: `${provider} disconnected (sandbox)`,
+      })),
+  };
 }
 
 function str(v: unknown, fallback = ""): string {
@@ -80,8 +184,15 @@ const SERVICECHANNEL_FIXTURES = [
   },
 ];
 
-export const serviceChannelAdapter: IntegrationAdapter = {
+export const serviceChannelAdapter: IntegrationAdapter = defineAdapter({
   provider: "ServiceChannel",
+  async connect(conn) {
+    return {
+      ok: true,
+      detail: "ServiceChannel sandbox connected (fixtures only, not live)",
+      tokenHint: conn.tokenHint ?? "sc_sandbox_••••1234",
+    };
+  },
   async authenticate(conn) {
     // Sandbox auth: accepts the stored (masked) token hint, refreshes a fake one.
     return {
@@ -90,7 +201,14 @@ export const serviceChannelAdapter: IntegrationAdapter = {
       tokenHint: conn.tokenHint ?? "sc_sandbox_••••1234",
     };
   },
-  async simulateInbound(conn) {
+  async refresh(conn) {
+    return {
+      ok: true,
+      detail: "ServiceChannel sandbox token rotated (simulated)",
+      tokenHint: conn.tokenHint ?? "sc_sandbox_••••1234",
+    };
+  },
+  async inbound(conn) {
     const idx =
       (typeof conn.config.inboundCount === "number"
         ? conn.config.inboundCount
@@ -102,7 +220,7 @@ export const serviceChannelAdapter: IntegrationAdapter = {
       payload: { ...fx, receivedVia: "ServiceChannel Sandbox" },
     };
   },
-  async mapInbound(conn, payload) {
+  async map(conn, payload) {
     return {
       entityType: "Intake",
       // Inbound external work-order requests are triaged by a human before they
@@ -118,16 +236,16 @@ export const serviceChannelAdapter: IntegrationAdapter = {
       },
     };
   },
-  async submitOutbound(_conn, mapped) {
+  async submit(_conn, mapped) {
     return {
       ok: true,
       detail: "Status update accepted by ServiceChannel Sandbox (simulated)",
       externalId: str(mapped.externalId) || `SC-ACK-${Date.now().toString().slice(-6)}`,
     };
   },
-};
+});
 
-export const emailIntakeAdapter: IntegrationAdapter = {
+export const emailIntakeAdapter: IntegrationAdapter = defineAdapter({
   provider: "EmailIntake",
   async authenticate() {
     return {
@@ -135,7 +253,7 @@ export const emailIntakeAdapter: IntegrationAdapter = {
       detail: "Mailbox poller ready (simulated — no mailbox connected)",
     };
   },
-  async simulateInbound() {
+  async inbound() {
     return {
       eventType: "email.received",
       externalId: `EM-${Date.now().toString().slice(-6)}`,
@@ -146,12 +264,14 @@ export const emailIntakeAdapter: IntegrationAdapter = {
       },
     };
   },
-  async mapInbound(conn, payload) {
+  async map(conn, payload) {
     // Naive parse of a simulated inbound email into a triage intake draft.
     const subject = str(payload.subject).replace(/^service request:\s*/i, "");
     return {
       entityType: "Intake",
-      requiresApproval: false,
+      // Parsed email requests are low-trust — a person must approve before the
+      // draft is created (guards against spam / misattributed customers).
+      requiresApproval: true,
       mapped: {
         source: "Email",
         customerId: str(conn.config.defaultCustomerId),
@@ -162,16 +282,23 @@ export const emailIntakeAdapter: IntegrationAdapter = {
       },
     };
   },
-  async submitOutbound() {
+  async submit() {
     return {
       ok: true,
       detail: "Auto-reply captured by dev mail sink (simulated — not sent)",
     };
   },
-};
+});
 
-export const genericPortalAdapter: IntegrationAdapter = {
+export const genericPortalAdapter: IntegrationAdapter = defineAdapter({
   provider: "GenericPortal",
+  async connect(conn) {
+    return {
+      ok: true,
+      detail: "Generic portal sandbox connected (API key accepted)",
+      tokenHint: conn.tokenHint ?? "gp_sandbox_••••abcd",
+    };
+  },
   async authenticate(conn) {
     return {
       ok: true,
@@ -179,7 +306,7 @@ export const genericPortalAdapter: IntegrationAdapter = {
       tokenHint: conn.tokenHint ?? "gp_sandbox_••••abcd",
     };
   },
-  async simulateInbound() {
+  async inbound() {
     return {
       eventType: "ticket.created",
       externalId: `GP-${Date.now().toString().slice(-6)}`,
@@ -190,13 +317,15 @@ export const genericPortalAdapter: IntegrationAdapter = {
       },
     };
   },
-  async mapInbound(conn, payload) {
+  async map(conn, payload) {
     const urgency = str(payload.urgency, "normal").toLowerCase();
     const priority =
       urgency === "urgent" ? "High" : urgency === "low" ? "Low" : "Medium";
     return {
       entityType: "Intake",
-      requiresApproval: false,
+      // Generic portal tickets come from an untrusted external source — held for
+      // human approval before a draft intake is created.
+      requiresApproval: true,
       mapped: {
         source: "Portal",
         customerId: str(conn.config.defaultCustomerId),
@@ -207,19 +336,19 @@ export const genericPortalAdapter: IntegrationAdapter = {
       },
     };
   },
-  async submitOutbound() {
+  async submit() {
     return {
       ok: true,
       detail: "Ticket update accepted by generic portal (sandbox)",
     };
   },
-};
+});
 
-// VoiceConnect: a spoken closeout captured in the field. simulateInbound runs
-// the full voice pipeline (STT → language detect → translate → extract) and
-// maps the result to a Draft intake for human triage — never an approved
-// closeout, preserving the review-before-billing guardrail.
-export const voiceConnectAdapter: IntegrationAdapter = {
+// VoiceConnect: a spoken closeout captured in the field. inbound runs the full
+// voice pipeline (STT → language detect → translate → extract) and maps the
+// result to a Draft intake for human triage — never an approved closeout,
+// preserving the review-before-billing guardrail.
+export const voiceConnectAdapter: IntegrationAdapter = defineAdapter({
   provider: "VoiceConnect",
   async authenticate() {
     return {
@@ -227,7 +356,7 @@ export const voiceConnectAdapter: IntegrationAdapter = {
       detail: "VoiceConnect pipeline ready (simulated STT/translation)",
     };
   },
-  async simulateInbound() {
+  async inbound() {
     const result = await runVoicePipeline(`voice-${Date.now()}`);
     return {
       eventType: "voice.closeout_captured",
@@ -244,7 +373,7 @@ export const voiceConnectAdapter: IntegrationAdapter = {
       },
     };
   },
-  async mapInbound(conn, payload) {
+  async map(conn, payload) {
     return {
       entityType: "Intake",
       requiresApproval: false,
@@ -259,14 +388,11 @@ export const voiceConnectAdapter: IntegrationAdapter = {
       },
     };
   },
-  async submitOutbound() {
-    return { ok: true, detail: "No outbound channel for VoiceConnect" };
-  },
-};
+});
 
-// Routing: a GPS/routing provider. simulateInbound produces a labeled ETA
-// estimate between two sample points using the straight-line estimator.
-export const routingAdapter: IntegrationAdapter = {
+// Routing: a GPS/routing provider. inbound produces a labeled ETA estimate
+// between two sample points using the straight-line estimator.
+export const routingAdapter: IntegrationAdapter = defineAdapter({
   provider: "Routing",
   async authenticate() {
     return {
@@ -274,7 +400,7 @@ export const routingAdapter: IntegrationAdapter = {
       detail: "Routing provider ready (straight-line estimator, no live traffic)",
     };
   },
-  async simulateInbound() {
+  async inbound() {
     const eta = await estimateEta(
       { lat: 40.7128, lng: -74.006 },
       { lat: 40.73061, lng: -73.935242 },
@@ -291,14 +417,11 @@ export const routingAdapter: IntegrationAdapter = {
       },
     };
   },
-  async mapInbound() {
+  async map() {
     // Routing estimates are advisory; they are not converted to an intake.
     return { entityType: "None", requiresApproval: false, mapped: {} };
   },
-  async submitOutbound() {
-    return { ok: true, detail: "Routing provider has no outbound submissions" };
-  },
-};
+});
 
 const ADAPTERS: Record<string, IntegrationAdapter> = {
   ServiceChannel: serviceChannelAdapter,
