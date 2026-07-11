@@ -1,0 +1,600 @@
+# SERVICECONNECT PHASE 2B
+# Operational Completion & Production Foundation
+
+You are continuing development of the existing ServiceConnect with RoseOS Intelligence platform.
+
+DO NOT rebuild the application.
+
+Preserve:
+- all existing routes
+- current architecture
+- current design system
+- current backend
+- current authentication
+- current permissions
+- current tests
+- current UI
+- current workflow
+- current documentation
+
+The objective of this sprint is to complete the operational platform so ServiceConnect becomes a legitimate BlueFolder replacement.
+
+This sprint is NOT the QuickBooks replacement phase.
+
+====================================================
+FIRST — TECHNICAL DEBT CLEANUP
+====================================================
+
+Before implementing new features:
+
+1. Create the pending git commit.
+
+Use this commit message:
+
+fix(platform): finalize auth foundation and payment invariants
+
+- enforce AR balance rules
+- prevent overpayment
+- prevent over-refund
+- finalize 12-role authorization model
+- update documentation
+- extend regression coverage
+
+Return:
+- commit hash
+- commit summary
+
+----------------------------------------------------
+
+2. Remove technical debt.
+
+Find every legacy role definition.
+
+The backend role model is now authoritative:
+
+11 internal roles
+
+PLUS
+
+1 Customer Portal User
+
+= 12 total roles
+
+Search the repository for:
+
+- old mock role lists
+- demo role arrays
+- hardcoded role enums
+- fallback role objects
+- old permission maps
+- sample data using 8 roles
+- sample data using 10 roles
+
+Update every remaining reference.
+
+There should be ONE canonical role definition.
+
+Remove obsolete fallbacks whenever possible.
+
+====================================================
+SPRINT 1
+CUSTOMER PORTAL
+====================================================
+
+Build the complete customer portal.
+
+Routes:
+
+/portal/login
+/portal/dashboard
+/portal/work-orders
+/portal/work-orders/:id
+/portal/request-service
+/portal/invoices
+/portal/payments
+/portal/equipment
+/portal/documents
+/portal/profile
+
+Customer capabilities:
+
+- secure login
+- submit service request
+- upload attachments
+- view work orders
+- track job status
+- view technician arrival
+- view approved closeout
+- download invoices
+- pay invoices
+- payment history
+- equipment history
+- service history
+- documents
+- warranties
+- COIs
+- W-9s
+- customer messaging
+
+Strict tenant isolation.
+
+Customers must never see:
+
+- internal notes
+- technician notes
+- job costs
+- labor costs
+- RoseOS recommendations
+- internal documents
+- employee information
+- other customers
+
+====================================================
+SPRINT 2
+SERVICE CONTRACTS
+====================================================
+
+Implement recurring service.
+
+Support:
+
+- preventive maintenance
+- quarterly service
+- annual inspections
+- monthly visits
+- custom recurrence
+- automatic work-order generation
+- pause
+- resume
+- renewal reminders
+- expiration alerts
+
+Generated work orders must link back to the contract.
+
+====================================================
+SPRINT 3
+BLUEFOLDER MIGRATION CENTER
+====================================================
+
+Create a migration center.
+
+Support:
+
+CSV import
+
+Users
+Customers
+Contacts
+Locations
+Equipment
+Inventory
+Work Orders
+Statuses
+Notes
+Attachments
+Custom Fields
+
+Features:
+
+field mapping
+
+validation
+
+duplicate detection
+
+dry run
+
+rollback support
+
+error report
+
+mapping templates
+
+import history
+
+source ID preservation
+
+====================================================
+SPRINT 4
+REAL FILE STORAGE
+====================================================
+
+Replace development attachment handling.
+
+Create abstraction for:
+
+local development
+
+future S3
+
+future Azure
+
+future GCS
+
+Support:
+
+photos
+
+PDFs
+
+VoiceConnect audio
+
+equipment photos
+
+customer docs
+
+COIs
+
+W-9s
+
+contracts
+
+invoices
+
+service reports
+
+====================================================
+SPRINT 5
+NOTIFICATION ENGINE
+====================================================
+
+Replace notification placeholders.
+
+Implement:
+
+notification database
+
+notification queue
+
+notification history
+
+templates
+
+retry
+
+delivery status
+
+future adapters:
+
+Email
+
+SMS
+
+Push
+
+In-app
+
+Events:
+
+job assigned
+
+job changed
+
+invoice ready
+
+invoice overdue
+
+portal sync failed
+
+inventory low
+
+document expiring
+
+contract expiring
+
+====================================================
+SPRINT 6
+SERVICECHANNEL FOUNDATION
+====================================================
+
+Create the integration framework.
+
+Do NOT fake live integrations.
+
+Implement:
+
+adapter interface
+
+credential storage
+
+sandbox mode
+
+payload logging
+
+retry
+
+manual retry
+
+error logging
+
+status mapping
+
+attachment mapping
+
+future OAuth support
+
+====================================================
+SPRINT 7
+VOICECONNECT FOUNDATION
+====================================================
+
+Upgrade VoiceConnect.
+
+Implement:
+
+audio recording
+
+audio upload
+
+transcript persistence
+
+provider abstraction
+
+translation abstraction
+
+structured extraction
+
+confidence
+
+review workflow
+
+approval workflow
+
+draft storage
+
+Do not automatically send anything.
+
+====================================================
+SPRINT 8
+GPS FOUNDATION
+====================================================
+
+Replace simulated routing.
+
+Implement:
+
+GPS events
+
+technician location
+
+last known position
+
+route calculations
+
+provider abstraction
+
+distance calculations
+
+capacity scoring
+
+zone scoring
+
+inventory scoring
+
+human approval
+
+====================================================
+SPRINT 9
+INVENTORY COMPLETION
+====================================================
+
+Finish inventory.
+
+Support:
+
+warehouse
+
+truck
+
+technician
+
+transfer
+
+reservation
+
+consumption
+
+return
+
+adjustment
+
+cycle count
+
+purchase request
+
+approval
+
+transaction history
+
+Prevent double deductions.
+
+====================================================
+SPRINT 10
+EQUIPMENT
+====================================================
+
+Complete equipment management.
+
+Support:
+
+serial numbers
+
+models
+
+manufacturer
+
+warranty
+
+maintenance
+
+history
+
+parts
+
+photos
+
+documents
+
+future AI extraction workflow
+
+====================================================
+SPRINT 11
+ROSEOS INTELLIGENCE
+====================================================
+
+Move intelligence to backend.
+
+Generate recommendations using real data.
+
+Include:
+
+dispatch
+
+overload
+
+missing updates
+
+billing
+
+inventory
+
+documents
+
+contracts
+
+customer risk
+
+return trips
+
+equipment
+
+approval queues
+
+Every recommendation must include:
+
+confidence
+
+reason
+
+supporting evidence
+
+approve
+
+edit
+
+reject
+
+snooze
+
+====================================================
+SPRINT 12
+BACKGROUND JOBS
+====================================================
+
+Implement background workers.
+
+Support:
+
+notifications
+
+contract generation
+
+portal retries
+
+recommendations
+
+document reminders
+
+transcription
+
+migration
+
+====================================================
+SPRINT 13
+QUALITY
+====================================================
+
+Run:
+
+typecheck
+
+lint
+
+tests
+
+build
+
+permission tests
+
+workflow tests
+
+responsive tests
+
+Playwright
+
+No console errors.
+
+====================================================
+DELIVERABLES
+====================================================
+
+Provide:
+
+1. Git commit hash
+
+2. Updated architecture diagram
+
+3. Updated database schema
+
+4. Updated API reference
+
+5. Updated permission matrix
+
+6. Customer Portal documentation
+
+7. Migration documentation
+
+8. Notification documentation
+
+9. Integration documentation
+
+10. VoiceConnect documentation
+
+11. GPS documentation
+
+12. Inventory documentation
+
+13. RoseOS documentation
+
+14. Production readiness report
+
+15. Remaining blockers
+
+====================================================
+SUCCESS CRITERIA
+====================================================
+
+At completion, ServiceConnect should function as a true operational platform capable of replacing BlueFolder.
+
+The following workflow must work end-to-end:
+
+Customer Request
+→ Intake
+→ Work Order
+→ Scheduling
+→ GPS Recommendation
+→ Human Approval
+→ Technician Mobile
+→ VoiceConnect
+→ Supervisor Review
+→ Inventory Update
+→ Portal Queue
+→ Billing Queue
+→ Invoice
+→ Customer Portal
+→ Payment
+→ Audit Trail
+
+Do not begin building the General Ledger, Accounts Payable, bank reconciliation, or full QuickBooks replacement during this sprint.
+
+The focus is operational excellence, production readiness, and completing the BlueFolder replacement.
