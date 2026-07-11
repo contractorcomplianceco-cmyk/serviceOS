@@ -1,4 +1,5 @@
 import { useAppStore } from "@/lib/store";
+import { useAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +11,14 @@ const fmtTime = (iso?: string) =>
   iso ? new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "—";
 
 export default function TechnicianMobile() {
-  const { currentUser, workOrders, customers, locations, closeouts, technicianCheckIn, technicianCheckOut, setCurrentUserId } = useAppStore();
+  const { currentUser, workOrders, customers, locations, closeouts, technicianCheckIn, technicianCheckOut } = useAppStore();
+  const { logout } = useAuth();
   const [, navigate] = useLocation();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
 
   const myJobs = workOrders
     .filter((w) => w.assignedTechnicianId === currentUser?.id && !["Closed", "Cancelled", "Invoiced"].includes(w.status))
@@ -30,7 +37,7 @@ export default function TechnicianMobile() {
               <div className="text-xs font-medium leading-tight mt-0.5" style={{ color: "var(--sc-blue)" }}>{currentUser?.name}</div>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="text-sc-2 hover:text-white hover:bg-white/[0.05]" onClick={() => { setCurrentUserId("u1"); navigate("/login"); }} data-testid="button-logout">
+          <Button variant="ghost" size="icon" className="text-sc-2 hover:text-white hover:bg-white/[0.05]" onClick={handleLogout} data-testid="button-logout">
             <LogOut className="w-5 h-5" />
           </Button>
         </div>

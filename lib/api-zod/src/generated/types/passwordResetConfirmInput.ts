@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface PasswordResetConfirmInput {
+  /** @minLength 1 */
+  token: string;
+  /** @minLength 8 */
+  newPassword: string;
 }

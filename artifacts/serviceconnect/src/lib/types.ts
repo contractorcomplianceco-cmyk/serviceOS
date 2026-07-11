@@ -1,12 +1,16 @@
 export type Role =
   | 'Administrator'
-  | 'Scheduler'
   | 'Service Manager'
-  | 'Technician'
+  | 'Scheduler'
+  | 'Supervisor'
   | 'Lead Technician'
+  | 'Technician'
   | 'Billing'
   | 'Bookkeeper'
-  | 'Subcontractor';
+  | 'Inventory Manager'
+  | 'Sales'
+  | 'Subcontractor'
+  | 'Customer Portal User';
 
 export type Priority = 'Low' | 'Medium' | 'High' | 'Emergency';
 

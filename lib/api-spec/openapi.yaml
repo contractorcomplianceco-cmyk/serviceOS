@@ -10,6 +10,12 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: users
+    description: User management operations
+  - name: sessions
+    description: Session management operations
 paths:
   /healthz:
     get:
@@ -24,6 +30,379 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Log in with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Log out the current session
+      responses:
+        "204":
+          description: Logged out
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get the currently authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/change-password:
+    post:
+      operationId: changePassword
+      tags: [auth]
+      summary: Change the current user's password (also clears forced reset)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordInput"
+      responses:
+        "204":
+          description: Password changed
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated or wrong current password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/password-reset/request:
+    post:
+      operationId: requestPasswordReset
+      tags: [auth]
+      summary: Request a password reset token (no email enumeration)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetRequestInput"
+      responses:
+        "202":
+          description: Accepted (always returns 202 regardless of account existence)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResetRequestResult"
+
+  /auth/password-reset/confirm:
+    post:
+      operationId: confirmPasswordReset
+      tags: [auth]
+      summary: Confirm a password reset with a token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetConfirmInput"
+      responses:
+        "204":
+          description: Password reset
+        "400":
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/dev-users:
+    get:
+      operationId: listDevUsers
+      tags: [auth]
+      summary: List selectable users for the dev role switcher (development only)
+      responses:
+        "200":
+          description: Dev users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DevUser"
+        "403":
+          description: Disabled in production
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/dev-login:
+    post:
+      operationId: devLogin
+      tags: [auth]
+      summary: Log in as a user without a password (development only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DevLoginInput"
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "403":
+          description: Disabled in production
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users (admin only)
+      responses:
+        "200":
+          description: Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuthUser"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/invite:
+    post:
+      operationId: inviteUser
+      tags: [users]
+      summary: Invite a new user (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteInput"
+      responses:
+        "201":
+          description: Invitation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invitation"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/accept-invite:
+    post:
+      operationId: acceptInvite
+      tags: [users]
+      summary: Accept an invitation and set a password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptInviteInput"
+      responses:
+        "204":
+          description: Account activated
+        "400":
+          description: Invalid or expired invitation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{id}:
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update a user (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{id}/reset-password:
+    post:
+      operationId: adminResetUserPassword
+      tags: [users]
+      summary: Force a user to reset their password (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Forced reset applied
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions:
+    get:
+      operationId: listSessions
+      tags: [sessions]
+      summary: List the current user's active sessions
+      responses:
+        "200":
+          description: Sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SessionInfo"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions/revoke-others:
+    post:
+      operationId: revokeOtherSessions
+      tags: [sessions]
+      summary: Revoke all sessions except the current one
+      responses:
+        "204":
+          description: Other sessions revoked
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions/{id}:
+    delete:
+      operationId: revokeSession
+      tags: [sessions]
+      summary: Revoke a specific session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Session revoked
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +413,259 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Role:
+      type: string
+      enum:
+        - Administrator
+        - Service Manager
+        - Scheduler
+        - Supervisor
+        - Lead Technician
+        - Technician
+        - Billing
+        - Bookkeeper
+        - Inventory Manager
+        - Sales
+        - Subcontractor
+        - Customer Portal User
+
+    AuthUser:
+      type: object
+      required:
+        - id
+        - tenantId
+        - email
+        - name
+        - role
+        - active
+        - mustResetPassword
+        - emailVerified
+        - mfaEnabled
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+        active:
+          type: boolean
+        mustResetPassword:
+          type: boolean
+        emailVerified:
+          type: boolean
+        mfaEnabled:
+          type: boolean
+        customerId:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        zone:
+          type: ["string", "null"]
+        skills:
+          type: ["array", "null"]
+          items:
+            type: string
+        restrictedTasks:
+          type: ["array", "null"]
+          items:
+            type: string
+        workloadHours:
+          type: ["number", "null"]
+        capacityHours:
+          type: ["number", "null"]
+        truckId:
+          type: ["string", "null"]
+        gpsConsent:
+          type: ["boolean", "null"]
+        hourlyCost:
+          type: ["number", "null"]
+        lastLoginAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+
+    ChangePasswordInput:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          minLength: 8
+
+    PasswordResetRequestInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          minLength: 1
+
+    PasswordResetRequestResult:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        # Present only in development to make the flow testable without email.
+        devToken:
+          type: ["string", "null"]
+
+    PasswordResetConfirmInput:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          minLength: 8
+
+    DevUser:
+      type: object
+      required: [id, name, role, email]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+        email:
+          type: string
+
+    DevLoginInput:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+          minLength: 1
+
+    InviteInput:
+      type: object
+      required: [email, name, role]
+      properties:
+        email:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
+        role:
+          $ref: "#/components/schemas/Role"
+        customerId:
+          type: ["string", "null"]
+
+    Invitation:
+      type: object
+      required: [id, email, name, role, expiresAt]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+        expiresAt:
+          type: string
+          format: date-time
+        # Present only in development to make the flow testable without email.
+        devToken:
+          type: ["string", "null"]
+
+    AcceptInviteInput:
+      type: object
+      required: [token, password]
+      properties:
+        token:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 8
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        role:
+          $ref: "#/components/schemas/Role"
+        active:
+          type: boolean
+        mustResetPassword:
+          type: boolean
+        phone:
+          type: ["string", "null"]
+        zone:
+          type: ["string", "null"]
+        skills:
+          type: ["array", "null"]
+          items:
+            type: string
+        restrictedTasks:
+          type: ["array", "null"]
+          items:
+            type: string
+        workloadHours:
+          type: ["number", "null"]
+        capacityHours:
+          type: ["number", "null"]
+        truckId:
+          type: ["string", "null"]
+        gpsConsent:
+          type: ["boolean", "null"]
+        hourlyCost:
+          type: ["number", "null"]
+
+    SessionInfo:
+      type: object
+      required: [id, createdAt, expiresAt, current]
+      properties:
+        id:
+          type: string
+        ip:
+          type: ["string", "null"]
+        userAgent:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        current:
+          type: boolean

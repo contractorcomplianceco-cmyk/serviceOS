@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAppStore } from "@/lib/store";
+import { useAuth, IS_DEV } from "@/lib/auth";
 import {
   Select,
   SelectContent,
@@ -8,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Bell, Search, Mail, MessageSquare, UserCircle, Wrench, Building2, MapPin, HardHat, Users, FileText } from "lucide-react";
+import { Bell, Search, Mail, MessageSquare, UserCircle, Wrench, Building2, MapPin, HardHat, Users, FileText, LogOut } from "lucide-react";
 
 interface SearchResult {
   id: string;
@@ -27,7 +28,13 @@ interface SearchGroup {
 
 export function Header() {
   const { currentUser, users, setCurrentUserId, recommendations, workOrders, customers, locations, equipment, invoices } = useAppStore();
+  const { logout } = useAuth();
   const [, navigate] = useLocation();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
   const urgentCount = recommendations.filter((r) => r.severity === "urgent").length;
 
   const [query, setQuery] = useState("");
@@ -157,33 +164,37 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4 ml-auto">
-        {/* Role selector */}
-        <div className="flex items-center gap-2.5">
-          <span className="text-[10px] text-sc-3 font-semibold uppercase tracking-[0.14em] leading-tight text-right">
-            Demo<br />Role
-          </span>
-          <Select value={currentUser.id} onValueChange={setCurrentUserId}>
-            <SelectTrigger
-              data-testid="select-role"
-              className="w-[230px] h-11 text-sm font-medium text-sc rounded-lg"
-              style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}
-            >
-              <SelectValue placeholder="Select a role" />
-            </SelectTrigger>
-            <SelectContent
-              className="text-sc"
-              style={{ background: "var(--sc-panel-2)", border: "1px solid var(--sc-line)" }}
-            >
-              {users.map((user) => (
-                <SelectItem key={user.id} value={user.id} data-testid={`role-option-${user.id}`}>
-                  {user.role} — {user.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Dev-only role selector — hidden in production builds. */}
+        {IS_DEV && (
+          <>
+            <div className="flex items-center gap-2.5">
+              <span className="text-[10px] text-sc-3 font-semibold uppercase tracking-[0.14em] leading-tight text-right">
+                Demo<br />Role
+              </span>
+              <Select value={currentUser.id} onValueChange={setCurrentUserId}>
+                <SelectTrigger
+                  data-testid="select-role"
+                  className="w-[230px] h-11 text-sm font-medium text-sc rounded-lg"
+                  style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}
+                >
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent
+                  className="text-sc"
+                  style={{ background: "var(--sc-panel-2)", border: "1px solid var(--sc-line)" }}
+                >
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id} data-testid={`role-option-${user.id}`}>
+                      {user.role} — {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="h-8 w-px" style={{ background: "var(--sc-line)" }} />
+            <div className="h-8 w-px" style={{ background: "var(--sc-line)" }} />
+          </>
+        )}
 
         {/* Icon actions */}
         <div className="flex items-center gap-1.5">
@@ -227,6 +238,15 @@ export function Header() {
             <span className="text-sm font-semibold text-sc" data-testid="text-current-user">{currentUser.name}</span>
             <span className="text-xs text-sc-3">{currentUser.role}</span>
           </div>
+          <button
+            onClick={handleLogout}
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-sc-2 hover:text-white hover:bg-white/[0.05] transition-colors ml-1"
+            data-testid="button-logout"
+            aria-label="Sign out"
+            title="Sign out"
+          >
+            <LogOut className="h-[18px] w-[18px]" />
+          </button>
         </div>
       </div>
     </header>

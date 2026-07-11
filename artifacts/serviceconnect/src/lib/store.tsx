@@ -6,6 +6,7 @@ import {
   BillingStatus,
 } from './types';
 import * as initialData from './mock-data';
+import { useAuth, mapAuthUserToUser, IS_DEV } from './auth';
 
 interface AppState {
   currentUserId: string;
@@ -105,7 +106,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  const currentUser = state.users.find((u) => u.id === state.currentUserId) ?? state.users[0];
+  const auth = useAuth();
+  // The authenticated user (from the backend) is the single source of truth for
+  // identity, role, and audit actor. Domain lists (users/customers/etc.) remain
+  // local mock data until later sprints migrate them.
+  const currentUser = auth.user ? mapAuthUserToUser(auth.user) : state.users[0];
 
   const buildEvent = (e: AuditInput): AuditEvent => ({
     id: genId('aud'),
@@ -124,7 +129,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value: AppContextType = {
     ...state,
     currentUser,
-    setCurrentUserId: (id) => setState((s) => ({ ...s, currentUserId: id })),
+    // Context switching is a dev-only convenience backed by the dev-login
+    // endpoint; production bundles never surface a switcher and the backend
+    // rejects the call anyway.
+    setCurrentUserId: (id) => {
+      if (IS_DEV) void auth.devLogin(id);
+    },
 
     logAudit: (e) => setState((s) => ({ ...s, auditLog: withAudit(s, [e]) })),
 

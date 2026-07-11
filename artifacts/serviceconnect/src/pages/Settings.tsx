@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useAppStore } from "@/lib/store";
+import { useAuth, IS_DEV } from "@/lib/auth";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,13 +12,19 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { roleDescription } from "@/lib/permissions";
-import { RotateCcw, ShieldCheck, Users, Settings2, UserCircle2, HardHat, FileText, Database, ScrollText } from "lucide-react";
+import { RotateCcw, ShieldCheck, Users, Settings2, UserCircle2, HardHat, FileText, Database, ScrollText, LogOut } from "lucide-react";
 import type { AuditEntityType } from "@/lib/types";
 
 export default function Settings() {
   const { users, currentUser, setCurrentUserId, resetData, auditLog } = useAppStore();
+  const { logout } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
   const [auditFilter, setAuditFilter] = useState<"all" | AuditEntityType>("all");
 
   const isAdmin = currentUser.role === "Administrator";
@@ -65,25 +72,35 @@ export default function Settings() {
                <h3 className="text-lg font-bold text-sc mb-1">Current Session</h3>
                <div className="text-sm font-medium text-sc-blue mb-3">{currentUser.name} — {currentUser.role}</div>
                <p className="text-sm text-sc-2 mb-6">{roleDescription(currentUser.role)}</p>
-               <div className="space-y-2">
-                 <h4 className="text-xs font-bold text-sc-3 uppercase tracking-wider">Switch Role Context</h4>
-                 <div className="space-y-1">
-                   {users.map((u) => (
-                     <button 
-                       key={u.id} 
-                       onClick={() => { setCurrentUserId(u.id); toast({ title: "Context switched", description: `Now viewing as ${u.name} (${u.role}).` }); }} 
-                       className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between border ${currentUser?.id === u.id ? "bg-[var(--sc-elevated)] text-white font-medium border-panel-strong" : "hover:bg-white/[0.04] bg-transparent border-transparent hover:border-panel text-sc-2"}`} 
-                       data-testid={`user-switch-${u.id}`}
-                     >
-                       <div className="flex items-center gap-2">
-                         {u.role.includes("Technician") ? <HardHat className="w-4 h-4 opacity-70" /> : <FileText className="w-4 h-4 opacity-70" />}
-                         {u.name}
-                       </div>
-                       <span className="text-[10px] opacity-70">{u.role.split(' ')[0]}</span>
-                     </button>
-                   ))}
+               <Button
+                 variant="outline"
+                 className="w-full mb-6 border-panel text-sc-2 hover:text-white"
+                 onClick={handleLogout}
+                 data-testid="button-logout-settings"
+               >
+                 <LogOut className="w-4 h-4 mr-2" /> Sign out
+               </Button>
+               {IS_DEV && (
+                 <div className="space-y-2">
+                   <h4 className="text-xs font-bold text-sc-3 uppercase tracking-wider">Switch Role Context <span className="text-sc-blue">(Dev)</span></h4>
+                   <div className="space-y-1">
+                     {users.map((u) => (
+                       <button 
+                         key={u.id} 
+                         onClick={() => { setCurrentUserId(u.id); toast({ title: "Context switched", description: `Now viewing as ${u.name} (${u.role}).` }); }} 
+                         className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between border ${currentUser?.id === u.id ? "bg-[var(--sc-elevated)] text-white font-medium border-panel-strong" : "hover:bg-white/[0.04] bg-transparent border-transparent hover:border-panel text-sc-2"}`} 
+                         data-testid={`user-switch-${u.id}`}
+                       >
+                         <div className="flex items-center gap-2">
+                           {u.role.includes("Technician") ? <HardHat className="w-4 h-4 opacity-70" /> : <FileText className="w-4 h-4 opacity-70" />}
+                           {u.name}
+                         </div>
+                         <span className="text-[10px] opacity-70">{u.role.split(' ')[0]}</span>
+                       </button>
+                     ))}
+                   </div>
                  </div>
-               </div>
+               )}
              </CardContent>
           </Card>
         </div>

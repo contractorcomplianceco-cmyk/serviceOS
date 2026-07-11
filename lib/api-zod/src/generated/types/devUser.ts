@@ -5,7 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { Role } from './role';
 
-export interface HealthStatus {
-  status: string;
+export interface DevUser {
+  id: string;
+  name: string;
+  role: Role;
+  email: string;
 }

@@ -1,33 +1,51 @@
-import { useAppStore } from "@/lib/store";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { roleDescription, navFor } from "@/lib/permissions";
-import { Wrench, ArrowRight, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth, roleHome, IS_DEV } from "@/lib/auth";
+import type { Role } from "@/lib/types";
+import { Wrench, ShieldCheck, Loader2, Lock } from "lucide-react";
 import logoIcon from "@/assets/logo-icon.png";
 
-export default function Login() {
-  const { users, setCurrentUserId } = useAppStore();
-  const [, navigate] = useLocation();
+const FIELD_ROLE_LABELS = ["Technician", "Lead Technician", "Subcontractor"];
 
-  const signIn = (id: string) => {
-    setCurrentUserId(id);
-    const user = users.find((u) => u.id === id);
-    if (user && (user.role === "Technician" || user.role === "Lead Technician" || user.role === "Subcontractor")) {
-      navigate("/tech");
-    } else {
-      navigate("/today");
+export default function Login() {
+  const { login, devLogin, devUsers, loginPending, loginError } = useAuth();
+  const [, navigate] = useLocation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [switching, setSwitching] = useState<string | null>(null);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const user = await login(email.trim(), password);
+      navigate(roleHome(user.role as Role));
+    } catch {
+      // Error surfaced via loginError from the auth context.
+    }
+  };
+
+  const quickSelect = async (id: string, role: string) => {
+    setSwitching(id);
+    try {
+      await devLogin(id);
+      navigate(roleHome(role as Role));
+    } catch {
+      setSwitching(null);
     }
   };
 
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans" style={{ background: "var(--sc-bg)" }}>
-      {/* Background styling elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none" style={{ background: "rgba(67,166,255,0.05)" }} />
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none" style={{ background: "rgba(18,104,243,0.05)" }} />
 
       <div className="w-full max-w-[1000px] z-10">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <div className="inline-flex items-center gap-3 mb-4 px-4 py-2 rounded-2xl shadow-xl border-panel-subtle" style={{ background: "var(--sc-panel)", border: "1px solid var(--sc-line)" }}>
             <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg overflow-hidden ring-1 ring-white/10" style={{ boxShadow: "0 4px 14px rgba(18,104,243,0.3)" }}>
               <img src={logoIcon} alt="ServiceConnect" className="w-full h-full object-cover" />
@@ -38,56 +56,95 @@ export default function Login() {
             </div>
           </div>
           <p className="text-sc-2 text-lg font-medium max-w-xl mx-auto">
-            Secure Command Center Authentication. Select your operational role to enter the environment.
+            Secure Command Center Authentication. Sign in with your credentials to enter the environment.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {users.map((u) => {
-            const sections = navFor(u.role).length;
-            const isField = ["Technician", "Lead Technician", "Subcontractor"].includes(u.role);
-            return (
-              <Card 
-                key={u.id} 
-                className="sc-panel cursor-pointer group hover:border-[var(--sc-blue)] transition-all duration-300 overflow-hidden relative backdrop-blur-xl border-panel" 
-                onClick={() => signIn(u.id)} 
-                data-testid={`login-${u.id}`}
-              >
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(67,166,255,0), rgba(67,166,255,0.05))" }} />
-                <CardContent className="p-5 flex flex-col h-full relative z-10">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center border" style={
-                        isField 
+        <div className="max-w-md mx-auto">
+          <Card className="sc-panel backdrop-blur-xl border-panel">
+            <CardContent className="p-6">
+              <form onSubmit={submit} className="space-y-4" data-testid="login-form">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-sc-2 text-xs uppercase tracking-wider font-semibold">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    autoComplete="username"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@serviceconnect.app"
+                    data-testid="input-email"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="password" className="text-sc-2 text-xs uppercase tracking-wider font-semibold">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    data-testid="input-password"
+                  />
+                </div>
+
+                {loginError && (
+                  <div className="text-sm font-medium text-destructive flex items-center gap-2" data-testid="login-error">
+                    <Lock className="w-4 h-4" /> {loginError}
+                  </div>
+                )}
+
+                <Button type="submit" className="w-full bg-primary text-white font-semibold" disabled={loginPending} data-testid="button-login">
+                  {loginPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign In"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        {IS_DEV && devUsers.length > 0 && (
+          <div className="mt-10">
+            <div className="flex items-center gap-3 justify-center mb-4">
+              <div className="h-px flex-1 max-w-[120px]" style={{ background: "var(--sc-line)" }} />
+              <Badge variant="outline" className="bg-transparent text-[10px] uppercase font-bold tracking-widest border-panel" style={{ color: "var(--sc-orange)" }}>
+                Dev role quick-select
+              </Badge>
+              <div className="h-px flex-1 max-w-[120px]" style={{ background: "var(--sc-line)" }} />
+            </div>
+            <p className="text-center text-xs text-sc-3 mb-4">Development only — bypasses the password but still authenticates against the backend.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {devUsers.map((u) => {
+                const isField = FIELD_ROLE_LABELS.includes(u.role);
+                const busy = switching === u.id;
+                return (
+                  <Card
+                    key={u.id}
+                    className="sc-panel cursor-pointer group hover:border-[var(--sc-blue)] transition-all duration-300 overflow-hidden relative backdrop-blur-xl border-panel"
+                    onClick={() => quickSelect(u.id, u.role)}
+                    data-testid={`login-${u.id}`}
+                  >
+                    <CardContent className="p-4 flex items-center gap-3 relative z-10">
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center border shrink-0" style={
+                        isField
                           ? { background: "rgba(255,157,24,0.1)", borderColor: "rgba(255,157,24,0.2)", color: "var(--sc-orange)" }
                           : { background: "rgba(67,166,255,0.1)", borderColor: "rgba(67,166,255,0.2)", color: "var(--sc-blue)" }
                       }>
-                        {isField ? <Wrench className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+                        {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : isField ? <Wrench className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
                       </div>
-                      <div>
-                        <span className="font-bold text-sc block leading-tight">{u.name}</span>
-                        <Badge variant="outline" className="mt-1 bg-transparent text-[10px] uppercase font-bold tracking-wider border-panel" style={{ color: isField ? "var(--sc-orange)" : "var(--sc-2)" }}>
-                          {u.role}
-                        </Badge>
+                      <div className="min-w-0">
+                        <span className="font-bold text-sc block leading-tight truncate">{u.name}</span>
+                        <span className="text-xs text-sc-3 truncate block">{u.role}</span>
                       </div>
-                    </div>
-                  </div>
-                  <div className="mt-auto">
-                    <p className="text-sm text-sc-3 leading-relaxed mb-3 line-clamp-2">
-                      {roleDescription(u.role)}
-                    </p>
-                    <div className="flex items-center justify-between pt-3 border-t border-panel-subtle">
-                      <span className="text-xs font-mono text-sc-3 group-hover:text-[var(--sc-blue)] transition-colors">
-                        {sections} MODULES
-                      </span>
-                      <ArrowRight className="w-4 h-4 text-sc-3 group-hover:text-[var(--sc-blue)] transition-colors transform group-hover:translate-x-1" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

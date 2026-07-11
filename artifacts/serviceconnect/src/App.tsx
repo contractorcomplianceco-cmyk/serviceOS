@@ -3,8 +3,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { ShieldOff } from "lucide-react";
-import { AppProvider, useAppStore } from "@/lib/store";
+import { ShieldOff, Loader2 } from "lucide-react";
+import { AppProvider } from "@/lib/store";
+import { AuthProvider, useAuth, roleHome } from "@/lib/auth";
 import { canAccess, canApproveCloseouts, isFieldRole, type NavKey } from "@/lib/permissions";
 import type { Role } from "@/lib/types";
 import AppLayout from "@/components/layout/AppLayout";
@@ -53,20 +54,40 @@ function AccessDenied() {
 }
 
 function Protected({ allow, children }: { allow: (role: Role) => boolean; children: React.ReactNode }) {
-  const { currentUser } = useAppStore();
-  if (!currentUser) return <Redirect to="/login" />;
-  if (!allow(currentUser.role)) return <AccessDenied />;
+  const { user } = useAuth();
+  if (!user) return <Redirect to="/login" />;
+  if (!allow(user.role as Role)) return <AccessDenied />;
   return <>{children}</>;
+}
+
+function FullScreenLoader() {
+  return (
+    <div className="min-h-[100dvh] flex items-center justify-center" style={{ background: "var(--sc-bg)" }} data-testid="auth-loading">
+      <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--sc-blue)" }} />
+    </div>
+  );
 }
 
 const nav = (key: NavKey) => (role: Role) => canAccess(role, key);
 
+function RootRedirect() {
+  const { user } = useAuth();
+  if (!user) return <Redirect to="/login" />;
+  return <Redirect to={roleHome(user.role as Role)} />;
+}
+
+function LoginRoute() {
+  const { user } = useAuth();
+  if (user) return <Redirect to={roleHome(user.role as Role)} />;
+  return <Login />;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={() => <Redirect to="/today" />} />
-      <Route path="/login" component={Login} />
-      <Route path="/today" component={TodayDashboard} />
+      <Route path="/" component={RootRedirect} />
+      <Route path="/login" component={LoginRoute} />
+      <Route path="/today">{() => <Protected allow={() => true}><TodayDashboard /></Protected>}</Route>
       <Route path="/intake">{() => <Protected allow={nav("intake")}><IntakeQueue /></Protected>}</Route>
       <Route path="/work-orders">{() => <Protected allow={nav("work-orders")}><WorkOrders /></Protected>}</Route>
       <Route path="/work-orders/:id">{() => <Protected allow={nav("work-orders")}><WorkOrderDetail /></Protected>}</Route>
@@ -91,19 +112,29 @@ function Router() {
   );
 }
 
+function AuthedApp() {
+  const { isLoading } = useAuth();
+  if (isLoading) return <FullScreenLoader />;
+  return (
+    <AppProvider>
+      <AppLayout>
+        <Router />
+      </AppLayout>
+    </AppProvider>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppProvider>
+      <AuthProvider>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <AppLayout>
-              <Router />
-            </AppLayout>
+            <AuthedApp />
           </WouterRouter>
           <Toaster />
         </TooltipProvider>
-      </AppProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
