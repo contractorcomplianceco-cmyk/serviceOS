@@ -598,6 +598,7 @@ export interface MaterialInput {
   cost?: number;
   billablePrice?: number;
   approved?: boolean;
+  override?: boolean;
 }
 
 export interface NoteInput {
@@ -754,6 +755,7 @@ export interface CycleCountInput {
   /** @minimum 0 */
   countedQuantity: number;
   reason?: string;
+  override?: boolean;
 }
 
 export interface PurchaseRequest {

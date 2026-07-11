@@ -1536,7 +1536,8 @@ export const AddMaterialEntryBody = zod.object({
   "quantity": zod.number(),
   "cost": zod.number().optional(),
   "billablePrice": zod.number().optional(),
-  "approved": zod.boolean().optional()
+  "approved": zod.boolean().optional(),
+  "override": zod.boolean().optional()
 })
 
 export const AddMaterialEntryResponse = zod.object({
@@ -2377,7 +2378,8 @@ export const CreateInventoryCycleCountBody = zod.object({
   "itemId": zod.string().min(1),
   "location": zod.string().min(1),
   "countedQuantity": zod.number().min(createInventoryCycleCountBodyCountedQuantityMin),
-  "reason": zod.string().optional()
+  "reason": zod.string().optional(),
+  "override": zod.boolean().optional()
 })
 
 export const CreateInventoryCycleCountResponse = zod.object({

@@ -23,11 +23,10 @@ import {
 import { requireAuth, requireRoles } from "../middleware/auth";
 import {
   canApproveCloseouts,
-  canOverrideStock,
   isFieldRole,
   isValidRole,
 } from "../lib/authz";
-import { postTransaction } from "../lib/inventory-ledger";
+import { postTransaction, NegativeStockError } from "../lib/inventory-ledger";
 import { toCloseout } from "../lib/serialize-ops";
 import { writeAudit } from "../lib/audit";
 
@@ -340,10 +339,10 @@ router.post(
           },
         );
 
-        // Post a consumption transaction per detected material. The approver is
-        // privileged, so consumption is allowed to override negative-stock
-        // protection here — an approved closeout reflects work already done.
-        const privileged = isValidRole(user.role) && canOverrideStock(user.role);
+        // Post a consumption transaction per detected material. Negative-stock
+        // protection applies with no automatic bypass: closeout approval has no
+        // explicit-override affordance, so if stock is insufficient the approval
+        // is blocked (a privileged user must first post an inventory adjustment).
         for (const { item, qty } of consumedItems) {
           await postTransaction(tx, {
             tenantId: user.tenantId,
@@ -353,8 +352,8 @@ router.post(
             quantity: -qty,
             workOrderId: wo.id,
             reason: `Closeout ${co.id} approved`,
-            override: privileged,
-            privileged,
+            override: false,
+            privileged: false,
             actorUserId: user.id,
             actorName: user.name,
           });
@@ -436,6 +435,12 @@ router.post(
       }
       res.json(toCloseout(result.closeout));
     } catch (err) {
+      if (err instanceof NegativeStockError) {
+        res.status(400).json({
+          error: `${err.message} — post an inventory adjustment before approving this closeout`,
+        });
+        return;
+      }
       req.log.error({ err }, "Failed to approve closeout");
       res.status(500).json({ error: "Failed to approve closeout" });
     }

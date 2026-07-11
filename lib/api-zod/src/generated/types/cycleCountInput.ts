@@ -14,4 +14,5 @@ export interface CycleCountInput {
   /** @minimum 0 */
   countedQuantity: number;
   reason?: string;
+  override?: boolean;
 }

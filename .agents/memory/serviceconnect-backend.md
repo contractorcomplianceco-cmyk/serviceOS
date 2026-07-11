@@ -13,7 +13,7 @@ description: Durable guardrails for the ServiceConnect api-server (inventory led
 ## Negative-stock guard is directional
 - The guard only blocks a location leg when it DECREASES on-hand there (onHandDelta<0) or INCREASES reserved there. A purely additive leg (a receipt, or the incoming side of a transfer) never trips it.
 - **Why:** a naive "any leg would be negative" check wrongly blocked valid receipts / incoming transfers into a zero-stock location.
-- **How to apply:** when adding new transaction types, classify each leg by its signed delta before applying the guard. A privileged `override` flag (Administrator / Inventory Manager) bypasses the guard and is itself audited.
+- **How to apply:** when adding new transaction types, classify each leg by its signed delta before applying the guard. Override is bypassed ONLY when `override && privileged` — i.e. the caller EXPLICITLY sends `override:true` in the request AND their role is authorized (Administrator / Service Manager / Inventory Manager). Role authorizes the override; it must never auto-trigger it. Never hardcode `override:true` or set `override: privileged` — plumb an explicit request flag (add it to the OpenAPI body + codegen) or leave it false (fail-closed) and surface `NegativeStockError` as a 400.
 
 ## Human-in-the-loop is enforced server-side
 - RoseOS never auto-commits. Purchase requests go Requested → Approved → Received; receiving is the ONLY step that posts stock into the ledger. Document extraction is simulated but persisted as a draft requiring human approval.

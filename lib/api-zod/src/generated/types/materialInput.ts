@@ -14,4 +14,5 @@ export interface MaterialInput {
   cost?: number;
   billablePrice?: number;
   approved?: boolean;
+  override?: boolean;
 }

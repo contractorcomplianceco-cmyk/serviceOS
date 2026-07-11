@@ -2712,6 +2712,7 @@ components:
         cost: { type: number }
         billablePrice: { type: number }
         approved: { type: boolean }
+        override: { type: boolean }
 
     NoteInput:
       type: object
@@ -2904,6 +2905,7 @@ components:
         location: { type: string, minLength: 1 }
         countedQuantity: { type: integer, minimum: 0 }
         reason: { type: string }
+        override: { type: boolean }
 
     PurchaseRequest:
       type: object

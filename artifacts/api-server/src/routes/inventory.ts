@@ -290,9 +290,11 @@ router.post(
           reservedDelta: -d.quantity,
           workOrderId: d.workOrderId ?? null,
           reason: d.reason ?? null,
-          // Releasing never drives balances negative in a harmful way; allow it.
-          override: true,
-          privileged: true,
+          // Releasing a reservation only DECREASES `reserved` (increasing
+          // available), so it can never cause a shortfall — the guard never
+          // fires. No override needed or granted.
+          override: false,
+          privileged: false,
           actorUserId: user.id,
           actorName: user.name,
         });
@@ -406,6 +408,7 @@ router.post(
       return;
     }
     const d = parsed.data;
+    const privileged = canOverrideStock(user.role);
     try {
       const out = await db.transaction(async (tx) => {
         const [item] = await tx
@@ -439,9 +442,12 @@ router.post(
             location: d.location,
             quantity: delta,
             reason: d.reason ?? `Counted ${d.countedQuantity}`,
-            // A cycle count reconciles to reality; the count is authoritative.
-            override: true,
-            privileged: true,
+            // A cycle count reconciles to a physically counted (>= 0) quantity,
+            // so on-hand can never go negative. If the count is below what's
+            // reserved, that rare shortfall requires an EXPLICIT override from a
+            // privileged user — role authorizes, it does not auto-trigger.
+            override: Boolean(d.override),
+            privileged,
             actorUserId: user.id,
             actorName: user.name,
           });
@@ -467,6 +473,10 @@ router.post(
       );
       await respondWithItem(res, user.tenantId, d.itemId);
     } catch (err) {
+      if (err instanceof NegativeStockError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
       req.log.error({ err }, "Failed to record cycle count");
       res.status(500).json({ error: "Failed to record cycle count" });
     }

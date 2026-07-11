@@ -441,8 +441,10 @@ router.post(
             if (d.billablePrice === undefined) billablePrice = item.billablePrice;
             name = item.name;
             // Consumption is a ledger transaction, not a direct quantity edit —
-            // balances stay derived. Negative-stock protection applies; only a
-            // privileged role may override it.
+            // balances stay derived. Negative-stock protection applies. Override
+            // is honored only when the caller EXPLICITLY requests it (d.override)
+            // AND their role is authorized to override — role authorizes, it does
+            // not auto-trigger.
             const privileged = isValidRole(user.role) && canOverrideStock(user.role);
             await postTransaction(tx, {
               tenantId: user.tenantId,
@@ -452,7 +454,7 @@ router.post(
               quantity: -d.quantity,
               workOrderId: wo.id,
               reason: `Consumed on ${wo.number}`,
-              override: privileged,
+              override: Boolean(d.override),
               privileged,
               actorUserId: user.id,
               actorName: user.name,
