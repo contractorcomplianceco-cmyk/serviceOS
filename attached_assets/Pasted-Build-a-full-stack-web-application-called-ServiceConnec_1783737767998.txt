@@ -1,0 +1,500 @@
+Build a full-stack web application called ServiceConnect with RoseOS Intelligence.
+
+ServiceConnect is a custom field-service operating system designed to replace BlueFolder and eventually replace QuickBooks for a plumbing/service company. It must feel like a real operational platform, not a landing page or demo page.
+
+Core purpose:
+One system for every job, every tech, every invoice, every inventory item, and every customer update.
+
+Build the first working prototype with realistic seeded data. Do not connect real APIs yet, but structure the app so ServiceChannel, GPS, VoiceConnect, merchant processing, and accounting integrations can be added later.
+
+TECH STACK
+Use:
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Local mock data or lightweight backend storage if available
+- Responsive design for desktop dispatchers and mobile technicians
+
+VISUAL STYLE
+Make it polished, clean, operational, and easy to scan.
+Do not make it look like a marketing website.
+Use a professional field-service command center style.
+Avoid yellow-heavy branding.
+Use a modern Rose OS feel: clean white workspace, deep navy/charcoal structure, blue accents, green for completed, red for urgent, amber only for warnings.
+
+PRIMARY USERS / ROLES
+Create role-based views for:
+- Administrator
+- Scheduler
+- Service Manager
+- Technician
+- Lead Technician
+- Billing
+- Bookkeeper
+- Subcontractor
+
+Permissions should affect what each role can see:
+- Technicians see assigned jobs and limited customer/job info.
+- Schedulers see intake, calendar, routing suggestions, and assignments.
+- Billing sees billing queue, invoice drafts, AR, payments, and job cost.
+- Admin sees everything.
+- Sensitive employee fields and job-cost/accounting data should be permission-gated.
+
+LEFT NAVIGATION
+Create a persistent left sidebar with:
+- Today
+- Intake Queue
+- Work Orders
+- Dispatch Calendar
+- Technicians
+- Customers
+- Locations
+- Inventory
+- Equipment
+- Billing
+- Accounting
+- Documents
+- Reports
+- Intelligence
+- Settings
+
+DASHBOARD / TODAY SCREEN
+The first screen after login should be the real operating dashboard.
+
+Include:
+- Daily RoseOS Operations Brief
+- Emergency jobs needing scheduling
+- Jobs missing technician updates
+- Jobs awaiting materials
+- Jobs ready for billing review
+- Portal updates pending approval
+- Customer documents missing or expired
+- Inventory below reorder point
+- Technician overload warnings
+- AR / unpaid invoice snapshot
+
+Each recommendation must have action buttons:
+- Approve
+- Edit
+- Assign
+- Snooze
+- Reject
+
+Clearly label AI recommendations as “RoseOS Recommendation” or “Needs Human Approval.”
+
+WORK ORDER SYSTEM
+Build a work order list and detail page.
+
+Work order fields:
+- Work order number
+- Source: ServiceChannel, email, customer portal, manual, other portal
+- Customer
+- Service location
+- PO number
+- Reference number
+- External ID
+- Priority
+- Status
+- Type
+- Region
+- Due date
+- Billing status
+- Account manager
+- Service manager
+- Assigned technician
+- Time window
+- Detailed description
+- Important notes for technician
+- Location notes
+- Reason for return trip
+- Materials needed for return trip or quote
+- Manager name per trip
+- Check-in/check-out times
+- Work performed descriptions
+- Quote notes
+- Attachments
+- Internal log
+- Portal sync status
+
+Statuses should include:
+- New
+- Triage Needed
+- Need Scheduled
+- Scheduled
+- First Trip
+- On Site
+- Awaiting Materials
+- Awaiting Quote Approval
+- Return Trip Needed
+- Completed Pending Review
+- Ready for Billing
+- Invoiced
+- Closed
+- Cancelled
+
+Work order detail tabs:
+- Overview
+- Notes
+- Schedule
+- Labor
+- Materials
+- Attachments
+- Billing
+- Job Cost
+- Portal Sync
+- History
+
+INTAKE QUEUE
+Build an intake queue for incoming jobs.
+
+Sources:
+- ServiceChannel
+- Outlook/email
+- Other portals
+- Customer portal
+- Manual job
+
+Each incoming item should show:
+- Source
+- Customer
+- Location
+- Priority
+- Requested date
+- Description
+- Attachments indicator
+- Duplicate warning
+- Missing fields
+- Suggested action
+
+Actions:
+- Create Work Order
+- Merge Duplicate
+- Request Missing Info
+- Assign to Scheduler
+- Dismiss
+
+DISPATCH CALENDAR
+Build a calendar that can replace BlueFolder’s team calendar.
+
+Requirements:
+- Technicians listed down the left side
+- Days/time blocks across the top
+- Job cards on the calendar
+- Unscheduled jobs drawer
+- Ability to drag jobs between technicians/time blocks
+- Job cards show customer, city, priority, time window, source, materials/quote flags, and status color
+- Hover/click preview should show full job summary without leaving the calendar
+- Calendar filters by region, tech, priority, status, source, and date
+
+Include AI smart routing:
+When a scheduler clicks an unscheduled job, show suggested technicians based on:
+- GPS location
+- Zone/region
+- Skills
+- Restricted tasks
+- Current workload
+- Drive time
+- Priority
+- Truck inventory
+- Customer requirements
+
+Do not auto-place the job. Show:
+- “RoseOS Suggested Assignment”
+- Why this tech is recommended
+- Confidence level
+- Risks
+- Approve Schedule button
+- Choose Different Tech button
+
+TECHNICIAN MOBILE VIEW
+Build a mobile-friendly technician workflow.
+
+Technician clicks:
+- My Jobs Today
+- Job Detail
+- Navigate
+- Check In
+- Add Note
+- Start VoiceConnect
+- Add Materials
+- Upload Photo
+- Mark Work Complete
+- Submit for Review
+
+Technician should not send final invoice or customer-facing closeout unless permission allows.
+
+VOICECONNECT MODULE
+Create a simulated VoiceConnect workflow.
+
+Purpose:
+Technicians can speak naturally from phone, earbuds, or truck after a job. The system turns speech into structured job notes and billing prep.
+
+Build screens:
+- Start VoiceConnect
+- Recording / live transcript simulation
+- Structured extraction
+- Review draft
+- Submit for supervisor/billing review
+
+VoiceConnect should extract:
+- Work performed
+- Materials used
+- Labor time
+- Return-trip reason
+- Quote notes
+- Missing information
+- Customer update text
+- Billing line suggestions
+- Portal update text
+
+Include Spanish-to-English translation as a visible future-ready feature:
+- Show sample Spanish note
+- Show translated English work summary
+- Mark it as “review required”
+
+SUPERVISOR REVIEW QUEUE
+Build a review queue where submitted technician closeouts are approved.
+
+Supervisor sees:
+- Original technician notes
+- Voice transcript
+- AI-generated summary
+- Materials detected
+- Labor suggested
+- Billing draft
+- ServiceChannel/customer portal update draft
+
+Actions:
+- Approve Closeout
+- Edit Summary
+- Send Back to Technician
+- Approve Billing Draft
+- Approve Portal Update
+
+MULTI-PORTAL SYNC
+Create a Portal Sync tab.
+
+Show sync targets:
+- ServiceChannel
+- Other customer portal
+- Customer email
+- Internal billing queue
+
+For now, simulate sync status:
+- Ready to Send
+- Needs Approval
+- Sent
+- Failed
+- Manual Copy Needed
+
+No external updates should send without human approval.
+
+CUSTOMERS / LOCATIONS
+Build customer and service location records.
+
+Customer tabs:
+- Overview
+- Contacts
+- Locations
+- Work Orders
+- Documents
+- Rates
+- Requirements
+- Invoices
+- Portal Rules
+- History
+
+Customer documents:
+- COI
+- W-9
+- Contract
+- Site instructions
+- Customer-specific billing rules
+- Portal login/rules note
+- Expiration date
+- Visibility permissions
+
+INVENTORY
+Build inventory by location.
+
+Inventory locations:
+- Tampa Shop
+- Orlando Shop
+- Office
+- Truck
+- Technician
+
+Inventory fields:
+- Item name
+- Category
+- Vendor
+- Cost
+- Billable price
+- Quantity
+- Reorder point
+- Compatible job types
+- Location
+- Reserved for job
+- Last used
+- Notes
+
+Features:
+- Add item
+- Move item between locations
+- Reserve item for job
+- Deduct item after supervisor approval
+- Low stock alert
+- Reorder suggestion
+- Future AI truck-photo inventory detection placeholder
+
+EQUIPMENT / ASSETS
+Build an equipment module.
+
+Equipment fields:
+- Customer
+- Location
+- Asset name
+- Model
+- Serial number
+- Warranty info
+- Last serviced date
+- Related work orders
+- Attachments
+- Notes
+
+Include a future feature placeholder:
+- “AI can read model/serial numbers from photos or POs.”
+
+BILLING QUEUE
+Build a billing queue to replace the current BlueFolder-to-QuickBooks manual flow.
+
+Billing queue statuses:
+- Needs Review
+- Ready for Invoice
+- Missing Info
+- Waiting on Approval
+- Invoiced
+- Paid
+- Past Due
+
+Billing user clicks a job and sees:
+- Approved labor
+- Approved materials
+- Customer rate rules
+- Tax code
+- Invoice notes
+- Work performed
+- Attachments
+- Portal billing requirements
+- Job cost summary
+
+Actions:
+- Create Invoice Draft
+- Edit Invoice
+- Send Invoice
+- Mark Paid
+- Send Payment Link
+- Export
+- Flag Issue
+
+ACCOUNTING MODULE
+Build the accounting foundation as a QuickBooks replacement path.
+
+Include:
+- Invoice list
+- Accounts receivable dashboard
+- Payments
+- Customer balances
+- Aging report
+- Revenue by customer
+- Revenue by portal/source
+- Profit by job
+- Profit by technician
+- Profit by region
+- Salesperson/owner reporting placeholder
+- Merchant processing placeholder
+
+Invoices should be visually polished and customizable.
+Include a preview invoice screen.
+
+REPORTS
+Build reports:
+- Open jobs
+- Need scheduled
+- On schedule
+- Quoting statuses
+- Jobs created today
+- Jobs created this month
+- Jobs by region
+- Emergency jobs
+- Ready for billing
+- AR aging
+- Customer profitability
+- Portal/source ROI
+- Technician workload
+- Inventory reorder report
+
+INTELLIGENCE MODULE
+Create a RoseOS Intelligence page.
+
+Include cards for:
+- Scheduling recommendations
+- Technician overload warnings
+- Missing info warnings
+- Material blocker predictions
+- Customer document alerts
+- Billing risk
+- AR risk
+- Inventory reorder suggestions
+- Profitability insights
+- Vendor price intelligence placeholder
+- Cash flow forecast placeholder
+
+All intelligence outputs must be recommendations only.
+
+SETTINGS
+Build settings sections:
+- Users
+- Roles and Permissions
+- Work Order Fields
+- Statuses
+- Priorities
+- Regions
+- Notification Rules
+- Assignment Rules
+- Labor Rates
+- Tax Codes
+- Customer Portal Settings
+- ServiceChannel Integration Placeholder
+- GPS Tracking Settings
+- VoiceConnect Settings
+- Accounting Settings
+
+Seed with realistic users, technicians, customers, jobs, inventory, and invoices inspired by plumbing/facility-service operations.
+
+SAMPLE DATA
+Include sample customers:
+- RaceTrac
+- True Food Kitchen
+- Ruth’s Chris Steakhouse
+- Heartland Dental
+- Cracker Barrel
+- Publix
+
+Include sample technicians with names, zones, skills, workload, and truck inventory.
+
+IMPORTANT GUARDRAILS
+- AI never auto-schedules without approval.
+- AI never sends customer-facing updates without approval.
+- AI never creates final invoices without billing approval.
+- VoiceConnect output is always draft until reviewed.
+- GPS tracking must be consent-based.
+- Sensitive employee info must be permission-gated.
+- Accounting data must be permission-gated.
+- Job cost/profit data must not be visible to technicians unless allowed.
+
+DELIVERABLE
+Build the prototype as a complete usable app with working navigation, realistic seeded data, responsive layouts, and enough interactions to demonstrate the replacement workflow from intake to scheduling to technician closeout to billing.
+
+The app should clearly show that ServiceConnect replaces BlueFolder and creates a future path to replace QuickBooks.
