@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { buildCorsOptions } from "./lib/cors";
 
 const app: Express = express();
 
@@ -29,7 +30,10 @@ app.use(
     },
   }),
 );
-app.use(cors());
+// Exactly one CORS middleware, mounted before cookie/body parsing and the API
+// router so credentialed preflight (OPTIONS) requests are answered before any
+// session/auth handling. Origins come from SERVICECONNECT_ALLOWED_ORIGINS.
+app.use(cors(buildCorsOptions()));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
