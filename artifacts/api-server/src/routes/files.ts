@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { db, filesTable } from "@workspace/db";
 import { CreateFileBody } from "@workspace/api-zod";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireStaff } from "../middleware/auth";
 import { isValidRole, canViewDocumentVisibility } from "../lib/authz";
 import { toFileRecord } from "../lib/serialize-ops";
 import { getStorageAdapter } from "../lib/storage";
@@ -12,7 +12,7 @@ import { writeAudit } from "../lib/audit";
 const router: IRouter = Router();
 
 // GET /files?entityType=&entityId= — list file metadata the caller may see.
-router.get("/files", requireAuth, async (req, res): Promise<void> => {
+router.get("/files", requireAuth, requireStaff, async (req, res): Promise<void> => {
   const user = req.user!;
   const entityType =
     typeof req.query.entityType === "string" ? req.query.entityType : undefined;

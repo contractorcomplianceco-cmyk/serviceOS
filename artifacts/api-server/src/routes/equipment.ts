@@ -25,7 +25,7 @@ import {
   ApproveEquipmentExtractionBody,
   RejectEquipmentExtractionParams,
 } from "@workspace/api-zod";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireStaff } from "../middleware/auth";
 import { canManageEquipment, isValidRole } from "../lib/authz";
 import { toEquipment, toEquipmentExtraction } from "../lib/serialize-ops";
 import { writeAudit } from "../lib/audit";
@@ -55,7 +55,7 @@ async function loadEquipment(
   return row;
 }
 
-router.get("/equipment", requireAuth, async (req, res): Promise<void> => {
+router.get("/equipment", requireAuth, requireStaff, async (req, res): Promise<void> => {
   const user = req.user!;
   const rows = await db
     .select()
@@ -300,6 +300,7 @@ router.post(
 router.get(
   "/equipment/extractions",
   requireAuth,
+  requireStaff,
   async (req, res): Promise<void> => {
     const user = req.user!;
     const rows = await db
