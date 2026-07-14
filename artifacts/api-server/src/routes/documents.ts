@@ -18,7 +18,7 @@ import {
   AddDocumentReminderParams,
   AddDocumentReminderBody,
 } from "@workspace/api-zod";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireStaff } from "../middleware/auth";
 import {
   canManageDocuments,
   canViewDocumentVisibility,
@@ -63,7 +63,7 @@ async function loadVisibleDocument(
   return row;
 }
 
-router.get("/documents", requireAuth, async (req, res): Promise<void> => {
+router.get("/documents", requireAuth, requireStaff, async (req, res): Promise<void> => {
   const user = req.user!;
   const rows = await db
     .select()
@@ -155,6 +155,7 @@ router.patch("/documents/:id", requireAuth, async (req, res): Promise<void> => {
 router.get(
   "/documents/:id/versions",
   requireAuth,
+  requireStaff,
   async (req, res): Promise<void> => {
     const params = ListDocumentVersionsParams.safeParse(req.params);
     if (!params.success) {
@@ -251,6 +252,7 @@ router.post(
 router.get(
   "/documents/:id/reminders",
   requireAuth,
+  requireStaff,
   async (req, res): Promise<void> => {
     const params = ListDocumentRemindersParams.safeParse(req.params);
     if (!params.success) {

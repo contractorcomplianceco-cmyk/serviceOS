@@ -10,7 +10,7 @@ import {
   LocalFilesystemStorageAdapter,
   type ObjectDownload,
 } from "../lib/storage";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireStaff } from "../middleware/auth";
 import { isValidRole, canViewDocumentVisibility } from "../lib/authz";
 import { checkFilePolicy, MAX_FILE_SIZE } from "../lib/file-policy";
 
@@ -143,6 +143,7 @@ router.get(
 router.get(
   "/storage/objects/*path",
   requireAuth,
+  requireStaff,
   async (req: Request, res: Response) => {
     try {
       const user = req.user!;

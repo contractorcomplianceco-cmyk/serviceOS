@@ -1,6 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
+import { randomUUID } from "node:crypto";
 import supertest from "supertest";
+import { db, filesTable } from "@workspace/db";
 import app from "../app";
+import { LocalFilesystemStorageAdapter } from "../lib/storage";
 import { loginAs, anon, createSecondTenant, SEED } from "./helpers";
 
 // Security & isolation: authentication, role/nav authorization, portal
@@ -113,6 +116,121 @@ describe("customer portal scoping", () => {
     const admin = await loginAs(SEED.admin);
     const res = await admin.get("/api/portal/me");
     expect(res.status).toBe(403);
+  });
+});
+
+// Regression: staff-only endpoints must reject Customer Portal Users. Before the
+// fix these filtered by tenantId only (via requireAuth), so a portal user linked
+// to Customer A (c1) could read other customers' (Customer B = c6) equipment,
+// files, documents, and stored object bytes in the same tenant. They are now
+// gated with requireStaff. Portal users keep their properly customer-scoped
+// /portal/* equivalents; the staff surfaces are internal-only.
+describe("portal isolation on staff-only endpoints (regression)", () => {
+  // Customer A: the seeded portal user (u14) is linked to c1.
+  // Customer B: c6 — owns equipment eq1 and document d8. The portal user must
+  // never reach these tenant-wide staff endpoints that expose Customer B's data.
+  const CUSTOMER_B_EQUIPMENT = "eq1"; // c6
+  const CUSTOMER_B_DOCUMENT = "d8"; // c6, "Customer Visible"
+
+  // A real stored object attached to Customer B's equipment (eq1 / c6), created
+  // via the same local-filesystem backend the app uses in tests. Proves a portal
+  // user cannot fetch the bytes and that staff still can.
+  let objectRelPath: string; // path segment after /objects/
+  let objectFileName: string;
+
+  beforeAll(async () => {
+    const id = randomUUID();
+    objectFileName = `portal-isolation-${id}.txt`;
+    objectRelPath = `uploads/${id}`;
+    const objectPath = `/objects/${objectRelPath}`;
+    const bytes = Buffer.from("customer-b confidential bytes");
+    const adapter = new LocalFilesystemStorageAdapter();
+    await adapter.writeUpload(id, bytes, "text/plain");
+    await db.insert(filesTable).values({
+      tenantId: "org1",
+      objectPath,
+      name: objectFileName,
+      contentType: "text/plain",
+      size: bytes.byteLength,
+      entityType: "Equipment",
+      entityId: CUSTOMER_B_EQUIPMENT, // c6 — a customer other than the portal user's c1
+      visibility: "All Staff",
+      uploadedByName: "Seed (regression test)",
+    });
+  });
+
+  it("blocks a portal user (c1) from the tenant-wide equipment list that exposes Customer B (c6)", async () => {
+    const portal = await loginAs(SEED.portal);
+    const res = await portal.get("/api/equipment");
+    expect(res.status).toBe(403);
+  });
+
+  it("still lets staff read equipment, including Customer B's (c6) asset", async () => {
+    const admin = await loginAs(SEED.admin);
+    const res = await admin.get("/api/equipment");
+    expect(res.status).toBe(200);
+    const ids = (res.body as Array<{ id: string }>).map((e) => e.id);
+    expect(ids).toContain(CUSTOMER_B_EQUIPMENT);
+  });
+
+  it("blocks a portal user from the tenant-wide files listing", async () => {
+    const portal = await loginAs(SEED.portal);
+    const res = await portal.get(
+      `/api/files?entityType=Equipment&entityId=${CUSTOMER_B_EQUIPMENT}`,
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("still lets staff list files attached to Customer B's equipment", async () => {
+    const admin = await loginAs(SEED.admin);
+    const res = await admin.get(
+      `/api/files?entityType=Equipment&entityId=${CUSTOMER_B_EQUIPMENT}`,
+    );
+    expect(res.status).toBe(200);
+    const names = (res.body as Array<{ name: string }>).map((f) => f.name);
+    expect(names).toContain(objectFileName);
+  });
+
+  it("blocks a portal user (c1) from fetching Customer B's (c6) document by id", async () => {
+    // No bare GET /documents/:id exists; the by-id document read is
+    // GET /documents/:id/versions (loads the doc via loadVisibleDocument).
+    const portal = await loginAs(SEED.portal);
+    const res = await portal.get(
+      `/api/documents/${CUSTOMER_B_DOCUMENT}/versions`,
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("blocks a portal user from the tenant-wide documents list", async () => {
+    const portal = await loginAs(SEED.portal);
+    const res = await portal.get("/api/documents");
+    expect(res.status).toBe(403);
+  });
+
+  it("still lets staff fetch Customer B's document and see it in the list", async () => {
+    const admin = await loginAs(SEED.admin);
+    const byId = await admin.get(
+      `/api/documents/${CUSTOMER_B_DOCUMENT}/versions`,
+    );
+    expect(byId.status).toBe(200);
+    expect(Array.isArray(byId.body)).toBe(true);
+    const list = await admin.get("/api/documents");
+    expect(list.status).toBe(200);
+    const ids = (list.body as Array<{ id: string }>).map((d) => d.id);
+    expect(ids).toContain(CUSTOMER_B_DOCUMENT);
+  });
+
+  it("blocks a portal user (c1) from fetching Customer B's stored object bytes", async () => {
+    const portal = await loginAs(SEED.portal);
+    const res = await portal.get(`/api/storage/objects/${objectRelPath}`);
+    expect(res.status).toBe(403);
+  });
+
+  it("still lets staff fetch the stored object bytes", async () => {
+    const admin = await loginAs(SEED.admin);
+    const res = await admin.get(`/api/storage/objects/${objectRelPath}`);
+    expect(res.status).toBe(200);
+    expect(res.text).toBe("customer-b confidential bytes");
   });
 });
 
