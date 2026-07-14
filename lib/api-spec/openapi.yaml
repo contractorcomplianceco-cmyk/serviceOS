@@ -5951,6 +5951,10 @@ components:
         locationId: { type: ["string", "null"] }
         priority: { type: string }
         requestedDate: { type: string }
+        externalId: { type: ["string", "null"] }
+        poNumber: { type: ["string", "null"] }
+        nte: { type: ["number", "null"] }
+        contact: { type: ["string", "null"] }
         description: { type: string }
         hasAttachments: { type: boolean }
         duplicateOf: { type: ["string", "null"] }
@@ -5971,6 +5975,10 @@ components:
         locationId: { type: string }
         priority: { type: string }
         requestedDate: { type: string }
+        externalId: { type: string }
+        poNumber: { type: string }
+        nte: { type: number }
+        contact: { type: string }
         description: { type: string, minLength: 1 }
         hasAttachments: { type: boolean }
         duplicateOf: { type: string }
@@ -6094,6 +6102,8 @@ components:
         poNumber: { type: ["string", "null"] }
         referenceNumber: { type: ["string", "null"] }
         externalId: { type: ["string", "null"] }
+        nte: { type: ["number", "null"] }
+        contact: { type: ["string", "null"] }
         priority: { type: string }
         status: { type: string }
         type: { type: string }

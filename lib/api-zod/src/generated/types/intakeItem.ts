@@ -15,6 +15,14 @@ export interface IntakeItem {
   locationId?: string | null;
   priority: string;
   requestedDate: string;
+  /** @nullable */
+  externalId?: string | null;
+  /** @nullable */
+  poNumber?: string | null;
+  /** @nullable */
+  nte?: number | null;
+  /** @nullable */
+  contact?: string | null;
   description: string;
   hasAttachments: boolean;
   /** @nullable */

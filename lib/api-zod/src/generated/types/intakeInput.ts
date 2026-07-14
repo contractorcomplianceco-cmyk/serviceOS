@@ -13,6 +13,10 @@ export interface IntakeInput {
   locationId?: string;
   priority?: string;
   requestedDate: string;
+  externalId?: string;
+  poNumber?: string;
+  nte?: number;
+  contact?: string;
   /** @minLength 1 */
   description: string;
   hasAttachments?: boolean;

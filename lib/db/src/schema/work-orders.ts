@@ -1,6 +1,7 @@
 import {
   boolean,
   date,
+  doublePrecision,
   jsonb,
   pgTable,
   text,
@@ -91,6 +92,8 @@ export const workOrdersTable = pgTable("work_orders", {
   poNumber: text("po_number"),
   referenceNumber: text("reference_number"),
   externalId: text("external_id"),
+  nte: doublePrecision("nte"),
+  contact: text("contact"),
   priority: text("priority").notNull().default("Medium"),
   status: text("status").notNull().default("New"),
   type: text("type").notNull().default(""),

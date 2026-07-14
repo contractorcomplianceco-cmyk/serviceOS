@@ -1,4 +1,11 @@
-import { boolean, date, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  date,
+  doublePrecision,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { randomUUID } from "node:crypto";
 import { z } from "zod/v4";
@@ -16,6 +23,12 @@ export const intakeTable = pgTable("intake", {
   locationId: text("location_id"),
   priority: text("priority").notNull().default("Medium"),
   requestedDate: date("requested_date", { mode: "string" }).notNull(),
+  // Dispatcher-entered fields that must survive conversion to a work order.
+  // Nullable so existing rows remain valid.
+  externalId: text("external_id"),
+  poNumber: text("po_number"),
+  nte: doublePrecision("nte"),
+  contact: text("contact"),
   description: text("description").notNull().default(""),
   hasAttachments: boolean("has_attachments").notNull().default(false),
   duplicateOf: text("duplicate_of"),

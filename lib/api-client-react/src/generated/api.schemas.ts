@@ -1658,6 +1658,14 @@ export interface IntakeItem {
   locationId?: string | null;
   priority: string;
   requestedDate: string;
+  /** @nullable */
+  externalId?: string | null;
+  /** @nullable */
+  poNumber?: string | null;
+  /** @nullable */
+  nte?: number | null;
+  /** @nullable */
+  contact?: string | null;
   description: string;
   hasAttachments: boolean;
   /** @nullable */
@@ -1677,6 +1685,10 @@ export interface IntakeInput {
   locationId?: string;
   priority?: string;
   requestedDate: string;
+  externalId?: string;
+  poNumber?: string;
+  nte?: number;
+  contact?: string;
   /** @minLength 1 */
   description: string;
   hasAttachments?: boolean;
@@ -1764,6 +1776,10 @@ export interface WorkOrder {
   referenceNumber?: string | null;
   /** @nullable */
   externalId?: string | null;
+  /** @nullable */
+  nte?: number | null;
+  /** @nullable */
+  contact?: string | null;
   priority: string;
   status: string;
   type: string;
