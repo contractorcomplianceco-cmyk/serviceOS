@@ -1,3 +1,5 @@
+> **SUPERSEDED NOTE 2026-07-13:** Phase-1 “frontend-only” wording in this file is **historical**. Current tree includes Express API + Postgres — see repo root `README.md` and `STATUS-2026-07-13.md`. Do not quote this doc as proof there is no backend.
+
 # ServiceConnect — Integration Status
 
 **Every integration below is SIMULATED in the browser. No network calls leave the app.** This is a

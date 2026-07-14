@@ -16,12 +16,15 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-app.listen(port, (err) => {
+// Default to loopback until a team nginx vhost fronts the API.
+const host = process.env["HOST"] || "127.0.0.1";
+
+app.listen(port, host, (err) => {
   if (err) {
     logger.error({ err }, "Error listening on port");
     process.exit(1);
   }
 
-  logger.info({ port }, "Server listening");
+  logger.info({ port, host }, "Server listening");
   void bootstrapJobs();
 });

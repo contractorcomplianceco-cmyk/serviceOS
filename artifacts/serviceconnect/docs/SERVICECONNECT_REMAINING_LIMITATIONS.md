@@ -1,3 +1,5 @@
+> **SUPERSEDED NOTE 2026-07-13:** Phase-1 “frontend-only” wording in this file is **historical**. Current tree includes Express API + Postgres — see repo root `README.md` and `STATUS-2026-07-13.md`. Do not quote this doc as proof there is no backend.
+
 # ServiceConnect — Remaining Limitations
 
 Written plainly and honestly. This is a **frontend-only prototype**. The following are real limits,

@@ -1,3 +1,5 @@
+> **SUPERSEDED NOTE 2026-07-13:** Phase-1 “frontend-only” wording in this file is **historical**. Current tree includes Express API + Postgres — see repo root `README.md` and `STATUS-2026-07-13.md`. Do not quote this doc as proof there is no backend.
+
 # ServiceConnect — Gap Report
 
 State of the product as found at the start of this pass, and the gaps that remain after it.

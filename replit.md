@@ -1,10 +1,13 @@
 # ServiceConnect with RoseOS Intelligence
 
-A field-service operating system for a plumbing/HVAC service company — replacing BlueFolder + QuickBooks. Frontend-only prototype with rich seeded mock data (no real backend/APIs).
+A field-service operating system for a plumbing/HVAC service company — replacing BlueFolder + QuickBooks.
+
+**Status (2026-07-13 Carmen audit):** Full-stack app — Express API under `artifacts/api-server` (~32 route modules) + React web `artifacts/serviceconnect` + Postgres/Drizzle. The older line “frontend-only prototype / no real backend” below was **stale**; prefer `README.md`. Not hosted on this EC2 yet (no nginx/uptime target).
 
 ## Run & Operate
 
 - App runs via the `artifacts/serviceconnect: web` workflow (Vite dev server, reads `PORT`/`BASE_PATH`).
+- `pnpm --filter @workspace/api-server run dev` — API (requires `PORT`, `DATABASE_URL`, `SESSION_SECRET`).
 - `pnpm --filter @workspace/serviceconnect run typecheck` — typecheck the app.
 - Do NOT run `pnpm dev` at the repo root; use the workflow.
 
