@@ -264,3 +264,54 @@ describe("AR / invoice calculations", () => {
     expect(after.amount - after.amountPaid).toBeGreaterThanOrEqual(0);
   });
 });
+
+describe("intake → work order field preservation", () => {
+  // A dispatcher enters External ID / PO / NTE / contact / notes ONCE on an
+  // intake; every one of those values must survive conversion to the work order.
+  const dispatcherFields = {
+    externalId: "SC#98765",
+    poNumber: "RT-778899",
+    nte: 1250.5,
+    contact: "Dana Dispatcher, 813-555-0143",
+    description: "After-hours HVAC failure — freezer aisle at risk.",
+  };
+
+  it("persists dispatcher fields on create and carries them onto the converted work order", async () => {
+    const admin = await loginAs(SEED.admin);
+
+    const created = await admin.post("/api/intake").send({
+      source: "Manual",
+      customerId: "c1",
+      locationId: "l1",
+      priority: "High",
+      requestedDate: "2026-07-20",
+      ...dispatcherFields,
+    });
+    expect(created.status).toBe(201);
+    // Fields are persisted on the intake record itself.
+    expect(created.body.externalId).toBe(dispatcherFields.externalId);
+    expect(created.body.poNumber).toBe(dispatcherFields.poNumber);
+    expect(created.body.nte).toBe(dispatcherFields.nte);
+    expect(created.body.contact).toBe(dispatcherFields.contact);
+    expect(created.body.description).toBe(dispatcherFields.description);
+
+    const convert = await admin.post(`/api/intake/${created.body.id}/convert`);
+    expect(convert.status).toBe(200);
+    const wo = convert.body;
+    // Every dispatcher-entered value must be present on the work order.
+    expect(wo.externalId).toBe(dispatcherFields.externalId);
+    expect(wo.poNumber).toBe(dispatcherFields.poNumber);
+    expect(wo.nte).toBe(dispatcherFields.nte);
+    expect(wo.contact).toBe(dispatcherFields.contact);
+    expect(wo.description).toBe(dispatcherFields.description);
+
+    // Idempotency: a second convert returns the same work order, still intact.
+    const again = await admin.post(`/api/intake/${created.body.id}/convert`);
+    expect(again.status).toBe(200);
+    expect(again.body.id).toBe(wo.id);
+    expect(again.body.externalId).toBe(dispatcherFields.externalId);
+    expect(again.body.poNumber).toBe(dispatcherFields.poNumber);
+    expect(again.body.nte).toBe(dispatcherFields.nte);
+    expect(again.body.contact).toBe(dispatcherFields.contact);
+  });
+});

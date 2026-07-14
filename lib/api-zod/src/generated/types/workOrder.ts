@@ -26,6 +26,10 @@ export interface WorkOrder {
   referenceNumber?: string | null;
   /** @nullable */
   externalId?: string | null;
+  /** @nullable */
+  nte?: number | null;
+  /** @nullable */
+  contact?: string | null;
   priority: string;
   status: string;
   type: string;
